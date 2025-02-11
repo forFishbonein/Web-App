@@ -25,8 +25,8 @@ WORKDIR /app
 # 从第一阶段复制打包生成的 JAR 文件到当前镜像
 COPY --from=builder /app/target/Backend-0.0.1-SNAPSHOT.jar app.jar
 
-# Spring Boot 默认为 8080 端口，但你在 application.yml 中配成 8081
-EXPOSE 8081
+# Spring Boot 默认为 8080 端口
+EXPOSE 8080
 
 # 运行 Spring Boot
 CMD ["java", "-jar", "app.jar"]
