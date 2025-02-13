@@ -1,0 +1,16 @@
+.css-1usuzwp-MuiButtonBase-root-MuiTab-root.Mui-selected{
+    color: white !important;
+    background-color: #224a95;
+    border:1px solid #224a95;
+}
+
+.tab {
+    width: 46%;
+    border: 1px solid #224a95 !important;
+    font-size: medium !important;
+    text-transform: none !important;
+}
+
+.css-1qltlow-MuiTabs-indicator{
+    background-color: #224a95 !important;
+}
