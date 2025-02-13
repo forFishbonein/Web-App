@@ -25,7 +25,7 @@ services:
     volumes:
       # 这行配置的作用是将容器内的 MySQL 数据存储目录映射到名为 db_data 的 Docker 卷上，以便实现数据持久化。
       # 如果注释掉这一行，容器每次启动都会使用全新的数据目录，所有之前创建的数据都会丢失。所以建议保留这一行配置，除非你有特殊需求。
-#      - db_data:/var/lib/mysql
+      - db_data:/var/lib/mysql
       - ./init-scripts:/docker-entrypoint-initdb.d  # 挂载初始化脚本
     networks:
     # 指定该服务加入名为 app-network 的 Docker 网络。
@@ -109,3 +109,5 @@ services:
 networks:
   app-network:
     driver: bridge
+volumes:
+  db_data:
