@@ -73,7 +73,7 @@ const HomePage = () => {
             padding: "10px 20px",
             fontSize: "18px",
             borderRadius: "8px",
-            "&:hover": { backgroundColor: "#ffcc4d" },
+            "&:hover": { textDecoration: "underline" },
           }}
           onClick={() => navigate("/authenticate")}
         >
