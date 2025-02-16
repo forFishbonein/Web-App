@@ -105,7 +105,7 @@ const LoginForm = () => {
             <Link
               href="#"
               variant="body2"
-              sx={{ color: "#224a95", textDecorationColor: "#224a95" }}
+              sx={{ color: "#023047", textDecorationColor: "#023047" }}
             >
               Forgot password?
             </Link>
