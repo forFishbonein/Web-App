@@ -113,7 +113,7 @@ const AuthenticationPage = () => {
             <VerificationForm onVerified={handleVerificationSuccess} email={email} />
           ) : (
             <>
-              <Typography className="tabHeaders" variant="h5" gutterBottom sx={{marginTop: "0.35em"}}>
+              <Typography className="tabHeaders" variant="h5" gutterBottom sx={{ marginTop: "0.35em" }}>
                 {activeTab === 0
                   ? role === "trainer"
                     ? "Join as a Trainer!"
@@ -135,7 +135,7 @@ const AuthenticationPage = () => {
           )}
         </Paper>
       </Grid>
-    </Grid>
+    </Grid >
   );
 };
 

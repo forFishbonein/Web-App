@@ -44,8 +44,8 @@ const SignupForm = ({ onSubmit }) => {
       : "Email is required";
     tempErrors.password =
       formData.password.length >= 6 &&
-      /[A-Z]/.test(formData.password) &&
-      /\d/.test(formData.password)
+        /[A-Z]/.test(formData.password) &&
+        /\d/.test(formData.password)
         ? ""
         : "Password must be at least 6 characters, include one uppercase letter and one number";
     tempErrors.confirmPassword =
@@ -77,7 +77,7 @@ const SignupForm = ({ onSubmit }) => {
         onSubmit(response.data);
         setMessage(
           response.data.message ||
-            "Signup successful! Check your email for verification."
+          "Signup successful! Check your email for verification."
         );
       } catch (error) {
         setMessage(
@@ -91,27 +91,27 @@ const SignupForm = ({ onSubmit }) => {
     <Container maxWidth="sm">
       <Box>
         <form onSubmit={handleSubmit}>
-          <div style={{display: "flex", flexDirection: "row", gap: "10px"}}>
-          <TextField
-            fullWidth
-            label="First Name"
-            name="firstName"
-            value={formData.firstName}
-            onChange={handleChange}
-            error={!!errors.firstName}
-            helperText={errors.firstName}
-            margin="normal"
-          />
-          <TextField
-            fullWidth
-            label="Last Name"
-            name="lastName"
-            value={formData.lastName}
-            onChange={handleChange}
-            error={!!errors.lastName}
-            helperText={errors.lastName}
-            margin="normal"
-          />
+          <div style={{ display: "flex", flexDirection: "row", gap: "10px" }}>
+            <TextField
+              fullWidth
+              label="First Name"
+              name="firstName"
+              value={formData.firstName}
+              onChange={handleChange}
+              error={!!errors.firstName}
+              helperText={errors.firstName}
+              margin="normal"
+            />
+            <TextField
+              fullWidth
+              label="Last Name"
+              name="lastName"
+              value={formData.lastName}
+              onChange={handleChange}
+              error={!!errors.lastName}
+              helperText={errors.lastName}
+              margin="normal"
+            />
           </div>
           <TextField
             fullWidth
@@ -124,7 +124,7 @@ const SignupForm = ({ onSubmit }) => {
             helperText={errors.dateOfBirth}
             margin="normal"
             slotProps={{
-                inputLabel: { shrink: true },
+              inputLabel: { shrink: true },
             }}
           />
           <TextField

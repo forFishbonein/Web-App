@@ -40,7 +40,7 @@ function MemberDashboard() {
   };
 
   return (
-    <AppBar position="static">
+    <AppBar position="static" sx={{ backgroundColor: "#023047" }}>
       <Container maxWidth="xl">
         <Toolbar disableGutters>
           {/* Logo section */}
@@ -68,7 +68,7 @@ function MemberDashboard() {
               <Button
                 key={page.name}
                 onClick={() => navigate(page.path)} // Navigate to corresponding page
-                sx={{ my: 2, color: "white", display: "block" }}
+                sx={{ my: 2, color: "white", display: "block", marginRight: 2 }}
               >
                 {page.name}
               </Button>

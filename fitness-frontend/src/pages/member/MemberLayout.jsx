@@ -1,5 +1,5 @@
 import { Outlet } from "react-router-dom";
-import MemberDashboard from "../components/MemberDashboard.jsx"
+import MemberDashboard from "../../components/dashboard/MemberDashboard.jsx"
 function MemberLayout() {
   return (
     <div>
