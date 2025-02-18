@@ -1,31 +1,24 @@
 import React from "react";
-import { Tabs, Tab, Box } from "@mui/material";
+import { AppBar, Toolbar, Typography, Avatar } from "@mui/material";
 
-const Header = ({ tabs, onTabClick }) => {
+const Header = ({ firstName, lastName }) => {
+  // Generate avatar initials
+  const initials = `${firstName?.charAt(0) ?? ""}${lastName?.charAt(0) ?? ""}`;
 
   return (
-    <Box
-      sx={{
-        backgroundColor: "#023047",
-        padding: "10px 10px",
-      }}
-    >
-      <Tabs
-        aria-label="navigation tabs"
-      >
-        {tabs.map((tab, index) => (
-          <Tab
-            key={index}
-            label={tab.label}
-            onClick={() => onTabClick(tab.role)}
-            sx={{
-              color: "white",
-              "&:hover": { color: "#f4d35e",textDecoration: "underline" }
-            }}
-          />
-        ))}
-      </Tabs>
-    </Box>
+    <AppBar position="static" sx={{ backgroundColor: "#023047", padding: "2px 20px" }}>
+      <Toolbar sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        {/* Application Name */}
+        <Typography variant="h4" sx={{ color: "white", fontWeight: "bold" }}>
+          FitQuest
+        </Typography>
+
+        {/* User Avatar with Initials */}
+        <Avatar sx={{ bgcolor: "#f4d35e", color: "#023047", fontWeight: "bold", cursor: "pointer" }}>
+          {initials.toUpperCase()}
+        </Avatar>
+      </Toolbar>
+    </AppBar>
   );
 };
 

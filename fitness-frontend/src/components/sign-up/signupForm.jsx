@@ -11,8 +11,10 @@ import {
   Box,
   IconButton,
   InputAdornment,
+  Divider,
 } from "@mui/material";
-import { Visibility, VisibilityOff } from "@mui/icons-material"; // Import icons
+import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { Google as GoogleIcon, Facebook as FacebookIcon } from "@mui/icons-material";
 
 const SignupForm = ({ onSubmit }) => {
   const [formData, setFormData] = useState({
@@ -101,6 +103,7 @@ const SignupForm = ({ onSubmit }) => {
             error={!!errors.firstName}
             helperText={errors.firstName}
             margin="normal"
+            size="small"
           />
           <TextField
             fullWidth
@@ -111,6 +114,7 @@ const SignupForm = ({ onSubmit }) => {
             error={!!errors.lastName}
             helperText={errors.lastName}
             margin="normal"
+            size="small"
           />
           </div>
           <TextField
@@ -126,6 +130,7 @@ const SignupForm = ({ onSubmit }) => {
             slotProps={{
                 inputLabel: { shrink: true },
             }}
+            size="small"
           />
           <TextField
             fullWidth
@@ -136,6 +141,7 @@ const SignupForm = ({ onSubmit }) => {
             error={!!errors.address}
             helperText={errors.address}
             margin="normal"
+            size="small"
           />
           <TextField
             fullWidth
@@ -146,6 +152,7 @@ const SignupForm = ({ onSubmit }) => {
             error={!!errors.email}
             helperText={errors.email}
             margin="normal"
+            size="small"
           />
           <TextField
             fullWidth
@@ -157,6 +164,7 @@ const SignupForm = ({ onSubmit }) => {
             error={!!errors.password}
             helperText={errors.password}
             margin="normal"
+            size="small"
             slotProps={{
               input: {
                 endAdornment: formData.password ? ( // Show eye icon only when input is not empty
@@ -182,6 +190,7 @@ const SignupForm = ({ onSubmit }) => {
             error={!!errors.confirmPassword}
             helperText={errors.confirmPassword}
             margin="normal"
+            size="small"
             slotProps={{
               input: {
                 endAdornment: formData.confirmPassword ? ( // Show eye icon only when input is not empty
@@ -224,6 +233,41 @@ const SignupForm = ({ onSubmit }) => {
           </Button>
         </form>
       </Box>
+
+      {/* Divider with OR */}
+        <Box display="flex" alignItems="center" my={1}>
+          <Divider sx={{ flex: 1 }} />
+          <Typography sx={{ mx: 1 }}>OR</Typography>
+          <Divider sx={{ flex: 1 }} />
+        </Box>
+
+        {/* Social Login Buttons */}
+        <Box display="flex" justifyContent="center" gap={2}>
+          <Button
+            variant="contained"
+            startIcon={<GoogleIcon />}
+            sx={{
+              backgroundColor: "#DB4437",
+              color: "white",
+              "&:hover": { backgroundColor: "#C1351D" },
+              flex: 1, // Makes buttons equal width
+            }}
+          >
+            Google
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<FacebookIcon />}
+            sx={{
+              backgroundColor: "#1877F2",
+              color: "white",
+              "&:hover": { backgroundColor: "#145DBF" },
+              flex: 1, // Makes buttons equal width
+            }}
+          >
+            Facebook
+          </Button>
+        </Box>
     </Container>
   );
 };

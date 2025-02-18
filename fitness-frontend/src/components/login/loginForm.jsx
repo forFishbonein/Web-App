@@ -1,17 +1,19 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import "./LoginForm.css";
 import {
   TextField,
   Button,
   Container,
   Box,
-  Link,
   IconButton,
   InputAdornment,
+  Typography,
+  Divider,
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { Google as GoogleIcon, Facebook as FacebookIcon } from "@mui/icons-material";
 
 const LoginForm = () => {
   const navigate = useNavigate();
@@ -70,6 +72,7 @@ const LoginForm = () => {
             error={!!errors.email}
             helperText={errors.email}
             margin="normal"
+            size="small"
           />
           <TextField
             fullWidth
@@ -81,6 +84,7 @@ const LoginForm = () => {
             error={!!errors.password}
             helperText={errors.password}
             margin="normal"
+            size="small"
             slotProps={{
               input: {
                 endAdornment: formData.password ? (
@@ -103,11 +107,10 @@ const LoginForm = () => {
             mt={1}
           >
             <Link
-              href="#"
               variant="body2"
-              sx={{ color: "#023047", textDecorationColor: "#023047" }}
+              to="/forgot-password"
             >
-              Forgot password?
+              <Button variant="text" sx={{ color: "#023047", textDecorationColor: "#023047", textTransform: "none" }}>Forgot password?</Button>
             </Link>
           </Box>
           <Button
@@ -120,6 +123,40 @@ const LoginForm = () => {
           </Button>
         </form>
       </Box>
+      {/* Divider with OR */}
+      <Box display="flex" alignItems="center" my={1}>
+          <Divider sx={{ flex: 1 }} />
+          <Typography sx={{ mx: 1 }}>OR</Typography>
+          <Divider sx={{ flex: 1 }} />
+        </Box>
+
+        {/* Social Login Buttons */}
+        <Box display="flex" justifyContent="center" gap={2}>
+          <Button
+            variant="contained"
+            startIcon={<GoogleIcon />}
+            sx={{
+              backgroundColor: "#DB4437",
+              color: "white",
+              "&:hover": { backgroundColor: "#C1351D" },
+              flex: 1,
+            }}
+          >
+            Google
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<FacebookIcon />}
+            sx={{
+              backgroundColor: "#1877F2",
+              color: "white",
+              "&:hover": { backgroundColor: "#145DBF" },
+              flex: 1,
+            }}
+          >
+            Facebook
+          </Button>
+        </Box>
     </Container>
   );
 };

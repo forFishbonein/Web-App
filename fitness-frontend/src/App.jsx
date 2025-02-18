@@ -8,9 +8,10 @@ import {
 } from "react-router-dom";
 import AuthenticationPage from "./pages/authenticationPage";
 import HomePage from "./pages/HomePage";
+import ForgotPassword from "./components/forgotPassword/forgotPassword";
 
 function App() {
-  const isAuthenticated = false; // Replace with actual authentication logic
+  const isAuthenticated = false;
 
   return (
       <Router>
@@ -28,6 +29,7 @@ function App() {
             <Route path="/authenticate" element={<AuthenticationPage />} />
             {/* Redirect all non-authenticated users to login */}
             <Route path="*" element={<Navigate to="/authenticate" />} />
+            <Route path="/forgot-password" element={< ForgotPassword/>} />
           </Routes>
         )}
       </Router>
