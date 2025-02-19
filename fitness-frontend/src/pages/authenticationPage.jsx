@@ -45,7 +45,6 @@ const AuthenticationPage = () => {
     <Grid container sx={{ height: "100vh" }}>
       {/* Left side with blue background */}
       <Grid
-        item
         xs={12}
         md={6}
         sx={{
@@ -97,7 +96,6 @@ const AuthenticationPage = () => {
 
       {/* Right side with form */}
       <Grid
-        item
         xs={12}
         md={6}
         sx={{

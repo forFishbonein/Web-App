@@ -13,7 +13,6 @@ const Header = ({ firstName, lastName, children }) => {
   const [anchorElUser, setAnchorElUser] = React.useState(null);
   // Open user menu dropdown
   const handleOpenUserMenu = (event) => {
-    console.log(event.currentTarget);
     setAnchorElUser(event.currentTarget);
   };
 

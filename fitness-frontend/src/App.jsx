@@ -4,7 +4,6 @@ import CssBaseline from "@mui/material/CssBaseline";
 import theme from "./theme";
 import "./index.css";
 import {
-  BrowserRouter as Router,
   Routes,
   Route,
   Navigate,
@@ -28,29 +27,27 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Router>
-        <Routes>
-          {/* The login page can be accessed before login, but not after login */}
-          <Route path="/" element={!userRole ? <HomePage /> : <Navigate to={getDefaultPath()} replace />} />
-          <Route path="/authenticate" element={!userRole ? <AuthenticationPage /> : <Navigate to={getDefaultPath()} replace />} />
-          <Route path="/forgot-password" element={!userRole ? <ForgotPassword /> : <Navigate to={getDefaultPath()} replace />} />
-          {/* Perform role access control after login */}
-          {isAuthorized(userRole, ["member"]) && (
-            <Route path="/member" element={<MemberLayout />}>
-              <Route index element={<Navigate to="/member/trainers" replace />} />
-              <Route path="trainers" element={<Trainers />} />
-              <Route path="sessions" element={<Sessions />} />
-            </Route>
-          )}
-          {isAuthorized(userRole, ["admin"]) && (
-            <Route path="/admin" element={<MemberLayout />} ></Route>
-          )}
-          {isAuthorized(userRole, ["trainer"]) && (
-            <Route path="/trainer" element={<MemberLayout />} ></Route>
-          )}
-          <Route path="*" element={!userRole ? <Navigate to="/authenticate" replace /> : <Navigate to={getDefaultPath()} replace />} />
-        </Routes>
-      </Router>
+      <Routes>
+        {/* The login page can be accessed before login, but not after login */}
+        <Route path="/" element={!userRole ? <HomePage /> : <Navigate to={getDefaultPath()} replace />} />
+        <Route path="/authenticate" element={!userRole ? <AuthenticationPage /> : <Navigate to={getDefaultPath()} replace />} />
+        <Route path="/forgot-password" element={!userRole ? <ForgotPassword /> : <Navigate to={getDefaultPath()} replace />} />
+        {/* Perform role access control after login */}
+        {isAuthorized(userRole, ["member"]) && (
+          <Route path="/member" element={<MemberLayout />}>
+            <Route index element={<Navigate to="/member/trainers" replace />} />
+            <Route path="trainers" element={<Trainers />} />
+            <Route path="sessions" element={<Sessions />} />
+          </Route>
+        )}
+        {isAuthorized(userRole, ["admin"]) && (
+          <Route path="/admin" element={<MemberLayout />} ></Route>
+        )}
+        {isAuthorized(userRole, ["trainer"]) && (
+          <Route path="/trainer" element={<MemberLayout />} ></Route>
+        )}
+        <Route path="*" element={!userRole ? <Navigate to="/authenticate" replace /> : <Navigate to={getDefaultPath()} replace />} />
+      </Routes>
     </ThemeProvider>
   );
 }
