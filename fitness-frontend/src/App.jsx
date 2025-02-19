@@ -15,6 +15,13 @@ import Trainers from "./pages/member/Trainers";
 import Sessions from "./pages/member/Sessions";
 import ForgotPassword from "./components/forgotPassword/forgotPassword";
 import { useUserStore } from "./store/useUserStore";
+import TrainerLayout from "./pages/trainer/TrainerLayout";
+import Applications from "./pages/trainer/application/Applications";
+import Appointment from "./pages/trainer/application/Appointment";
+import Training from "./pages/trainer/application/Training";
+import Trainings from "./pages/trainer/training/Trainings";
+import Session from "./pages/trainer/training/Session";
+import Member from "./pages/trainer/training/Member";
 function App() {
   // before
   // const isAuthenticated = false;
@@ -40,12 +47,25 @@ function App() {
             <Route path="sessions" element={<Sessions />} />
           </Route>
         )}
+        {isAuthorized(userRole, ["trainer"]) && (
+          <Route path="/trainer" element={<TrainerLayout />} >
+            <Route index element={<Navigate to="/trainer/applications" replace />} />
+            <Route path="applications" element={<Applications />} >
+              <Route index element={<Navigate to="/trainer/applications/training" replace />} />
+              <Route path="training" element={<Training />} />
+              <Route path="appointment" element={<Appointment />} />
+            </Route>
+            <Route path="trainings" element={<Trainings />} >
+              <Route index element={<Navigate to="/trainer/trainings/session" replace />} />
+              <Route path="session" element={<Session />} />
+              <Route path="member" element={<Member />} />
+            </Route>
+          </Route>
+        )}
         {isAuthorized(userRole, ["admin"]) && (
           <Route path="/admin" element={<MemberLayout />} ></Route>
         )}
-        {isAuthorized(userRole, ["trainer"]) && (
-          <Route path="/trainer" element={<MemberLayout />} ></Route>
-        )}
+
         <Route path="*" element={!userRole ? <Navigate to="/authenticate" replace /> : <Navigate to={getDefaultPath()} replace />} />
       </Routes>
     </ThemeProvider>

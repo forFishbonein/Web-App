@@ -32,8 +32,8 @@ function MemberDashboard() {
               display: "block",
               marginRight: 2,
               fontSize: "16px",
-              color: location.pathname === page.path ? "white" : "gray",
-              "&:hover": { color: location.pathname !== page.path ? "lightgray" : "white", backgroundColor: "transparent" },
+              color: location.pathname.includes(page.path) ? "white" : "gray",
+              "&:hover": { color: !location.pathname.includes(page.path) ? "lightgray" : "white", backgroundColor: "transparent" },
               "&:focus": {
                 backgroundColor: "transparent"
               }

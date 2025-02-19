@@ -17,7 +17,7 @@ export const useUserStore = create(
             const userInfo = {
               data: {
                 name: "haowenhai",
-                role: "member",
+                role: "trainer", //test role
                 email: "111111",
               },
             }; //test data
