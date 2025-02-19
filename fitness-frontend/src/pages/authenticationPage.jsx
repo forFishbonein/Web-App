@@ -108,7 +108,7 @@ const AuthenticationPage = () => {
           flexDirection: "column",
         }}
       >
-        <Paper elevation={3} sx={{ paddingBottom: "16px", paddingTop: "5px", borderRadius: 2, textAlign: "center" }}>
+        <Paper elevation={3} sx={{ paddingBottom: "16px", borderRadius: 2, textAlign: "center" }}>
           {isVerificationVisible ? (
             <VerificationForm onVerified={handleVerificationSuccess} email={email} />
           ) : (

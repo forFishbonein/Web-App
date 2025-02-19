@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, Button, Typography } from "@mui/material";
-import Header from "../components/header/headerComponent";
+import Header from "../components/header/homeHeaderComponent";
 import Footer from "../components/footer/footerComponent";
 import image from "../assets/strengthImage.jpg";
 
@@ -9,10 +9,10 @@ const HomePage = () => {
   const navigate = useNavigate();
   const [selectedRole, setSelectedRole] = useState("");
 
-  const tabs = [
-    { label: "Member", role: "member" },
-    { label: "Trainer", role: "trainer" },
-  ];
+  // const tabs = [
+  //   { label: "Member", role: "member" },
+  //   { label: "Trainer", role: "trainer" },
+  // ];
 
   const handleTabClick = (role) => {
     setSelectedRole(role);
@@ -21,7 +21,7 @@ const HomePage = () => {
 
   return (
     <div>
-      <Header tabs={tabs} onTabClick={handleTabClick} />
+      <Header onTabClick={handleTabClick} />
 
       <Box
         sx={{
