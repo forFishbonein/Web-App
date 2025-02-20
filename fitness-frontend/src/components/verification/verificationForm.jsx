@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import axios from "axios";
 import { TextField, Button, Box, Typography } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import "./VerificationForm.css"
 
 const VerificationForm = ({ onVerified, email }) => {
@@ -62,7 +63,15 @@ const VerificationForm = ({ onVerified, email }) => {
   };
 
   return (
-    <div>
+    <Grid
+      xs={12}
+      md={6}
+      container
+      justifyContent="center"
+      alignItems="center"
+      direction="column"
+      sx={{ width: "600px", height: "650px", textAlign: "center" }} // 让整个界面垂直 & 水平居中
+    >
       <Typography variant="h5" gutterBottom>
         Verify
       </Typography>
@@ -101,7 +110,7 @@ const VerificationForm = ({ onVerified, email }) => {
       <Typography variant="body2" color="textSecondary" mt={2}>
         Didn’t receive code? <a href="#">Request again</a>
       </Typography>
-    </div>
+    </Grid>
   );
 };
 

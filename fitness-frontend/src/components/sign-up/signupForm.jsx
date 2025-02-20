@@ -64,19 +64,45 @@ const SignupForm = ({ onSubmit }) => {
     setFormData({ ...formData, [name]: type === "checkbox" ? checked : value });
   };
 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (validate()) {
+      onSubmit({
+        address: "111",
+        email: "haowhenhai@163.com"
+      });
+      onCaptchaShow();
+    }
+  };
+  //captcha logic
+  function onCaptchaShow() {
+    try {
+      const captcha = new TencentCaptcha('190688044', callback, {});
+      captcha.show();
+    } catch (error) {
+      loadErrorCallback();
+    }
+  }
+
+  function callback(res) {
+    console.log('callback:', res);
+    if (res.ret === 0) {
+      const randstr = res.randstr;
+      const ticket = res.ticket;
       try {
-        const response = await axios.post("http://localhost:8060/auth/signup", {
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          dateOfBirth: formData.dateOfBirth,
-          address: formData.address,
-          email: formData.email,
-          password: formData.password,
-        });
-        onSubmit(response.data);
+        // real logic
+        // const response = await axios.post("http://localhost:8060/auth/signup", {
+        //   firstName: formData.firstName,
+        //   lastName: formData.lastName,
+        //   dateOfBirth: formData.dateOfBirth,
+        //   address: formData.address,
+        //   email: formData.email,
+        //   password: formData.password,
+        //   randstr: randstr, // need to send to backend
+        //   ticket: ticket,
+        // });
+        onSubmit(formData);
         setMessage(
           response.data.message ||
           "Signup successful! Check your email for verification."
@@ -86,8 +112,24 @@ const SignupForm = ({ onSubmit }) => {
           error.response?.data?.message || "Signup failed. Please try again."
         );
       }
+    } else {
+      setMessage(
+        "Captcha verification failed. Please try again."
+      );
     }
-  };
+  }
+  // Defines captcha js load error handlers
+  function loadErrorCallback() {
+    var appid = '190688044';
+    var ticket = 'trerror_1001_' + appid + '_' + Math.floor(new Date().getTime() / 1000);
+    callback({
+      ret: 500,
+      randstr: '@' + Math.random().toString(36).substr(2),
+      ticket: ticket,
+      errorCode: 1001,
+      errorMessage: 'jsload_error',
+    });
+  }
 
   return (
     <Container maxWidth="sm">
