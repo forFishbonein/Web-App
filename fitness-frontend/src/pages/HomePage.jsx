@@ -4,7 +4,6 @@ import { Box, Button, Typography } from "@mui/material";
 import Header from "../components/header/homeHeaderComponent";
 import Footer from "../components/footer/footerComponent";
 import image from "../assets/strengthImage.jpg";
-
 const HomePage = () => {
   const navigate = useNavigate();
   const [selectedRole, setSelectedRole] = useState("");

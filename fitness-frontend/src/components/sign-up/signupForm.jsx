@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import axios from "axios";
 import "./SignupForm.css";
 import {
   TextField,
@@ -15,8 +14,10 @@ import {
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { Google as GoogleIcon, Facebook as FacebookIcon } from "@mui/icons-material";
-
-const SignupForm = ({ onSubmit }) => {
+import useCaptcha from "../../utils/Hooks/useCaptcha.js";
+import { useSnackbar } from "../../utils/Hooks/SnackbarContext.jsx";
+import useLoginApi from "../../apis/login";
+const SignupForm = ({ onSubmit, role }) => {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -31,8 +32,7 @@ const SignupForm = ({ onSubmit }) => {
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false); // Toggle password visibility
   const [showConfirmPassword, setShowConfirmPassword] = useState(false); // Toggle confirm password visibility
-  const [message, setMessage] = useState("");
-
+  const { onCaptchaShow } = useCaptcha();
   const validate = () => {
     let tempErrors = {};
     tempErrors.firstName = formData.firstName ? "" : "First name is required";
@@ -63,73 +63,43 @@ const SignupForm = ({ onSubmit }) => {
     const { name, value, type, checked } = e.target;
     setFormData({ ...formData, [name]: type === "checkbox" ? checked : value });
   };
-
-
+  const { getCaptchaAndSignUp } = useLoginApi();
+  const { showSnackbar } = useSnackbar();
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (validate()) {
-      onSubmit({
-        address: "111",
-        email: "haowhenhai@163.com"
-      });
-      onCaptchaShow();
+      //captcha logic
+      onCaptchaShow(
+        async (ticket, randstr) => {
+          console.log("successful！Ticket:", ticket, "RandStr:", randstr);
+          try {
+            // real logic
+            await getCaptchaAndSignUp({
+              address: formData.address,
+              captchaRandstr: randstr,
+              captchaTicket: ticket,
+              dateOfBirth: formData.dateOfBirth,
+              email: formData.email,
+              name: formData.firstName + " " + formData.lastName, //TODO：拼接的对吗？
+              password: formData.password,
+              role
+            });
+            onSubmit(formData);
+            showSnackbar({ message: "Signup successful! Check your email for verification.", severity: "success" });
+          } catch (error) {
+            if (error) {
+              showSnackbar({ message: "Signup failed. Please try again.", severity: "error" });
+            }
+          }
+        },
+        (error) => {
+          showSnackbar({ message: error, severity: "error" });
+        }
+      )
     }
   };
-  //captcha logic
-  function onCaptchaShow() {
-    try {
-      const captcha = new TencentCaptcha('190688044', callback, {});
-      captcha.show();
-    } catch (error) {
-      loadErrorCallback();
-    }
-  }
 
-  function callback(res) {
-    console.log('callback:', res);
-    if (res.ret === 0) {
-      const randstr = res.randstr;
-      const ticket = res.ticket;
-      try {
-        // real logic
-        // const response = await axios.post("http://localhost:8060/auth/signup", {
-        //   firstName: formData.firstName,
-        //   lastName: formData.lastName,
-        //   dateOfBirth: formData.dateOfBirth,
-        //   address: formData.address,
-        //   email: formData.email,
-        //   password: formData.password,
-        //   randstr: randstr, // need to send to backend
-        //   ticket: ticket,
-        // });
-        onSubmit(formData);
-        setMessage(
-          response.data.message ||
-          "Signup successful! Check your email for verification."
-        );
-      } catch (error) {
-        setMessage(
-          error.response?.data?.message || "Signup failed. Please try again."
-        );
-      }
-    } else {
-      setMessage(
-        "Captcha verification failed. Please try again."
-      );
-    }
-  }
-  // Defines captcha js load error handlers
-  function loadErrorCallback() {
-    var appid = '190688044';
-    var ticket = 'trerror_1001_' + appid + '_' + Math.floor(new Date().getTime() / 1000);
-    callback({
-      ret: 500,
-      randstr: '@' + Math.random().toString(36).substr(2),
-      ticket: ticket,
-      errorCode: 1001,
-      errorMessage: 'jsload_error',
-    });
-  }
+
 
   return (
     <Container maxWidth="sm">

@@ -3,13 +3,15 @@ import axios from "axios";
 import { TextField, Button, Box, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import "./VerificationForm.css"
-
+import useLoginApi from "../../apis/login";
+import { useSnackbar } from "../../utils/Hooks/SnackbarContext.jsx";
 const VerificationForm = ({ onVerified, email }) => {
+  const { showSnackbar } = useSnackbar();
   console.log(email);
   const [otp, setOtp] = useState(new Array(6).fill(""));
   const [error, setError] = useState("");
   const inputRefs = useRef([]);
-
+  const { verifyCode } = useLoginApi();
   const handleChange = (e, index) => {
     const value = e.target.value.replace(/[^0-9]/g, "");
     if (value.length > 1) return;
@@ -38,26 +40,14 @@ const VerificationForm = ({ onVerified, email }) => {
     setError("");
 
     try {
-      const response = await axios.post("http://localhost:8060/auth/verify", {
-        email: email,
-        verificationCode: otp.join(""),
-      });
-      if (response.status === 200) {
-        console.log("Verification successful!");
-        onVerified();
-      } else {
-        setError(response.data?.message || "Invalid OTP, please try again");
-      }
+      await verifyCode(otp.join(""), email); //real logic
+      onVerified();
+      showSnackbar({ message: "Verification successful! You can login.", severity: "success" });
     } catch (error) {
-      console.error("API Error:", error.response || error);
-      if (error.response) {
+      if (error) {
         setError(
-          error.response.data?.message || "Invalid OTP, please try again"
+          error?.response.data?.message || "Invalid OTP, please try again"
         );
-      } else if (error.request) {
-        setError("No response from server. Please try again later.");
-      } else {
-        setError("Something went wrong, please try again later.");
       }
     }
   };

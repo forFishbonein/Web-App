@@ -13,17 +13,17 @@ export const useUserStore = create(
           try {
             // After setting the token, the user information should be obtained immediately and stored
             // use newToken directly
-            // const userInfo = await getUserInfo(newToken); //real logic
-            const userInfo = {
-              data: {
-                name: "haowenhai",
-                role: "member", //test role
-                email: "111111",
-              },
-            }; //test data
+            const userInfo = await getUserInfo(newToken); //real logic
+            // const userInfo = {
+            //   data: {
+            //     name: "haowenhai",
+            //     role: "member", //test role
+            //     email: "111111",
+            //   },
+            // }; //test data
             console.log("userInfo:", userInfo.data);
             set({ userInfo: userInfo.data }); // userInfo contains the user's role
-            // return userInfo.data.role; // return role
+            return userInfo.data.role; // return role
           } catch (error) {
             console.error(error);
           }

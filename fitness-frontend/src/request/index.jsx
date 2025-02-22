@@ -4,8 +4,8 @@
 import axios from "axios";
 import config from "./config";
 import { useUserStore } from "../store/useUserStore";
+import { errorNotifier } from "../utils/Hooks/SnackbarContext.jsx";
 const useAxios = () => {
-
   const token = useUserStore((state) => state.token); // get token
   const service = axios.create({
     baseURL: config.baseApi,
@@ -15,6 +15,7 @@ const useAxios = () => {
       "Content-Type": "application/json",
     },
   });
+
   service.interceptors.request.use(
     async function (config) {
       console.log(`${config.url}，token：${token}`)
@@ -30,26 +31,36 @@ const useAxios = () => {
   service.interceptors.response.use(
     (response) => {
       const res = response?.data;
-      if (res.code !== 200) {
-        console.log("response：", response);
+      //Normally, the exception code returned by the back end will still go here
+      if (res?.code !== 200) {
+        console.log("response：", res);
         console.log("If code is not 200, an error is reported by default");
-        return Promise.reject(new Error(res.message || "Error"));
+        return Promise.reject({ response }); // Force the error handling logic
       } else {
         //Direct return response.data
-        return response.data;
+        return res;
       }
     },
     (error) => {
+      // From code! ==200 logic jump over
       const res = error?.response;
-      if (res) {
-        console.log("error.response信息：")
-        console.log(JSON.stringify(error.response))
-        //Here can use a pop-up to print an error message
-      } else {
-        console.log("error信息：")
-        console.log(JSON.stringify(error))
+      console.log(res);
+      // As long as you set code then the back end must set message
+      if (res?.data?.message && res?.data?.code) {
+        // error.message = res.data.message;
+        errorNotifier.showError(res.data.message);
+        alert(111)
+        return Promise.reject();
+      } else if (error?.message) { //Otherwise, let the page handle it
+        console.log("error.message：", error?.message, error);
+        // errorNotifier.showError(error?.message);
+        alert(222)
+        return Promise.reject(error);
+      } else { //Otherwise, let the page handle it
+        console.log("error：", error);
+        alert(333)
+        return Promise.reject(error);
       }
-      return Promise.reject(error);
     }
   );
   return { httpRequest: service };

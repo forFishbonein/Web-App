@@ -1,23 +1,31 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
-import Box from "@mui/material/Box";
-import Tab from "@mui/material/Tab";
-import TabContext from "@mui/lab/TabContext";
-import TabList from "@mui/lab/TabList";
-import TabPanel from "@mui/lab/TabPanel";
-import Paper from "@mui/material/Paper";
-import Typography from "@mui/material/Typography";
-import Select from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
-import InputLabel from "@mui/material/InputLabel";
-import FormControl from "@mui/material/FormControl";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import CardActions from "@mui/material/CardActions";
-import Button from "@mui/material/Button";
-import Avatar from "@mui/material/Avatar";
-import Stack from "@mui/material/Stack";
-import Pagination from "@mui/material/Pagination";
+import {
+  Box,
+  Paper,
+  Typography,
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl,
+  Card,
+  CardContent,
+  CardActions,
+  Button,
+  Avatar,
+  Stack,
+  Pagination,
+  Collapse,
+  Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField
+} from "@mui/material";
+
+import { TabContext, TabPanel } from "@mui/lab";
+
 
 // Sample trainers data
 const trainersData = [
@@ -76,84 +84,231 @@ export default function Trainers() {
     setSearchSpecialty(event.target.value);
   }
 
-  const handleTabChange = (event, newValue) => {
-    setTabValue(newValue);
-    if (newValue == 1) {
-      getTrainersData();
-      console.log("getTrainerData");
-    } else if (newValue == 2) {
-      console.log("getSessionData");
-    }
-  };
-
   const handlePageChange = (event, page) => {
     setCurrentPage(page);
   };
 
+  const [expandedId, setExpandedId] = useState([]);
+  const handleExpandClick = (id) => () => {
+    setExpandedId(expandedId.includes(id) ? expandedId.filter(e => e !== id) : [...expandedId, id]);
+  };
+
+  // Whether you have successfully made contact with your coach
+  const [isConnected, setIsConnected] = useState(false);
+
+  // Dialog logic
+  const [open, setOpen] = useState(false);
+  const [formData, setFormData] = useState({ name: "", email: "" });
+  const handleChange = (event) => {
+    setFormData({ ...formData, [event.target.name]: event.target.value });
+  };
+  const handleClose = () => {
+    setOpen(false);
+  };
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    console.log("information:", formData);
+    setOpen(false);
+  };
   return (
-    <Box sx={{ width: "100%", display: "flex", justifyContent: "center", mt: 4 }}>
-      <Paper elevation={3} sx={{ width: "90%", backgroundColor: "white", borderRadius: 2, p: 3 }}>
-        <TabContext value={tabValue}>
-          <Box sx={{ borderBottom: 1, borderColor: "divider", bgcolor: "#f5f5f5", borderRadius: 1 }}>
-            <TabList onChange={handleTabChange} aria-label="Trainer tabs" variant="fullWidth" textColor="primary" indicatorColor="primary">
-              <Tab label="Find a Trainer" value="1" />
-              <Tab label="Applications Management" value="2" />
-            </TabList>
-          </Box>
-
-          <Box sx={{ mt: 2, p: 2 }}>
-            <TabPanel value="1">
-              <Stack spacing={2} direction={{ xs: "column", sm: "row" }} sx={{ mb: 3 }}>
-                <FormControl fullWidth>
-                  <InputLabel>Filter by Club Location</InputLabel>
-                  <Select value={searchClub} onChange={searchClubChange}>
-                    <MenuItem value="">All Locations</MenuItem>
-                    <MenuItem value="City Gym">City Gym</MenuItem>
-                    <MenuItem value="Downtown Fitness">Downtown Fitness</MenuItem>
-                    <MenuItem value="Elite Sports Club">Elite Sports Club</MenuItem>
-                  </Select>
-                </FormControl>
-                <FormControl fullWidth>
-                  <InputLabel>Filter by Specialty</InputLabel>
-                  <Select value={searchSpecialty} onChange={searchSpecialtyChange}>
-                    <MenuItem value="">All Specialties</MenuItem>
-                    <MenuItem value="Strength Training">Strength Training</MenuItem>
-                    <MenuItem value="Yoga & Flexibility">Yoga & Flexibility</MenuItem>
-                    <MenuItem value="Cardio & Endurance">Cardio & Endurance</MenuItem>
-                  </Select>
-                </FormControl>
-              </Stack>
-
-              <Stack spacing={2}>
-                {filteredTrainersList.map((trainer) => (
-                  <Card key={trainer.id} sx={{ display: "flex", alignItems: "center", p: 2 }}>
-                    <Avatar src={trainer.avatar} sx={{ width: 80, height: 80, mr: 2 }} />
-                    <CardContent sx={{ flexGrow: 1 }}>
-                      <Typography variant="h6">{trainer.name}</Typography>
-                      <Typography variant="body2" color="text.secondary">{trainer.specialty}</Typography>
-                      <Typography variant="body2" color="text.secondary">{trainer.club}</Typography>
-                    </CardContent>
-                    <CardActions>
-                      <Button variant="contained" color="primary">Apply Now</Button>
-                    </CardActions>
-                  </Card>
-                ))}
-                <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
-                  <Pagination
-                    count={count}
-                    page={currentPage}
-                    onChange={handlePageChange}
-                    color="primary"
-                  />
-                </Box>
-              </Stack>
-            </TabPanel>
-            <TabPanel value="2">
-              <Typography variant="body1">Manage your trainer appointments here.</Typography>
-            </TabPanel>
-          </Box>
-        </TabContext>
-      </Paper>
-    </Box>
+    <>
+      <Box sx={{ width: "100%", height: "calc(90vh - 64px)", display: "flex", justifyContent: "center", mt: 4, mb: 4 }}>
+        <Paper
+          elevation={3}
+          sx={{
+            width: "90%",
+            backgroundColor: "white",
+            borderRadius: 2,
+            p: 3,
+            pb: 1,
+            pt: 1,
+            height: "100%",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <TabContext value={tabValue}>
+            <Box sx={{ mt: 2, p: 1, pb: 1, flexGrow: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+              <TabPanel
+                value="1"
+                sx={{
+                  flexGrow: 1,
+                  overflowY: "auto",
+                  maxHeight: "100%",
+                }}
+              >
+                <Stack spacing={2} direction={{ xs: "column", sm: "row" }} sx={{ mb: 3 }}>
+                  <FormControl fullWidth>
+                    <InputLabel>Filter by Club Location</InputLabel>
+                    <Select value={searchClub} onChange={searchClubChange}>
+                      <MenuItem value="">All Locations</MenuItem>
+                      <MenuItem value="City Gym">City Gym</MenuItem>
+                      <MenuItem value="Downtown Fitness">Downtown Fitness</MenuItem>
+                      <MenuItem value="Elite Sports Club">Elite Sports Club</MenuItem>
+                    </Select>
+                  </FormControl>
+                  <FormControl fullWidth>
+                    <InputLabel>Filter by Specialty</InputLabel>
+                    <Select value={searchSpecialty} onChange={searchSpecialtyChange}>
+                      <MenuItem value="">All Specialties</MenuItem>
+                      <MenuItem value="Strength Training">Strength Training</MenuItem>
+                      <MenuItem value="Yoga & Flexibility">Yoga & Flexibility</MenuItem>
+                      <MenuItem value="Cardio & Endurance">Cardio & Endurance</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Stack>
+                <Stack
+                  spacing={2}
+                  sx={{
+                    flexGrow: 1,
+                    overflowY: "auto",
+                    p: 1.5
+                  }}
+                >
+                  {filteredTrainersList.map((trainer) => (
+                    <Card key={trainer.id} sx={styles.card}>
+                      <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <Avatar src={trainer.avatar} sx={styles.avatar} />
+                        <CardContent sx={{ flexGrow: 1 }}>
+                          <Typography variant="h6">{trainer.name}</Typography>
+                          <Typography variant="body2" color="text.secondary">{trainer.specialty}</Typography>
+                          <Typography variant="body2" color="text.secondary">{trainer.club}</Typography>
+                        </CardContent>
+                        <CardActions>
+                          {/* 如果这里是 connect 成功了，才可以订课 */}
+                          <Button
+                            variant="contained"
+                            color={isConnected ? "success" : "primary"} // 连接后变绿色
+                            sx={styles.button}
+                            disabled={!isConnected} // 未连接时禁用
+                            onClick={() => setOpen(true)}
+                          >
+                            Book a Session
+                          </Button>
+                          {/* 如果这里已经 connect 了，要改成 状态，而不是按钮了 */}
+                          {isConnected ? (
+                            <Chip
+                              label="Connected"
+                              color="success"
+                              sx={styles.chip}
+                            />
+                          ) : (
+                            <Button
+                              variant="contained"
+                              color="primary"
+                              sx={styles.button}
+                              onClick={() => setIsConnected(true)} // 模拟连接成功
+                            >
+                              Connect Now
+                            </Button>
+                          )}
+                        </CardActions>
+                      </Box>
+                      <Box sx={{ display: "flex" }}>
+                        <Box sx={{ width: "112px" }}></Box>
+                        <Box>
+                          <Typography
+                            variant="body1" color="text.secondary"
+                            onClick={handleExpandClick(trainer.id)}
+                            style={styles.moreInfo}
+                          >
+                            {expandedId.includes(trainer.id) ? "Show Less" : "More Info"}
+                          </Typography>
+                          <Collapse in={expandedId.includes(trainer.id)} timeout="auto" unmountOnExit>
+                            <Typography variant="body2" sx={{ mt: 1, color: "text.secondary", width: "80%" }}>
+                              ✅ styled(Typography) 让 Typography 直接应用 MUI 主题。
+                              ✅ color: theme.palette.primary.main 让颜色自动适配 MUI 主题。
+                              ✅ 无额外依赖，MUI 内置，适用于 不想安装 styled-components 的情况。
+                            </Typography>
+                          </Collapse>
+                        </Box>
+                      </Box>
+                    </Card>
+                  ))}
+                </Stack>
+              </TabPanel>
+              <Box sx={{ display: "flex", justifyContent: "center", mt: 1, md: 1 }}>
+                {count > 0 && <Pagination
+                  count={count}
+                  page={currentPage}
+                  onChange={handlePageChange}
+                  color="primary"
+                />}
+              </Box>
+            </Box>
+          </TabContext>
+        </Paper>
+      </Box>
+      {/* Dialog logic */}
+      <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+        <DialogTitle>Information</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} mt={1}>
+            <TextField
+              label="Name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              fullWidth
+              required
+            />
+            <TextField
+              label="Email"
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+              fullWidth
+              required
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose} color="secondary">Cancel</Button>
+          <Button onClick={handleSubmit} variant="contained" color="primary">
+            Submit
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 }
+const styles = {
+  card: {
+    display: "flex",
+    justifyContent: "center",
+    flexDirection: "column",
+    padding: "16px",
+    backgroundColor: "white",
+    borderRadius: "12px",
+    boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+  },
+  avatar: {
+    width: "80px",
+    height: "80px",
+    marginRight: "16px",
+    boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.2)",
+    border: "2px solid white",
+
+  },
+  button: {
+    borderRadius: "8px",
+    boxShadow: "0px 2px 6px rgba(0, 0, 0, 0.2)",
+    transition: "box-shadow 0.3s ease-in-out",
+    "&:hover": {
+      boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.3)",
+    },
+  },
+  chip: {
+    fontSize: "14px",
+    fontWeight: "bold",
+    padding: "18px 15px",
+  },
+  moreInfo: {
+    display: "inline-block",
+    textDecoration: "underline",
+    cursor: "pointer",
+    color: "#023047",
+    transition: "text-decoration 0.3s ease-in-out",
+  }
+};

@@ -26,7 +26,7 @@ const Header = ({ firstName, lastName, children }) => {
     setToken("");
   };
   return (
-    <AppBar position="static" sx={{ backgroundColor: "#023047", padding: "2px 20px" }}>
+    <AppBar position="static" sx={{ backgroundColor: "#023047", padding: "2px 20px", height: "10vh", display: "flex", justifyContent: "center" }}>
       <Toolbar sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         {/* Application Name */}
         <Typography variant="h4" sx={{ color: "white", fontWeight: "bold" }}>

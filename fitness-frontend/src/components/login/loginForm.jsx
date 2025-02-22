@@ -17,7 +17,10 @@ import { Google as GoogleIcon, Facebook as FacebookIcon } from "@mui/icons-mater
 import useLoginApi from "../../apis/login";
 import useUserApi from "../../apis/user";
 import { useUserStore } from "../../store/useUserStore"; // Zustand Store
-const LoginForm = () => {
+import { useSnackbar } from "../../utils/Hooks/SnackbarContext.jsx";
+import useCaptcha from "../../utils/Hooks/useCaptcha.js";
+const LoginForm = ({ role }) => {
+  const { showSnackbar } = useSnackbar();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: "",
@@ -66,23 +69,31 @@ const LoginForm = () => {
   const { passwordLogin } = useLoginApi();
   const { getUserInfo } = useUserApi();
   const setToken = useUserStore((state) => state.setToken);
+  const { onCaptchaShow } = useCaptcha();
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (validate()) {
-      try {
-        // const res = await passwordLogin(formData.email, formData.password); //real logic
-        // const newToken = res.data.token; //real logic
-        const newToken = "123456"; // test data
-        let role = await setToken(newToken, getUserInfo);
-        setMessage("Login Successful!");
-        console.log("Login Successful!", role);
-        //base the role to redirect to the right page
-        // navigate(`/${role}`); // don't need this logic
-      } catch (error) {
-        setMessage(
-          error.response?.data?.message || "Login failed. Please try again."
-        );
-      }
+      //captcha logic
+      onCaptchaShow(async (ticket, randstr) => {
+        try {
+          const res = await passwordLogin(formData.email, formData.password, ticket, randstr, role); //real logic
+          const newToken = res.data.token; //real logic
+          // const newToken = "123456"; // test data
+          let loginRole = await setToken(newToken, getUserInfo);
+          showSnackbar({ message: "Login Successful!", severity: "success" });
+          console.log("Login Successful!", loginRole);
+          //base the role to redirect to the right page
+          // navigate(`/${role}`); // don't need this logic
+        } catch (error) {
+          if (error) {
+            showSnackbar({ message: "Login failed. Please try again.", severity: "error" });
+          }
+        }
+      },
+        (error) => {
+          showSnackbar({ message: error, severity: "error" });
+        }
+      )
     }
   };
 
@@ -140,6 +151,11 @@ const LoginForm = () => {
               <Button variant="text" sx={{ color: "#ffffff", textDecorationColor: "#023047", textTransform: "none" }}>Forgot password?</Button>
             </Link>
           </Box>
+          {message && (
+            <Typography variant="body2" color="green" sx={{ mt: 2 }}>
+              {message}
+            </Typography>
+          )}
           <Button
             type="submit"
             variant="contained"

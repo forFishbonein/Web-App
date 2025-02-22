@@ -13,7 +13,8 @@ import HomePage from "./pages/HomePage";
 import MemberLayout from "./pages/member/MemberLayout";
 import Trainers from "./pages/member/Trainers";
 import Sessions from "./pages/member/Sessions";
-import ForgotPassword from "./components/forgotPassword/forgotPassword";
+import EmailComponent from "./components/forgotPassword/EmailComponent";
+import ResetPassword from "./components/resetPassword/resetPassword";
 import { useUserStore } from "./store/useUserStore";
 import TrainerLayout from "./pages/trainer/TrainerLayout";
 import Applications from "./pages/trainer/application/Applications";
@@ -22,6 +23,7 @@ import Training from "./pages/trainer/application/Training";
 import Trainings from "./pages/trainer/training/Trainings";
 import Session from "./pages/trainer/training/Session";
 import Member from "./pages/trainer/training/Member";
+import { SnackbarProvider } from "./utils/Hooks/SnackbarContext.jsx";
 function App() {
   // before
   // const isAuthenticated = false;
@@ -33,41 +35,44 @@ function App() {
   console.log("defaultPath", getDefaultPath());
   return (
     <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Routes>
-        {/* The login page can be accessed before login, but not after login */}
-        <Route path="/" element={!userRole ? <HomePage /> : <Navigate to={getDefaultPath()} replace />} />
-        <Route path="/authenticate" element={!userRole ? <AuthenticationPage /> : <Navigate to={getDefaultPath()} replace />} />
-        <Route path="/forgot-password" element={!userRole ? <ForgotPassword /> : <Navigate to={getDefaultPath()} replace />} />
-        {/* Perform role access control after login */}
-        {isAuthorized(userRole, ["member"]) && (
-          <Route path="/member" element={<MemberLayout />}>
-            <Route index element={<Navigate to="/member/trainers" replace />} />
-            <Route path="trainers" element={<Trainers />} />
-            <Route path="sessions" element={<Sessions />} />
-          </Route>
-        )}
-        {isAuthorized(userRole, ["trainer"]) && (
-          <Route path="/trainer" element={<TrainerLayout />} >
-            <Route index element={<Navigate to="/trainer/applications" replace />} />
-            <Route path="applications" element={<Applications />} >
-              <Route index element={<Navigate to="/trainer/applications/training" replace />} />
-              <Route path="training" element={<Training />} />
-              <Route path="appointment" element={<Appointment />} />
+      <SnackbarProvider>
+        <CssBaseline />
+        <Routes>
+          {/* The login page can be accessed before login, but not after login */}
+          <Route path="/" element={!userRole ? <HomePage /> : <Navigate to={getDefaultPath()} replace />} />
+          <Route path="/authenticate" element={!userRole ? <AuthenticationPage /> : <Navigate to={getDefaultPath()} replace />} />
+          <Route path="/forgot-password" element={!userRole ? <EmailComponent /> : <Navigate to={getDefaultPath()} replace />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          {/* Perform role access control after login */}
+          {isAuthorized(userRole, ["member"]) && (
+            <Route path="/member" element={<MemberLayout />}>
+              <Route index element={<Navigate to="/member/trainers" replace />} />
+              <Route path="trainers" element={<Trainers />} />
+              <Route path="sessions" element={<Sessions />} />
             </Route>
-            <Route path="trainings" element={<Trainings />} >
-              <Route index element={<Navigate to="/trainer/trainings/session" replace />} />
-              <Route path="session" element={<Session />} />
-              <Route path="member" element={<Member />} />
+          )}
+          {isAuthorized(userRole, ["trainer"]) && (
+            <Route path="/trainer" element={<TrainerLayout />} >
+              <Route index element={<Navigate to="/trainer/applications" replace />} />
+              <Route path="applications" element={<Applications />} >
+                <Route index element={<Navigate to="/trainer/applications/training" replace />} />
+                <Route path="training" element={<Training />} />
+                <Route path="appointment" element={<Appointment />} />
+              </Route>
+              <Route path="trainings" element={<Trainings />} >
+                <Route index element={<Navigate to="/trainer/trainings/session" replace />} />
+                <Route path="session" element={<Session />} />
+                <Route path="member" element={<Member />} />
+              </Route>
             </Route>
-          </Route>
-        )}
-        {isAuthorized(userRole, ["admin"]) && (
-          <Route path="/admin" element={<MemberLayout />} ></Route>
-        )}
+          )}
+          {isAuthorized(userRole, ["admin"]) && (
+            <Route path="/admin" element={<MemberLayout />} ></Route>
+          )}
 
-        <Route path="*" element={!userRole ? <Navigate to="/authenticate" replace /> : <Navigate to={getDefaultPath()} replace />} />
-      </Routes>
+          <Route path="*" element={!userRole ? <Navigate to="/authenticate" replace /> : <Navigate to={getDefaultPath()} replace />} />
+        </Routes>
+      </SnackbarProvider>
     </ThemeProvider>
   );
 }

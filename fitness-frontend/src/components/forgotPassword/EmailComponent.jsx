@@ -6,13 +6,20 @@ import {
   Typography,
   Paper,
 } from "@mui/material";
-import axios from "axios";
+import { Link, useNavigate } from "react-router-dom";
+import "./EmailComponent.css";
+import useCaptcha from "../../utils/Hooks/useCaptcha.js";
+import useLoginApi from "../../apis/login.js";
+import { useSnackbar } from "../../utils/Hooks/SnackbarContext.jsx";
 
-const ForgotPassword = ({ onCancel }) => {
+const EmailComponent = ({ onCancel }) => {
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
-
+  const navigate = useNavigate();
+  const { showSnackbar } = useSnackbar();
+  const { onCaptchaShow } = useCaptcha();
+  const { forgetPassword } = useLoginApi();
   const handleChange = (event) => {
     setEmail(event.target.value);
     setError("");
@@ -25,21 +32,27 @@ const ForgotPassword = ({ onCancel }) => {
       setError("Email is required");
       return;
     }
-
-    try {
-      // Replace with your actual API endpoint
-      const response = await axios.post("http://localhost:8060/auth/forgot-password", {
-        email,
-      });
-
-      setMessage(response.data.message || "Check your email for password reset instructions.");
-    } catch (error) {
-      setError(error.response?.data?.message || "Something went wrong. Please try again.");
-    }
+    onCaptchaShow(async (ticket, randstr) => {
+      try {
+        // Replace with your actual API endpoint
+        // let res = await forgetPassword(email, ticket, randstr); //real logic
+        let res = {};
+        showSnackbar({ message: res?.data?.message || "Check your email for password reset instructions.", severity: "success" });
+        navigate("/authenticate", { state: { activeTab: 1 } });
+      } catch (error) {
+        if (error) {
+          setError(error?.response?.data?.message || "Something went wrong. Please try again.");
+        }
+      }
+    },
+      (error) => {
+        showSnackbar({ message: error, severity: "error" });
+      }
+    )
   };
 
   return (
-    <Container maxWidth="sm" sx={{ marginTop: "20px"}}>
+    <Container maxWidth="sm" sx={{ marginTop: "20px" }}>
       <Paper elevation={3} sx={{ padding: "20px", borderRadius: "10px", textAlign: "center" }}>
         <Typography variant="h5" fontWeight="bold" sx={{ mb: 2 }}>
           Forgot Password?
@@ -64,6 +77,7 @@ const ForgotPassword = ({ onCancel }) => {
           />
 
           <Button
+            className="update-btn"
             type="submit"
             variant="contained"
             color="primary"
@@ -81,17 +95,19 @@ const ForgotPassword = ({ onCancel }) => {
         )}
 
         {/* Back to Login */}
-        <Button
-          variant="text"
-          fullWidth
-          sx={{ mt: 2, color: "#023047", textDecoration: "underline", textTransform: "none" }}
-          onClick={onCancel}
-        >
-          Back to Login
-        </Button>
+        <Link to="/authenticate" state={{ activeTab: 1 }}>
+          <Button
+            variant="text"
+            fullWidth
+            sx={{ mt: 2, color: "#023047", textDecoration: "underline", textTransform: "none" }}
+            onClick={onCancel}
+          >
+            Back to Login
+          </Button>
+        </Link>
       </Paper>
     </Container>
   );
 };
 
-export default ForgotPassword;
+export default EmailComponent;
