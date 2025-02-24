@@ -186,9 +186,9 @@ export default function Trainers() {
                       <Box sx={{ display: "flex", alignItems: "center" }}>
                         <Avatar src={trainer.avatar} sx={styles.avatar} />
                         <CardContent sx={{ flexGrow: 1 }}>
-                          <Typography variant="h6">{trainer.name}</Typography>
-                          <Typography variant="body2" color="text.secondary">{trainer.specialty}</Typography>
-                          <Typography variant="body2" color="text.secondary">{trainer.club}</Typography>
+                          <Typography variant="h6">{trainer.name || "-"}</Typography>
+                          <Typography variant="body2" color="text.secondary">{trainer.specializations || "-"}</Typography>
+                          <Typography variant="body2" color="text.secondary">{trainer.workplace || "-"}</Typography>
                         </CardContent>
                         <CardActions>
                           {/* 如果这里是 connect 成功了，才可以订课 */}
@@ -232,9 +232,13 @@ export default function Trainers() {
                           </Typography>
                           <Collapse in={expandedId.includes(trainer.id)} timeout="auto" unmountOnExit>
                             <Typography variant="body2" sx={{ mt: 1, color: "text.secondary", width: "80%" }}>
-                              ✅ styled(Typography) 让 Typography 直接应用 MUI 主题。
-                              ✅ color: theme.palette.primary.main 让颜色自动适配 MUI 主题。
-                              ✅ 无额外依赖，MUI 内置，适用于 不想安装 styled-components 的情况。
+                              YearsOfExperience: {trainer.yearsOfExperience || 0}
+                            </Typography>
+                            <Typography variant="body2" sx={{ mt: 1, color: "text.secondary", width: "80%" }}>
+                              Certifications: {trainer.certifications || "-"}
+                            </Typography>
+                            <Typography variant="body2" sx={{ mt: 1, color: "text.secondary", width: "80%" }}>
+                              Biography: {trainer.biography || "-"}
                             </Typography>
                           </Collapse>
                         </Box>
