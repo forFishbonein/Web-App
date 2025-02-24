@@ -43,47 +43,59 @@ export default function Trainers() {
   const [tabValue, setTabValue] = useState("1");
   const [searchClub, setSearchClub] = useState("");
   const [searchSpecialty, setSearchSpecialty] = useState("");
-  const [trainersList, setTrainersList] = useState([]);
+  // const [trainersList, setTrainersList] = useState([]);
   const [filteredTrainersList, setFilteredTrainersList] = useState([]);
   // paging
   const [currentPage, setCurrentPage] = useState(1);
   const [count, setCount] = useState(0);
   const numPerPage = 3;
   const { getTrainerList } = useTrainerApi();
-  const getTrainersData = async () => {
-    //要改成从后端进行搜索
-    const indexOfLastTrainer = currentPage * numPerPage;
-    const indexOfFirstTrainer = indexOfLastTrainer - numPerPage;
-    const currentTrainers = trainersData.slice(indexOfFirstTrainer, indexOfLastTrainer);
-    // const res = await getTrainerList(formData.email, formData.password, ticket, randstr, role); //real logic
-    setTrainersList(currentTrainers);
-    //要改成后端返回的内容
-    setCount(Math.ceil(trainersData.length / numPerPage));
-  }
-  useEffect(() => {
-    getTrainersData();
-  }, [currentPage])
+  // const getTrainersData = async () => {
+  //   //要改成从后端进行搜索
+  //   // const indexOfLastTrainer = currentPage * numPerPage;
+  //   // const indexOfFirstTrainer = indexOfLastTrainer - numPerPage;
+  //   // const currentTrainers = trainersData.slice(indexOfFirstTrainer, indexOfLastTrainer);
+  //   const res = await getTrainerList(currentPage, numPerPage, null, null); //real logic
+
+  //   //设置邮箱
+  //   let currentTrainers = res.data;
+  //   setTrainersList(currentTrainers);
+  //   //要改成后端返回的内容
+  //   setCount(Math.ceil(trainersData.length / numPerPage));
+  // }
+  // useEffect(() => {
+  //   getTrainersData();
+  // }, [currentPage])
   useEffect(() => {
     filterTrainersList();
     //trainersList is designed to ensure that switching back still displays the original search results
-  }, [trainersList, searchClub, searchSpecialty]);
+  }, [currentPage, searchClub, searchSpecialty]);
 
-  const filterTrainersList = () => {
-    console.log("trainersList", trainersList)
+  const filterTrainersList = async () => {
+    // console.log("trainersList", trainersList);
     //后面要改成搜索代码
-    const fTrainersList = trainersList.filter((trainer) =>
-      (searchClub === "" || trainer.club === searchClub) &&
-      (searchSpecialty === "" || trainer.specialty === searchSpecialty)
-    );
+    // const fTrainersList = trainersList.filter((trainer) =>
+    //   (searchClub === "" || trainer.club === searchClub) &&
+    //   (searchSpecialty === "" || trainer.specialty === searchSpecialty)
+    // );
+    const res = await getTrainerList(currentPage, numPerPage, searchSpecialty, searchClub); //real logic
+    let fTrainersList = res.data.records;
     console.log("fTrainersList", fTrainersList);
 
     setFilteredTrainersList(fTrainersList);
+    // setTrainersList(currentTrainers);
+    //要改成后端返回的内容
+    // setCount(Math.ceil(trainersData.length / numPerPage));
+    setCurrentPage(res.data.current);
+    setCount(res.data.total);
   }
   const searchClubChange = (event, newValue) => {
-    console.log(event.target.value)
+    // console.log(event.target.value)
+    setCurrentPage(1);
     setSearchClub(event.target.value);
   }
   const searchSpecialtyChange = (event, newValue) => {
+    setCurrentPage(1);
     setSearchSpecialty(event.target.value);
   }
 
