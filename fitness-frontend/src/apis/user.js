@@ -11,8 +11,21 @@ const useUserApi = () => {
       },
     });
   };
+  const updateUserInfo = (address, dateOfBirth, name) => {
+    return httpRequest({
+      method: "post",
+      url: `/user/user-profile`,
+      data: {
+        address,
+        dateOfBirth,
+        name,
+      },
+    });
+  };
+
   return {
     getUserInfo,
+    updateUserInfo,
   };
 };
 export default useUserApi;

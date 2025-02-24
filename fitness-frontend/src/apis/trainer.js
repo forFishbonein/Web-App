@@ -8,8 +8,18 @@ const useTrainerApi = () => {
       url: `/trainer/listTrainers?page=${page}&pageSize=${pageSize}&specializations=${specializations}&workplace=${workplace}`,
     });
   };
+  const getTrainerInfo = (token) => {
+    return httpRequest({
+      method: "get",
+      url: `/trainer/profile`,
+      headers: {
+        Authorization: token ? `Bearer ${token}` : "",
+      },
+    });
+  };
   return {
     getTrainerList,
+    getTrainerInfo,
   };
 };
 export default useTrainerApi;

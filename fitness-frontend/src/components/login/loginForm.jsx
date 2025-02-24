@@ -16,6 +16,8 @@ import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { Google as GoogleIcon, Facebook as FacebookIcon } from "@mui/icons-material";
 import useLoginApi from "../../apis/login";
 import useUserApi from "../../apis/user";
+import useTrainerApi from "../../apis/trainer";
+import useAdminApi from "../../apis/admin";
 import { useUserStore } from "../../store/useUserStore"; // Zustand Store
 import { useSnackbar } from "../../utils/Hooks/SnackbarContext.jsx";
 import useCaptcha from "../../utils/Hooks/useCaptcha.js";
@@ -68,6 +70,8 @@ const LoginForm = ({ role }) => {
   // now
   const { passwordLogin } = useLoginApi();
   const { getUserInfo } = useUserApi();
+  const { getTrainerInfo } = useTrainerApi();
+  const { getAdminInfo } = useAdminApi();
   const setToken = useUserStore((state) => state.setToken);
   const { onCaptchaShow } = useCaptcha();
   const handleSubmit = async (e) => {
@@ -78,10 +82,20 @@ const LoginForm = ({ role }) => {
         try {
           const res = await passwordLogin(formData.email, formData.password, ticket, randstr, role); //real logic
           const newToken = res.data.token; //real logic
+          const role = res.data.role;
+          let getInfoFun = getUserInfo;
+          if (role === "member") {
+            getInfoFun = getUserInfo;
+          } else if (role === "trainer") {
+            getInfoFun = getTrainerInfo;
+          } else if (role === "admin") {
+            getInfoFun = getAdminInfo;
+          }
+          // let getInfoFun = getUserInfo; // test data
           // const newToken = "123456"; // test data
-          let loginRole = await setToken(newToken, getUserInfo);
+          await setToken(newToken, role, getInfoFun);
           showSnackbar({ message: "Login Successful!", severity: "success" });
-          console.log("Login Successful!", loginRole);
+          console.log("Login Successful!", role);
           //base the role to redirect to the right page
           // navigate(`/${role}`); // don't need this logic
         } catch (error) {

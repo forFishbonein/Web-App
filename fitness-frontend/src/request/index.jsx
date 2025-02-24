@@ -10,7 +10,7 @@ const useAxios = () => {
   const service = axios.create({
     baseURL: config.baseApi,
     timeout: 10000,
-    // withCredentials: true,
+    withCredentials: true,
     headers: {
       "Content-Type": "application/json",
     },
@@ -49,16 +49,13 @@ const useAxios = () => {
       if (res?.data?.message && res?.data?.code) {
         // error.message = res.data.message;
         errorNotifier.showError(res.data.message);
-        alert(111)
         return Promise.reject();
       } else if (error?.message) { //Otherwise, let the page handle it
         console.log("error.message：", error?.message, error);
         // errorNotifier.showError(error?.message);
-        alert(222)
         return Promise.reject(error);
       } else { //Otherwise, let the page handle it
         console.log("error：", error);
-        alert(333)
         return Promise.reject(error);
       }
     }

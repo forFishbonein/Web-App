@@ -16,6 +16,8 @@ const theme = createTheme({
       primary: "#023047",
       secondary: "#1E6091",
     },
+    error: { main: "#d32f2f" },
+    success: { main: "#2e7d32" },
   },
   components: {
     MuiAppBar: {

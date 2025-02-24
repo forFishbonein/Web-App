@@ -7,13 +7,14 @@ export const useUserStore = create(
       userInfo: {},
       token: "",
       setUserInfo: (userInfo) => set({ userInfo }),
-      setToken: async (newToken, getUserInfo) => {
+      setToken: async (newToken, role, getUserInfo) => {
         set({ token: newToken });
         if (getUserInfo) {
           try {
             // After setting the token, the user information should be obtained immediately and stored
             // use newToken directly
-            const userInfo = await getUserInfo(newToken); //real logic
+            let userInfo = await getUserInfo(newToken); //real logic
+            userInfo.data.role = role; //real logic
             // const userInfo = {
             //   data: {
             //     name: "haowenhai",
@@ -23,7 +24,7 @@ export const useUserStore = create(
             // }; //test data
             console.log("userInfo:", userInfo.data);
             set({ userInfo: userInfo.data }); // userInfo contains the user's role
-            return userInfo.data.role; // return role
+            // return userInfo.data.role; // return role
           } catch (error) {
             console.error(error);
           }
