@@ -25,7 +25,7 @@ import {
 } from "@mui/material";
 
 import { TabContext, TabPanel } from "@mui/lab";
-
+import useTrainerApi from "../../apis/trainer";
 
 // Sample trainers data
 const trainersData = [
@@ -49,11 +49,13 @@ export default function Trainers() {
   const [currentPage, setCurrentPage] = useState(1);
   const [count, setCount] = useState(0);
   const numPerPage = 3;
-  const getTrainersData = () => {
+  const { getTrainerList } = useTrainerApi();
+  const getTrainersData = async () => {
     //要改成从后端进行搜索
-    const indexOfLastTrainer = currentPage * numPerPage;
-    const indexOfFirstTrainer = indexOfLastTrainer - numPerPage;
-    const currentTrainers = trainersData.slice(indexOfFirstTrainer, indexOfLastTrainer);
+    // const indexOfLastTrainer = currentPage * numPerPage;
+    // const indexOfFirstTrainer = indexOfLastTrainer - numPerPage;
+    // const currentTrainers = trainersData.slice(indexOfFirstTrainer, indexOfLastTrainer);
+    const res = await passwordLogin(formData.email, formData.password, ticket, randstr, role); //real logic
     setTrainersList(currentTrainers);
     //要改成后端返回的内容
     setCount(Math.ceil(trainersData.length / numPerPage));
@@ -65,6 +67,7 @@ export default function Trainers() {
     filterTrainersList();
     //trainersList is designed to ensure that switching back still displays the original search results
   }, [trainersList, searchClub, searchSpecialty]);
+
   const filterTrainersList = () => {
     console.log("trainersList", trainersList)
     //后面要改成搜索代码
@@ -110,6 +113,7 @@ export default function Trainers() {
     console.log("information:", formData);
     setOpen(false);
   };
+
   return (
     <>
       <Box sx={{ width: "100%", height: "calc(90vh - 64px)", display: "flex", justifyContent: "center", mt: 4, mb: 4 }}>

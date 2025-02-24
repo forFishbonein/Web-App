@@ -35,8 +35,8 @@ const EmailComponent = ({ onCancel }) => {
     onCaptchaShow(async (ticket, randstr) => {
       try {
         // Replace with your actual API endpoint
-        // let res = await forgetPassword(email, ticket, randstr); //real logic
-        let res = {};
+        let res = await forgetPassword(email, ticket, randstr); //real logic
+        // let res = {};
         showSnackbar({ message: res?.data?.message || "Check your email for password reset instructions.", severity: "success" });
         navigate("/authenticate", { state: { activeTab: 1 } });
       } catch (error) {
