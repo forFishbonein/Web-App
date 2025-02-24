@@ -52,10 +52,10 @@ export default function Trainers() {
   const { getTrainerList } = useTrainerApi();
   const getTrainersData = async () => {
     //要改成从后端进行搜索
-    // const indexOfLastTrainer = currentPage * numPerPage;
-    // const indexOfFirstTrainer = indexOfLastTrainer - numPerPage;
-    // const currentTrainers = trainersData.slice(indexOfFirstTrainer, indexOfLastTrainer);
-    const res = await passwordLogin(formData.email, formData.password, ticket, randstr, role); //real logic
+    const indexOfLastTrainer = currentPage * numPerPage;
+    const indexOfFirstTrainer = indexOfLastTrainer - numPerPage;
+    const currentTrainers = trainersData.slice(indexOfFirstTrainer, indexOfLastTrainer);
+    // const res = await getTrainerList(formData.email, formData.password, ticket, randstr, role); //real logic
     setTrainersList(currentTrainers);
     //要改成后端返回的内容
     setCount(Math.ceil(trainersData.length / numPerPage));
