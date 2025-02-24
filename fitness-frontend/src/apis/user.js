@@ -4,8 +4,8 @@ const useUserApi = () => {
   let { httpRequest } = useAxios();
   const getUserInfo = (token) => {
     return httpRequest({
-      method: "post",
-      url: `/userinfo`, //example
+      method: "get",
+      url: `/member/user-profile`, //example
       headers: {
         Authorization: token ? `Bearer ${token}` : "",
       },

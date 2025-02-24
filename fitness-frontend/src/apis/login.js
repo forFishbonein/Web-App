@@ -17,7 +17,7 @@ const useLoginApi = () => {
   };
   const getCaptchaAndSignUp = (data) => {
     return httpRequest({
-      method: "get",
+      method: "post",
       url: `/user/signup`,
       data,
     });
