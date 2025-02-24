@@ -148,11 +148,13 @@ const Header = ({ firstName, lastName, children }) => {
               <TextField
                 label="DateOfBirth"
                 name="dateOfBirth"
+                type="date"
                 value={formData.dateOfBirth}
                 onChange={handleChange}
                 fullWidth
                 required
                 disabled={!updating}
+                InputLabelProps={{ shrink: true }}
               />
               <TextField
                 label="Address"
