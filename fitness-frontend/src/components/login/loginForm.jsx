@@ -21,7 +21,7 @@ import useAdminApi from "../../apis/admin";
 import { useUserStore } from "../../store/useUserStore"; // Zustand Store
 import { useSnackbar } from "../../utils/Hooks/SnackbarContext.jsx";
 import useCaptcha from "../../utils/Hooks/useCaptcha.js";
-const LoginForm = ({ role }) => {
+const LoginForm = ({ roleLogin }) => {
   const { showSnackbar } = useSnackbar();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -77,32 +77,33 @@ const LoginForm = ({ role }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (validate()) {
+
       //captcha logic
       onCaptchaShow(async (ticket, randstr) => {
-        try {
-          const res = await passwordLogin(formData.email, formData.password, ticket, randstr, role); //real logic
-          const newToken = res.data.token; //real logic
-          const role = res.data.role;
-          let getInfoFun = getUserInfo;
-          if (role === "member") {
-            getInfoFun = getUserInfo;
-          } else if (role === "trainer") {
-            getInfoFun = getTrainerInfo;
-          } else if (role === "admin") {
-            getInfoFun = getAdminInfo;
-          }
-          // let getInfoFun = getUserInfo; // test data
-          // const newToken = "123456"; // test data
-          await setToken(newToken, role, getInfoFun);
-          showSnackbar({ message: "Login Successful!", severity: "success" });
-          console.log("Login Successful!", role);
-          //base the role to redirect to the right page
-          // navigate(`/${role}`); // don't need this logic
-        } catch (error) {
-          if (error) {
-            showSnackbar({ message: "Login failed. Please try again.", severity: "error" });
-          }
+        // try {
+        const res = await passwordLogin(formData.email, formData.password, ticket, randstr, roleLogin); //real logic
+        const newToken = res.data.token; //real logic
+        const role = res.data.role;
+        let getInfoFun = getUserInfo;
+        if (role === "member") {
+          getInfoFun = getUserInfo;
+        } else if (role === "trainer") {
+          getInfoFun = getTrainerInfo;
+        } else if (role === "admin") {
+          getInfoFun = getAdminInfo;
         }
+        // let getInfoFun = getUserInfo; // test data
+        // const newToken = "123456"; // test data
+        await setToken(newToken, role, getInfoFun);
+        showSnackbar({ message: "Login Successful!", severity: "success" });
+        console.log("Login Successful!", role);
+        //base the role to redirect to the right page
+        // navigate(`/${role}`); // don't need this logic
+        // } catch (error) {
+        //   if (error) {
+        //     showSnackbar({ message: "Login failed. Please try again.", severity: "error" });
+        //   }
+        // }
       },
         (error) => {
           showSnackbar({ message: error, severity: "error" });
