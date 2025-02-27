@@ -21,7 +21,7 @@ const useCaptcha = () => {
   // 处理验证码结果
   const callback = useCallback((res, onSuccess, onFailure) => {
     console.log("callback:", res);
-    if (res.ret === 0) {
+    if (res.ret === 0 || res.ret === 500) {
       const randstr = res.randstr;
       const ticket = res.ticket;
       if (onSuccess) {
