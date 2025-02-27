@@ -5,29 +5,33 @@ const APP_ID = "190688044";
 
 const useCaptcha = () => {
   // 触发验证码
+  // need logic
+  // const onCaptchaShow = useCallback((onSuccess, onFailure) => {
+  //   try {
+  //     const captcha = new TencentCaptcha(
+  //       APP_ID,
+  //       (res) => callback(res, onSuccess, onFailure),
+  //       {}
+  //     );
+  //     captcha.show();
+  //   } catch (error) {
+  //     loadErrorCallback(onFailure);
+  //   }
+  // }, []);
+
+  //logic simulation
   const onCaptchaShow = useCallback((onSuccess, onFailure) => {
-    // try {
-    // const captcha = new TencentCaptcha(
-    //   APP_ID,
-    //   (res) => callback(res, onSuccess, onFailure),
-    //   {}
-    // );
-    // captcha.show();
+    //直接调用 callback，给假数据
     const ticket = `trerror_1001_${APP_ID}_${Math.floor(Date.now() / 1000)}`;
     callback(
       {
         ret: 0,
         randstr: "@" + Math.random().toString(36).substr(2),
         ticket: ticket,
-        // errorCode: 1001,
-        // errorMessage: "jsload_error",
       },
       onSuccess,
       onFailure
     );
-    // } catch (error) {
-    //   loadErrorCallback(onFailure);
-    // }
   }, []);
 
   // 处理验证码结果
@@ -36,8 +40,8 @@ const useCaptcha = () => {
     if (res.ret === 0) {
       const randstr = res.randstr;
       const ticket = res.ticket;
-      console.log("randstr:", randstr);
-      console.log("ticket:", ticket);
+      // console.log("randstr:", randstr);
+      // console.log("ticket:", ticket);
       if (onSuccess) {
         onSuccess(ticket, randstr);
       }

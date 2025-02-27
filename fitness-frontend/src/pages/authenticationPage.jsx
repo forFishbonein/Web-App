@@ -126,6 +126,7 @@ const AuthenticationPage = () => {
                 {activeTab === 0 ? (
                   <SignupForm onSubmit={handleAuthSubmit} role={role} />
                 ) : (
+                  //The role should also be followed by admin, then admin can also login！
                   <LoginForm onSubmit={handleAuthSubmit} role={role} />
                 )}
               </Box>

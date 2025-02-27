@@ -5,7 +5,7 @@ const useTrainerApi = () => {
   const getTrainerList = (page, pageSize, specializations, workplace) => {
     return httpRequest({
       method: "get",
-      url: `/trainer/listTrainers?page=${page}&pageSize=${pageSize}&specializations=${specializations}&workplace=${workplace}`,
+      url: `/member/listTrainers?page=${page}&pageSize=${pageSize}&specializations=${specializations}&workplace=${workplace}`,
     });
   };
   const getTrainerInfo = (token) => {

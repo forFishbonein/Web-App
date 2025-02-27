@@ -35,7 +35,11 @@ const LoginForm = ({ roleLogin }) => {
 
   const validate = () => {
     let tempErrors = {};
-    tempErrors.email = formData.email ? "" : "Email is required";
+    tempErrors.email = formData.email
+      ? /.+@.+\..+/.test(formData.email)
+        ? ""
+        : "Invalid email format"
+      : "Email is required";
     tempErrors.password = formData.password ? "" : "Password is required";
     setErrors(tempErrors);
     return Object.values(tempErrors).every((x) => x === "");
@@ -80,30 +84,31 @@ const LoginForm = ({ roleLogin }) => {
 
       //captcha logic
       onCaptchaShow(async (ticket, randstr) => {
-        // try {
-        const res = await passwordLogin(formData.email, formData.password, ticket, randstr, roleLogin); //real logic
-        const newToken = res.data.token; //real logic
-        const role = res.data.role;
-        let getInfoFun = getUserInfo;
-        if (role === "member") {
-          getInfoFun = getUserInfo;
-        } else if (role === "trainer") {
-          getInfoFun = getTrainerInfo;
-        } else if (role === "admin") {
-          getInfoFun = getAdminInfo;
+        try {
+          const res = await passwordLogin(formData.email, formData.password, ticket, randstr, roleLogin); //real logic
+          const newToken = res.data.token; //real logic
+          const role = res.data.role;
+          let getInfoFun = getUserInfo;
+          if (role === "member") {
+            getInfoFun = getUserInfo;
+          } else if (role === "trainer") {
+            getInfoFun = getTrainerInfo;
+          } else if (role === "admin") {
+            getInfoFun = getAdminInfo;
+          }
+          // let getInfoFun = getUserInfo; // test data
+          // const newToken = "123456"; // test data
+          await setToken(newToken, role, getInfoFun);
+          showSnackbar({ message: "Login Successful!", severity: "success" });
+          console.log("Login Successful!", role);
+          //base the role to redirect to the right page
+          // navigate(`/${role}`); // don't need this logic
+        } catch (error) {
+          if (error) {
+            //要做错误处理，不然 try-catch之后直接就没办法看到报错了，导致找不到问题所在
+            showSnackbar({ message: error.message || "Login failed. Please try again.", severity: "error" });
+          }
         }
-        // let getInfoFun = getUserInfo; // test data
-        // const newToken = "123456"; // test data
-        await setToken(newToken, role, getInfoFun);
-        showSnackbar({ message: "Login Successful!", severity: "success" });
-        console.log("Login Successful!", role);
-        //base the role to redirect to the right page
-        // navigate(`/${role}`); // don't need this logic
-        // } catch (error) {
-        //   if (error) {
-        //     showSnackbar({ message: "Login failed. Please try again.", severity: "error" });
-        //   }
-        // }
       },
         (error) => {
           showSnackbar({ message: error, severity: "error" });
