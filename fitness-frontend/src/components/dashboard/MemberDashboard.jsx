@@ -31,7 +31,7 @@ function MemberDashboard() {
   const handleClose = () => {
     setAnchorEl(null);
   };
-  const { getNotificationList, markNotificationAsRead } = useNotificationApi();
+  const { getNotificationList, markNotificationAsRead, deleteNotification } = useNotificationApi();
   const open = Boolean(anchorEl);
   const id = open ? 'simple-popover' : undefined;
   let [badgeContent, setBadgeContent] = useState(0);
@@ -58,6 +58,8 @@ function MemberDashboard() {
                 display: "block",
                 marginRight: 2,
                 fontSize: "16px",
+                textTransform: "none",
+                fontWeight: "bold",
                 color: location.pathname.includes(page.path) ? "white" : "gray",
                 "&:hover": { color: !location.pathname.includes(page.path) ? "lightgray" : "white", backgroundColor: "transparent" },
                 "&:focus": {
@@ -127,7 +129,12 @@ function MemberDashboard() {
           },
         }}
       >
-        <MemberNotification getNotificationList={getNotificationList} markNotificationAsRead={markNotificationAsRead} setBadgeContent={setBadgeContent} badgeContent={badgeContent} />
+        <MemberNotification
+          getNotificationList={getNotificationList}
+          markNotificationAsRead={markNotificationAsRead}
+          setBadgeContent={setBadgeContent}
+          badgeContent={badgeContent}
+          deleteNotification={deleteNotification} />
       </Popover>
     </>
   );

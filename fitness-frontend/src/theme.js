@@ -27,19 +27,19 @@ const theme = createTheme({
         },
       },
     },
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          textTransform: "none",
-          fontWeight: "bold",
-          color: "#ffffff",
-          backgroundColor: "#023047",
-          "&:hover": {
-            backgroundColor: "#021B29",
-          },
-        },
-      },
-    },
+    // MuiButton: {
+    //   styleOverrides: {
+    //     root: {
+    //       textTransform: "none",
+    //       fontWeight: "bold",
+    //       color: "#ffffff",
+    //       backgroundColor: "#023047",
+    //       "&:hover": {
+    //         backgroundColor: "#021B29",
+    //       },
+    //     },
+    //   },
+    // },
   },
 });
 

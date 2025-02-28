@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { Box, Card, CardContent, Typography, Pagination, IconButton, Tooltip } from "@mui/material";
+import { Box, Card, CardContent, Typography, Pagination, IconButton, Tooltip, Popover, Button } from "@mui/material";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import dayjs from "dayjs";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle"; // ✅ 已读图标
-import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked"; // ⭕ 未读图标
-function MemberNotification({ getNotificationList, markNotificationAsRead, setBadgeContent, badgeContent }) {
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
+import CancelIcon from "@mui/icons-material/Cancel";
+function MemberNotification({ getNotificationList, markNotificationAsRead, setBadgeContent, badgeContent, deleteNotification }) {
   // paging
   const [currentPage, setCurrentPage] = useState(1);
   const [count, setCount] = useState(0);
@@ -37,6 +38,27 @@ function MemberNotification({ getNotificationList, markNotificationAsRead, setBa
     //   return e;
     // }));
   }
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
+
+  // 打开确认删除 Popover
+  const handleOpenPopover = (event, notificationId) => {
+    setAnchorEl(event.currentTarget);
+    setDeletingId(notificationId);
+  };
+
+  // 关闭 Popover
+  const handleClosePopover = () => {
+    setAnchorEl(null);
+    setDeletingId(null);
+  };
+  // 确认删除
+  const handleConfirmDelete = () => {
+    deleteNotification(deletingId).then((res) => {
+      setNotificationList(notificationList.filter(e => e.notificationId !== deletingId));
+    })
+    handleClosePopover();
+  };
   useEffect(() => {
     getNotificationList(currentPage, numPerPage).then((res) => {
       setCount(res.data.total);
@@ -92,8 +114,8 @@ function MemberNotification({ getNotificationList, markNotificationAsRead, setBa
             boxShadow: "none",
             borderRadius: 2,
             mb: 1.5,
-            backgroundColor: "#f9f9f9",
-
+            backgroundColor: notification.isRead ? "#f9f9f9" : "#fffbea",
+            transition: "background-color 0.3s ease",
           }}
         >
           {/* <NotificationsIcon /> */}
@@ -108,15 +130,62 @@ function MemberNotification({ getNotificationList, markNotificationAsRead, setBa
               {dayjs(notification.updatedAt).format("YYYY-MM-DD HH:mm:ss")}
             </Typography>
           </CardContent>
-          <Tooltip title={notification.isRead ? "Already Read" : "Mark as Read"} arrow>
-            <IconButton
+          <Tooltip title={notification.isRead ? "Click to Delete" : "Mark as Read"} arrow>
+            {/* <IconButton
               onClick={() => markAsRead(notification.notificationId)}
               color={notification.isRead ? "success" : "primary"}
               sx={{ ml: 2 }}
             >
               {notification.isRead ? <CheckCircleIcon /> : <RadioButtonUncheckedIcon />}
+            </IconButton> */}
+            <IconButton
+              onClick={notification.isRead ? (event) => handleOpenPopover(event, notification.notificationId) : () => markAsRead(notification.notificationId)}
+              color={notification.isRead ? "error" : "primary"}
+            >
+              {notification.isRead ? <CancelIcon /> : <RadioButtonUncheckedIcon />}
             </IconButton>
           </Tooltip>
+          <Popover
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleClosePopover}
+            anchorOrigin={{
+              vertical: "bottom",
+              horizontal: "center",
+            }}
+            transformOrigin={{
+              vertical: "top",
+              horizontal: "center",
+            }}
+          >
+            {/* <Box sx={{ p: 1, display: "flex", alignItems: "center", gap: 1 }}>
+              <Typography>Confirm deletion?</Typography>
+              <Button size="small" onClick={handleClosePopover}>Cancel</Button>
+              <Button size="small" color="error" onClick={handleConfirmDelete}>Delete</Button>
+            </Box> */}
+            <Box
+              sx={{
+                p: 1,
+                pl: 2,
+                pr: 2,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "stretch", // Let Typography fill the line
+                gap: 1,
+              }}
+            >
+              <Typography sx={{ textAlign: "left", fontWeight: "bold" }}>Confirm deletion?</Typography>
+              <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
+                <Button size="small" variant="outlined" onClick={handleClosePopover} color="primary">
+                  Cancel
+                </Button>
+                <Button size="small" variant="outlined" color="error" onClick={handleConfirmDelete}>
+                  Delete
+                </Button>
+              </Box>
+            </Box>
+
+          </Popover>
         </Card>
       ))}
       {(count > numPerPage) && (

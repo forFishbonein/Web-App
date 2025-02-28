@@ -14,9 +14,16 @@ const useNotificationApi = () => {
       url: `/member/notifications/${notificationId}/read`,
     });
   };
+  const deleteNotification = (notificationId) => {
+    return httpRequest({
+      method: "delete",
+      url: `/member/notifications/${notificationId}`,
+    });
+  };
   return {
     getNotificationList,
     markNotificationAsRead,
+    deleteNotification,
   };
 };
 export default useNotificationApi;
