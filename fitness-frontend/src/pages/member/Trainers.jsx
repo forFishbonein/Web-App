@@ -26,6 +26,7 @@ import {
 
 import { TabContext, TabPanel } from "@mui/lab";
 import useTrainerApi from "../../apis/trainer";
+import { useSnackbar } from "../../utils/Hooks/SnackbarContext.jsx";
 
 // Sample trainers data
 const trainersData = [
@@ -49,7 +50,7 @@ export default function Trainers() {
   const [currentPage, setCurrentPage] = useState(1);
   const [count, setCount] = useState(0);
   const numPerPage = 3;
-  const { getTrainerList } = useTrainerApi();
+  const { getTrainerList, connectTrainer } = useTrainerApi();
   // const getTrainersData = async () => {
   //   //要改成从后端进行搜索
   //   // const indexOfLastTrainer = currentPage * numPerPage;
@@ -86,7 +87,7 @@ export default function Trainers() {
     // setTrainersList(currentTrainers);
     //要改成后端返回的内容
     // setCount(Math.ceil(trainersData.length / numPerPage));
-    setCurrentPage(res.data.current);
+    // setCurrentPage(res.data.current);
     setCount(res.data.total);
   }
   const searchClubChange = (event, newValue) => {
@@ -108,23 +109,63 @@ export default function Trainers() {
     setExpandedId(expandedId.includes(id) ? expandedId.filter(e => e !== id) : [...expandedId, id]);
   };
 
-  // Whether you have successfully made contact with your coach
-  const [isConnected, setIsConnected] = useState(false);
-
-  // Dialog logic
-  const [open, setOpen] = useState(false);
-  const [formData, setFormData] = useState({ name: "", email: "" });
-  const handleChange = (event) => {
-    setFormData({ ...formData, [event.target.name]: event.target.value });
+  const [connectingId, setConnectingId] = useState(null);
+  const handleConnect = (trainerId) => () => {
+    setConnectingId(trainerId);
+    setOpenConnect(true);
+  }
+  // Connect Dialog logic
+  const [openConnect, setOpenConnect] = useState(false);
+  const [formDataConnect, setFormDataConnect] = useState({ requestMessage: "" });
+  const handleChangeConnect = (event) => {
+    setFormDataConnect({ ...formDataConnect, [event.target.name]: event.target.value });
   };
-  const handleClose = () => {
-    setOpen(false);
+  const handleCloseConnect = () => {
+    setOpenConnect(false);
+    setFormDataConnect({ requestMessage: "" });
   };
-  const handleSubmit = (event) => {
+  const { showSnackbar } = useSnackbar();
+  const handleSubmitConnect = async (event) => {
     event.preventDefault();
-    console.log("information:", formData);
-    setOpen(false);
+    console.log("connect information:", formDataConnect);
+    try {
+      await connectTrainer({
+        trainerId: connectingId,
+        requestMessage: formDataConnect.requestMessage
+      });
+      setFilteredTrainersList(filteredTrainersList.map(e => {
+        if (e.userId === connectingId) {
+          return {
+            ...e,
+            connectStatus: "Pending"
+          }
+        }
+        return e;
+      }));
+      setOpenConnect(false);
+      showSnackbar({ message: "Connect successful!", severity: "success" });
+    } catch (error) {
+      if (error) {
+        showSnackbar({ message: error.message || "Failed. Please try again.", severity: "error" });
+      }
+    }
   };
+  // Session Dialog logic
+  const [openSession, setOpenSession] = useState(false);
+  const [formDataSession, setFormDataSession] = useState({ name: "", email: "" });
+  const handleChangeSession = (event) => {
+    setFormDataSession({ ...formDataSession, [event.target.name]: event.target.value });
+  };
+  const handleCloseSession = () => {
+    setOpenSession(false);
+    setFormDataSession({ name: "", email: "" });
+  };
+  const handleSubmitSession = (event) => {
+    event.preventDefault();
+    console.log("session information:", formDataSession);
+    setOpenSession(false);
+  };
+
 
   return (
     <>
@@ -182,7 +223,7 @@ export default function Trainers() {
                   }}
                 >
                   {filteredTrainersList.map((trainer) => (
-                    <Card key={trainer.id} sx={styles.card}>
+                    <Card key={trainer.userId} sx={styles.card}>
                       <Box sx={{ display: "flex", alignItems: "center" }}>
                         <Avatar src={trainer.avatar} sx={styles.avatar} />
                         <CardContent sx={{ flexGrow: 1 }}>
@@ -194,17 +235,17 @@ export default function Trainers() {
                           {/* 如果这里是 connect 成功了，才可以订课 */}
                           <Button
                             variant="contained"
-                            color={isConnected ? "success" : "primary"} // 连接后变绿色
+                            color={trainer.connectStatus === "Accepted" ? "success" : "primary"} // 连接后变绿色
                             sx={styles.button}
-                            disabled={!isConnected} // 未连接时禁用
+                            disabled={!(trainer.connectStatus === "Accepted")} // 未连接时禁用
                             onClick={() => setOpen(true)}
                           >
                             Book a Session
                           </Button>
                           {/* 如果这里已经 connect 了，要改成 状态，而不是按钮了 */}
-                          {isConnected ? (
+                          {(trainer.connectStatus && trainer.connectStatus !== "NONE") ? (
                             <Chip
-                              label="Connected"
+                              label={trainer.connectStatus}
                               color="success"
                               sx={styles.chip}
                             />
@@ -213,7 +254,7 @@ export default function Trainers() {
                               variant="contained"
                               color="primary"
                               sx={styles.button}
-                              onClick={() => setIsConnected(true)} // 模拟连接成功
+                              onClick={handleConnect(trainer.userId)} // 模拟连接成功
                             >
                               Connect Now
                             </Button>
@@ -232,7 +273,7 @@ export default function Trainers() {
                           </Typography>
                           <Collapse in={expandedId.includes(trainer.id)} timeout="auto" unmountOnExit>
                             <Typography variant="body2" sx={{ mt: 1, color: "text.secondary", width: "80%" }}>
-                              YearsOfExperience: {trainer.yearsOfExperience || 0}
+                              Years Of Experience: {trainer.yearsOfExperience || 0}
                             </Typography>
                             <Typography variant="body2" sx={{ mt: 1, color: "text.secondary", width: "80%" }}>
                               Certifications: {trainer.certifications || "-"}
@@ -248,8 +289,8 @@ export default function Trainers() {
                 </Stack>
               </TabPanel>
               <Box sx={{ display: "flex", justifyContent: "center", mt: 1, md: 1 }}>
-                {count > 0 && <Pagination
-                  count={count}
+                {count > numPerPage && <Pagination
+                  count={Math.ceil(count / numPerPage)}
                   page={currentPage}
                   onChange={handlePageChange}
                   color="primary"
@@ -259,16 +300,38 @@ export default function Trainers() {
           </TabContext>
         </Paper>
       </Box>
-      {/* Dialog logic */}
-      <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-        <DialogTitle>Information</DialogTitle>
+      {/* Connect Dialog logic */}
+      <Dialog open={openConnect} onClose={handleCloseConnect} maxWidth="sm" fullWidth>
+        <DialogTitle>Connect a Trainer</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} mt={1}>
+            <TextField
+              label="Remark/Message"
+              name="requestMessage"
+              value={formDataConnect.requestMessage}
+              onChange={handleChangeConnect}
+              fullWidth
+              required
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseConnect} color="secondary">Cancel</Button>
+          <Button onClick={handleSubmitConnect} variant="contained" color="primary">
+            Submit
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {/* Session Dialog logic */}
+      <Dialog open={openSession} onClose={handleCloseSession} maxWidth="sm" fullWidth>
+        <DialogTitle>Book a Session</DialogTitle>
         <DialogContent>
           <Stack spacing={2} mt={1}>
             <TextField
               label="Name"
               name="name"
-              value={formData.name}
-              onChange={handleChange}
+              value={formDataSession.name}
+              onChange={handleChangeSession}
               fullWidth
               required
             />
@@ -276,16 +339,16 @@ export default function Trainers() {
               label="Email"
               name="email"
               type="email"
-              value={formData.email}
-              onChange={handleChange}
+              value={formDataSession.email}
+              onChange={handleChangeSession}
               fullWidth
               required
             />
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose} color="secondary">Cancel</Button>
-          <Button onClick={handleSubmit} variant="contained" color="primary">
+          <Button onClick={handleCloseSession} color="secondary">Cancel</Button>
+          <Button onClick={handleSubmitSession} variant="contained" color="primary">
             Submit
           </Button>
         </DialogActions>

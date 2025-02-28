@@ -105,7 +105,7 @@ const LoginForm = ({ roleLogin }) => {
           // navigate(`/${role}`); // don't need this logic
         } catch (error) {
           if (error) {
-            //要做错误处理，不然 try-catch之后直接就没办法看到报错了，导致找不到问题所在
+            //Error handling should be done, otherwise the try-catch will not be able to see the error directly after the try-catch, resulting in the failure to find the problem
             showSnackbar({ message: error.message || "Login failed. Please try again.", severity: "error" });
           }
         }

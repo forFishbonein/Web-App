@@ -18,7 +18,7 @@ const useAxios = () => {
 
   service.interceptors.request.use(
     async function (config) {
-      console.log(`${config.url}，token：${token}`)
+      // console.log(`${config.url}，token：${token}`)
       if (token && !config.headers["Authorization"]) {
         config.headers['Authorization'] = `Bearer ${token}`;
       }

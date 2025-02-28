@@ -17,9 +17,17 @@ const useTrainerApi = () => {
       },
     });
   };
+  const connectTrainer = (data) => {
+    return httpRequest({
+      method: "post",
+      url: `/member/connect-trainer`,
+      data,
+    });
+  };
   return {
     getTrainerList,
     getTrainerInfo,
+    connectTrainer,
   };
 };
 export default useTrainerApi;
