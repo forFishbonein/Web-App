@@ -77,7 +77,7 @@ const EmailComponent = ({ onCancel }) => {
           />
 
           <Button
-            className="update-btn"
+            // className="update-btn"
             type="submit"
             variant="contained"
             color="primary"

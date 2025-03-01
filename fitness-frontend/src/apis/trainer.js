@@ -24,6 +24,7 @@ const useTrainerApi = () => {
       data,
     });
   };
+
   return {
     getTrainerList,
     getTrainerInfo,

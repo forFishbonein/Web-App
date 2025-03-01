@@ -21,24 +21,25 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField
+  TextField,
 } from "@mui/material";
 
 import { TabContext, TabPanel } from "@mui/lab";
 import useTrainerApi from "../../apis/trainer";
+import useUserApi from "../../apis/user";
 import { useSnackbar } from "../../utils/Hooks/SnackbarContext.jsx";
-
+import dayjs from "dayjs";
 // Sample trainers data
-const trainersData = [
-  { id: 1, name: "John Doe", specialty: "Strength Training", club: "City Gym", avatar: "https://i.pravatar.cc/150?img=1" },
-  { id: 2, name: "Jane Smith", specialty: "Yoga & Flexibility", club: "Downtown Fitness", avatar: "https://i.pravatar.cc/150?img=2" },
-  { id: 3, name: "Michael Lee", specialty: "Cardio & Endurance", club: "Elite Sports Club", avatar: "https://i.pravatar.cc/150?img=3" },
-  { id: 4, name: "Emily Davis", specialty: "Strength Training", club: "Downtown Fitness", avatar: "https://i.pravatar.cc/150?img=4" },
-  { id: 5, name: "Chris Brown", specialty: "Yoga & Flexibility", club: "City Gym", avatar: "https://i.pravatar.cc/150?img=5" },
-  { id: 6, name: "Anna Johnson", specialty: "Cardio & Endurance", club: "Elite Sports Club", avatar: "https://i.pravatar.cc/150?img=6" },
-  { id: 7, name: "David Wilson", specialty: "Strength Training", club: "City Gym", avatar: "https://i.pravatar.cc/150?img=7" },
-  { id: 8, name: "Sophia Martinez", specialty: "Yoga & Flexibility", club: "Downtown Fitness", avatar: "https://i.pravatar.cc/150?img=8" },
-];
+// const trainersData = [
+//   { id: 1, name: "John Doe", specialty: "Strength Training", club: "City Gym", avatar: "https://i.pravatar.cc/150?img=1" },
+//   { id: 2, name: "Jane Smith", specialty: "Yoga & Flexibility", club: "Downtown Fitness", avatar: "https://i.pravatar.cc/150?img=2" },
+//   { id: 3, name: "Michael Lee", specialty: "Cardio & Endurance", club: "Elite Sports Club", avatar: "https://i.pravatar.cc/150?img=3" },
+//   { id: 4, name: "Emily Davis", specialty: "Strength Training", club: "Downtown Fitness", avatar: "https://i.pravatar.cc/150?img=4" },
+//   { id: 5, name: "Chris Brown", specialty: "Yoga & Flexibility", club: "City Gym", avatar: "https://i.pravatar.cc/150?img=5" },
+//   { id: 6, name: "Anna Johnson", specialty: "Cardio & Endurance", club: "Elite Sports Club", avatar: "https://i.pravatar.cc/150?img=6" },
+//   { id: 7, name: "David Wilson", specialty: "Strength Training", club: "City Gym", avatar: "https://i.pravatar.cc/150?img=7" },
+//   { id: 8, name: "Sophia Martinez", specialty: "Yoga & Flexibility", club: "Downtown Fitness", avatar: "https://i.pravatar.cc/150?img=8" },
+// ];
 
 export default function Trainers() {
   const [tabValue, setTabValue] = useState("1");
@@ -51,6 +52,7 @@ export default function Trainers() {
   const [count, setCount] = useState(0);
   const numPerPage = 3;
   const { getTrainerList, connectTrainer } = useTrainerApi();
+  const { bookASession, membertGetTrainerAvailability } = useUserApi();
   // const getTrainersData = async () => {
   //   //要改成从后端进行搜索
   //   // const indexOfLastTrainer = currentPage * numPerPage;
@@ -117,6 +119,9 @@ export default function Trainers() {
   // Connect Dialog logic
   const [openConnect, setOpenConnect] = useState(false);
   const [formDataConnect, setFormDataConnect] = useState({ requestMessage: "" });
+  const [errors2, setErrors2] = useState({
+    requestMessage: false,
+  });
   const handleChangeConnect = (event) => {
     setFormDataConnect({ ...formDataConnect, [event.target.name]: event.target.value });
   };
@@ -128,6 +133,13 @@ export default function Trainers() {
   const handleSubmitConnect = async (event) => {
     event.preventDefault();
     console.log("connect information:", formDataConnect);
+    const newErrors = {
+      requestMessage: !formDataConnect.requestMessage,
+    };
+    setErrors2(newErrors);
+    if (Object.values(newErrors).some((error) => error)) {
+      return;
+    }
     try {
       await connectTrainer({
         trainerId: connectingId,
@@ -142,7 +154,7 @@ export default function Trainers() {
         }
         return e;
       }));
-      setOpenConnect(false);
+      handleCloseConnect();
       showSnackbar({ message: "Connect successful!", severity: "success" });
     } catch (error) {
       if (error) {
@@ -152,20 +164,86 @@ export default function Trainers() {
   };
   // Session Dialog logic
   const [openSession, setOpenSession] = useState(false);
-  const [formDataSession, setFormDataSession] = useState({ name: "", email: "" });
+  const [formDataSession, setFormDataSession] = useState({
+    availabilityId: null,
+    description: "",
+    projectName: "",
+  });
+  const [errors, setErrors] = useState({
+    projectName: false,
+    availabilityId: false,
+    description: false,
+  });
+  const [bookingId, setBookingId] = useState(null);
+  const [bookingSpecializations, setBookingSpecializations] = useState([]);
+  const [availabilityList, setAvailabilityList] = useState([]);
   const handleChangeSession = (event) => {
     setFormDataSession({ ...formDataSession, [event.target.name]: event.target.value });
+    setErrors((prev) => ({
+      ...prev,
+      [name]: false,
+    }));
   };
   const handleCloseSession = () => {
     setOpenSession(false);
-    setFormDataSession({ name: "", email: "" });
+    setFormDataSession({
+      availabilityId: "",
+      description: "",
+      projectName: "",
+    });
   };
-  const handleSubmitSession = (event) => {
+  const handleSubmitSession = async (event) => {
     event.preventDefault();
     console.log("session information:", formDataSession);
-    setOpenSession(false);
-  };
+    const newErrors = {
+      projectName: !formDataSession.projectName,
+      availabilityId: !formDataSession.availabilityId,
+      description: !formDataSession.description.trim(),
+    };
+    setErrors(newErrors);
+    if (Object.values(newErrors).some((error) => error)) {
+      return;
+    }
+    try {
+      await bookASession({
+        availabilityId: formDataSession.availabilityId,
+        description: formDataSession.description,
+        projectName: formDataSession.projectName,
+        trainerId: bookingId
+      });
+      setFilteredTrainersList(filteredTrainersList.map(e => {
+        if (e.userId === connectingId) {
+          return {
+            ...e,
+            connectStatus: "Pending"
+          }
+        }
+        return e;
+      }));
+      handleCloseSession();
+      showSnackbar({ message: "Booking successful! Please go to Sessions Page to check.", severity: "success" });
+    } catch (error) {
+      if (error) {
+        showSnackbar({ message: error.message || "Failed. Please try again.", severity: "error" });
+      }
+    }
 
+  };
+  const handleBookSession = (trainerId, specializations) => () => {
+    setBookingId(trainerId);
+    setBookingSpecializations(specializations ? specializations.split(",") : []);
+    setOpenSession(true);
+    membertGetTrainerAvailability(trainerId).then(res => {
+      if (res.data?.length > 0) {
+        setAvailabilityList(res.data);
+      } else {
+        setAvailabilityList([]);
+      }
+    })
+  }
+  // useEffect(() => {
+  //   console.log("bookingSpecializations", bookingSpecializations);
+  // }, [bookingSpecializations])
 
   return (
     <>
@@ -235,10 +313,10 @@ export default function Trainers() {
                           {/* 如果这里是 connect 成功了，才可以订课 */}
                           <Button
                             variant="contained"
-                            color={trainer.connectStatus === "Accepted" ? "success" : "primary"} // 连接后变绿色
+                            color={trainer.connectStatus === "Accepted" ? "primary" : "primary"}
                             sx={styles.button}
                             disabled={!(trainer.connectStatus === "Accepted")} // 未连接时禁用
-                            onClick={() => setOpen(true)}
+                            onClick={handleBookSession(trainer.userId, trainer.specializations)}
                           >
                             Book a Session
                           </Button>
@@ -266,12 +344,12 @@ export default function Trainers() {
                         <Box>
                           <Typography
                             variant="body1" color="text.secondary"
-                            onClick={handleExpandClick(trainer.id)}
+                            onClick={handleExpandClick(trainer.userId)}
                             style={styles.moreInfo}
                           >
-                            {expandedId.includes(trainer.id) ? "Show Less" : "More Info"}
+                            {expandedId.includes(trainer.userId) ? "Show Less" : "More Info"}
                           </Typography>
-                          <Collapse in={expandedId.includes(trainer.id)} timeout="auto" unmountOnExit>
+                          <Collapse in={expandedId.includes(trainer.userId)} timeout="auto" unmountOnExit>
                             <Typography variant="body2" sx={{ mt: 1, color: "text.secondary", width: "80%" }}>
                               Years Of Experience: {trainer.yearsOfExperience || 0}
                             </Typography>
@@ -312,6 +390,11 @@ export default function Trainers() {
               onChange={handleChangeConnect}
               fullWidth
               required
+              multiline
+              minRows={3}
+              maxRows={6}
+              error={errors2.requestMessage}
+              helperText={errors2.requestMessage ? "Required field" : ""}
             />
           </Stack>
         </DialogContent>
@@ -327,22 +410,46 @@ export default function Trainers() {
         <DialogTitle>Book a Session</DialogTitle>
         <DialogContent>
           <Stack spacing={2} mt={1}>
+            <FormControl sx={{ minWidth: 150 }} required>
+              <InputLabel>Training Program</InputLabel>
+              <Select
+                name="projectName"
+                value={formDataSession.projectName || ""}
+                onChange={handleChangeSession}
+                required
+              >
+                {bookingSpecializations.map((specialization, index) => {
+                  return <MenuItem value={specialization} key={index}>{specialization}</MenuItem>
+                })}
+              </Select>
+              {errors.projectName && <span style={{ color: "red", fontSize: "12px" }}>Required field</span>}
+            </FormControl>
+            <FormControl sx={{ minWidth: 150 }} required>
+              <InputLabel>Available Training Time</InputLabel>
+              <Select
+                name="availabilityId"
+                value={formDataSession.availabilityId || ""}
+                onChange={handleChangeSession}
+                required
+              >
+                {availabilityList.map((availabilityTime, index) => {
+                  return <MenuItem value={availabilityTime.availabilityId} key={index}>{availabilityTime.startTime + " to " + dayjs(availabilityTime.endTime).format("HH:mm")}</MenuItem>
+                })}
+              </Select>
+              {errors.availabilityId && <span style={{ color: "red", fontSize: "12px" }}>Required field</span>}
+            </FormControl>
             <TextField
-              label="Name"
-              name="name"
-              value={formDataSession.name}
+              label="Remark/Requirement"
+              name="description"
+              value={formDataSession.description}
               onChange={handleChangeSession}
               fullWidth
               required
-            />
-            <TextField
-              label="Email"
-              name="email"
-              type="email"
-              value={formDataSession.email}
-              onChange={handleChangeSession}
-              fullWidth
-              required
+              multiline
+              minRows={3}
+              maxRows={6}
+              error={errors.description}
+              helperText={errors.description ? "Required field" : ""}
             />
           </Stack>
         </DialogContent>
@@ -352,7 +459,7 @@ export default function Trainers() {
             Submit
           </Button>
         </DialogActions>
-      </Dialog>
+      </Dialog >
     </>
   );
 }

@@ -5,19 +5,19 @@ const useNotificationApi = () => {
   const getNotificationList = (page, pageSize) => {
     return httpRequest({
       method: "get",
-      url: `/member/notifications?page=${page}&pageSize=${pageSize}`,
+      url: `/user/notifications?page=${page}&pageSize=${pageSize}`,
     });
   };
   const markNotificationAsRead = (notificationId) => {
     return httpRequest({
       method: "put",
-      url: `/member/notifications/${notificationId}/read`,
+      url: `/user/notifications/${notificationId}/read`,
     });
   };
   const deleteNotification = (notificationId) => {
     return httpRequest({
       method: "delete",
-      url: `/member/notifications/${notificationId}`,
+      url: `/user/notifications/${notificationId}`,
     });
   };
   return {

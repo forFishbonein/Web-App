@@ -84,7 +84,6 @@ const ResetPassword = () => {
   //   setIsAuthenticated(false);
   //   navigate("/authenticate", { state: { activeTab: 1 } });
   // };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (validate()) {
@@ -109,11 +108,20 @@ const ResetPassword = () => {
         //     password: formData.newPassword,
         //   });
         // }
-        await resetPassword(formData.newPassword, token);
+        if (userRole) {
+          // 这里将来调用resetCurrentPassword
+          // await resetCurrentPassword(formData.currentPassword, formData.newPassword);
+          alert(111);
+          setTimeout(() => {
+            handleLogout();
+          }, 500);
+        } else {
+          await resetPassword(formData.newPassword, token);
+          setTimeout(() => {
+            handleLogout();
+          }, 2000);
+        }
         setMessage("Password successfully updated!");
-        setTimeout(() => {
-          handleLogout();
-        }, 2000);
         // if (response.status === 200) {
         //   setMessage("Password successfully updated!");
         //   setTimeout(() => {
@@ -209,7 +217,9 @@ const ResetPassword = () => {
         {message && <Alert severity={message.includes("successful") ? "success" : "error"}>{message}</Alert>}
 
         {/* Submit Button */}
-        <Button type="submit" className="update-btn" variant="contained" fullWidth sx={{ mt: 3 }}>
+        <Button type="submit"
+          // className="update-btn"
+          variant="contained" fullWidth sx={{ mt: 3 }}>
           {userRole ? "Update Password" : "Reset Password"}
         </Button>
       </form>

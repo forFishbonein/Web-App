@@ -8,6 +8,7 @@ import IconButton from "@mui/material/IconButton";
 import { useUserStore } from "../../store/useUserStore";
 import useUserApi from "../../apis/user";
 import { useSnackbar } from "../../utils/Hooks/SnackbarContext.jsx";
+import { useNavigate } from "react-router-dom";
 const Header = ({ firstName, lastName, children }) => {
   const { showSnackbar } = useSnackbar();
   // Generate avatar initials
@@ -76,6 +77,12 @@ const Header = ({ firstName, lastName, children }) => {
         showSnackbar({ message: "Update Failed! Please try again.", severity: "error" });
       }
     }
+  };
+
+  const navigate = useNavigate();
+  const handleResetPassword = () => {
+    // window.open("/reset-password?token=default", "_blank", "noopener,noreferrer");
+    navigate("/reset-password?token=default");
   };
   return (
     <AppBar position="static" sx={{ backgroundColor: "#023047", padding: "2px 20px", height: "10vh", display: "flex", justifyContent: "center" }}>
@@ -178,7 +185,11 @@ const Header = ({ firstName, lastName, children }) => {
             </Stack>
           </DialogContent>
           <DialogActions>
-            {updating ? <Button onClick={handleCancle} variant="contained" color="error">Cancel</Button> : <Button onClick={() => setUpdating(true)} color="secondary">Update</Button>}
+            {/* 跳转到 Reset Password 按钮 */}
+            <Button variant="contained" color="warning" onClick={handleResetPassword}>
+              Update Password
+            </Button>
+            {updating ? <Button onClick={handleCancle} variant="outlined" color="error">Cancel</Button> : <Button onClick={() => setUpdating(true)} variant="contained" color="secondary">Update</Button>}
 
             {updating && <Button onClick={handleSubmit} variant="contained" color="success">
               Submit

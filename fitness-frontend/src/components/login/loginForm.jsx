@@ -168,7 +168,7 @@ const LoginForm = ({ roleLogin }) => {
               variant="body2"
               to="/forgot-password"
             >
-              <Button variant="text" sx={{ color: "#ffffff", textDecorationColor: "#023047", textTransform: "none" }}>Forgot password?</Button>
+              <Button variant="contained" sx={{ color: "#ffffff", textDecorationColor: "#023047", textTransform: "none" }}>Forgot password?</Button>
             </Link>
           </Box>
           {message && (
