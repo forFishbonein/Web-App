@@ -1,0 +1,51 @@
+import useAxios from "../request";
+// We can manage the interfaces globally
+const useMemberApi = () => {
+  let { httpRequest } = useAxios();
+  const bookASession = (data) => {
+    return httpRequest({
+      method: "post",
+      url: `/member/appointment`,
+      data,
+    });
+  };
+  const membertGetTrainerAvailability = (trainerId) => {
+    return httpRequest({
+      method: "get",
+      url: `/member/trainer/${trainerId}/availability`,
+    });
+  };
+  const getDynamicAppointmentStatistics = (startDate, endDate) => {
+    return httpRequest({
+      method: "get",
+      url: `/member/appointments/statistics/dynamic?startDate=${startDate}&endDate=${endDate}`,
+    });
+  };
+  const getUpcomingAppointments = (page, pageSize) => {
+    return httpRequest({
+      method: "get",
+      url: `/member/appointments/upcoming?page=${page}&pageSize=${pageSize}`,
+    });
+  };
+  const getHistoricalAppointments = (page, pageSize) => {
+    return httpRequest({
+      method: "get",
+      url: `/member/appointments/history?page=${page}&pageSize=${pageSize}`,
+    });
+  };
+  const cancelAppointment = (appointmentId) => {
+    return httpRequest({
+      method: "put",
+      url: `/member/appointment/cancel/${appointmentId}`,
+    });
+  };
+  return {
+    bookASession,
+    membertGetTrainerAvailability,
+    getDynamicAppointmentStatistics,
+    getUpcomingAppointments,
+    getHistoricalAppointments,
+    cancelAppointment,
+  };
+};
+export default useMemberApi;

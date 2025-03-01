@@ -6,22 +6,17 @@ import {
   Paper,
 } from "@mui/material";
 import { TabContext, TabList, TabPanel } from "@mui/lab";
-import SessionList from "./SessionList";
+import SessionList from "./Components/SessionList";
+import useMemberApi from "../../apis/member";
 export default function Sessions() {
   const [tabValue, setTabValue] = useState("1");
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
-    if (newValue == 1) {
-      getSessionData();
-    } else if (newValue == 2) {
-    }
   };
-  const getUpcomingSessionsList = () => {
-
-  }
-  const getHistorySessionsList = () => {
-
-  }
+  const { getDynamicAppointmentStatistics,
+    getUpcomingAppointments,
+    getHistoricalAppointments,
+    cancelAppointment } = useMemberApi();
   return (
     <Box sx={{ width: "100%", height: "calc(90vh - 64px)", display: "flex", justifyContent: "center", mt: 4, mb: 4 }}>
       <Paper
@@ -63,18 +58,26 @@ export default function Sessions() {
           </Box>
 
           <Box sx={{ mt: 2, p: 1, pb: 1, flexGrow: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
-            {["1", "2"].map(e => {
-              return <TabPanel
-                value={e}
-                sx={{
-                  flexGrow: 1,
-                  overflowY: "auto",
-                  maxHeight: "100%",
-                }}
-              >
-                <SessionList getSessionsList={e == "1" ? getUpcomingSessionsList : getHistorySessionsList}></SessionList>
-              </TabPanel>
-            })}
+            <TabPanel
+              value="1"
+              sx={{
+                flexGrow: 1,
+                overflowY: "auto",
+                maxHeight: "100%",
+              }}
+            >
+              <SessionList getSessionsList={getUpcomingAppointments} cancelAppointment={cancelAppointment} type="upcoming"></SessionList>
+            </TabPanel>
+            <TabPanel
+              value="2"
+              sx={{
+                flexGrow: 1,
+                overflowY: "auto",
+                maxHeight: "100%",
+              }}
+            >
+              <SessionList getSessionsList={getHistoricalAppointments} getDynamicAppointmentStatistics={getDynamicAppointmentStatistics} type="history"></SessionList>
+            </TabPanel>
           </Box>
         </TabContext>
       </Paper>

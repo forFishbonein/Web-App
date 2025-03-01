@@ -1,7 +1,7 @@
 /**
  * @description [ axios encapsulation]
  */
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import config from "./config";
 import { useUserStore } from "../store/useUserStore";
 import { errorNotifier } from "../utils/Hooks/SnackbarContext.jsx";
@@ -31,33 +31,26 @@ const useAxios = () => {
   service.interceptors.response.use(
     (response) => {
       const res = response?.data;
-      //Normally, the exception code returned by the back end will still go here
       if (res?.code !== 200) {
-        console.log("response：", res);
+        console.log("response：", res, { response });
         console.log("If code is not 200, an error is reported by default");
-        return Promise.reject({ response }); // Force the error handling logic
+        // If message is not set, let the page handle it
+        if (res?.message && res?.code) {
+          errorNotifier.showError(res.message);
+          // return Promise.reject();
+        } else { //If message is not set, let the page handle it
+          console.log("error：", res);
+          return Promise.reject(new Error(""));
+        }
       } else {
         //Direct return response.data
         return res;
       }
     },
     (error) => {
-      // From code! ==200 logic jump over
-      const res = error?.response;
-      console.log(res);
-      // As long as you set code then the back end must set message
-      if (res?.data?.message && res?.data?.code) {
-        // error.message = res.data.message;
-        errorNotifier.showError(res.data.message);
-        return Promise.reject();
-      } else if (error?.message) { //Otherwise, let the page handle it
-        console.log("error.message：", error?.message, error);
-        // errorNotifier.showError(error?.message);
-        return Promise.reject(error);
-      } else { //Otherwise, let the page handle it
-        console.log("error：", error);
-        return Promise.reject(error);
-      }
+      // Only axios errors are handled here
+      errorNotifier.showError(error?.message || "Error");
+      // return Promise.reject();
     }
   );
   return { httpRequest: service };

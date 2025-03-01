@@ -22,24 +22,9 @@ const useUserApi = () => {
       },
     });
   };
-  const bookASession = (data) => {
-    return httpRequest({
-      method: "post",
-      url: `/member/appointment`,
-      data,
-    });
-  };
-  const membertGetTrainerAvailability = (trainerId) => {
-    return httpRequest({
-      method: "get",
-      url: `/member/trainer/${trainerId}/availability`,
-    });
-  };
   return {
     getUserInfo,
     updateUserInfo,
-    bookASession,
-    membertGetTrainerAvailability,
   };
 };
 export default useUserApi;

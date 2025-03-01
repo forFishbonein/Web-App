@@ -26,9 +26,10 @@ import {
 
 import { TabContext, TabPanel } from "@mui/lab";
 import useTrainerApi from "../../apis/trainer";
-import useUserApi from "../../apis/user";
+import useMemberApi from "../../apis/member";
 import { useSnackbar } from "../../utils/Hooks/SnackbarContext.jsx";
 import dayjs from "dayjs";
+import Empty from "../../components/empty/Empty"
 // Sample trainers data
 // const trainersData = [
 //   { id: 1, name: "John Doe", specialty: "Strength Training", club: "City Gym", avatar: "https://i.pravatar.cc/150?img=1" },
@@ -40,56 +41,40 @@ import dayjs from "dayjs";
 //   { id: 7, name: "David Wilson", specialty: "Strength Training", club: "City Gym", avatar: "https://i.pravatar.cc/150?img=7" },
 //   { id: 8, name: "Sophia Martinez", specialty: "Yoga & Flexibility", club: "Downtown Fitness", avatar: "https://i.pravatar.cc/150?img=8" },
 // ];
-
+function getChipColor(status) {
+  switch (status) {
+    case "Pending":
+      return "warning";
+    case "Accepted":
+      return "success";
+    case "Rejected":
+      return "error";
+    default:
+      return "primary";
+  }
+}
 export default function Trainers() {
   const [tabValue, setTabValue] = useState("1");
   const [searchClub, setSearchClub] = useState("");
   const [searchSpecialty, setSearchSpecialty] = useState("");
-  // const [trainersList, setTrainersList] = useState([]);
   const [filteredTrainersList, setFilteredTrainersList] = useState([]);
   // paging
   const [currentPage, setCurrentPage] = useState(1);
   const [count, setCount] = useState(0);
   const numPerPage = 3;
   const { getTrainerList, connectTrainer } = useTrainerApi();
-  const { bookASession, membertGetTrainerAvailability } = useUserApi();
-  // const getTrainersData = async () => {
-  //   //要改成从后端进行搜索
-  //   // const indexOfLastTrainer = currentPage * numPerPage;
-  //   // const indexOfFirstTrainer = indexOfLastTrainer - numPerPage;
-  //   // const currentTrainers = trainersData.slice(indexOfFirstTrainer, indexOfLastTrainer);
-  //   const res = await getTrainerList(currentPage, numPerPage, null, null); //real logic
-
-  //   //设置邮箱
-  //   let currentTrainers = res.data;
-  //   setTrainersList(currentTrainers);
-  //   //要改成后端返回的内容
-  //   setCount(Math.ceil(trainersData.length / numPerPage));
-  // }
-  // useEffect(() => {
-  //   getTrainersData();
-  // }, [currentPage])
+  const { bookASession, membertGetTrainerAvailability } = useMemberApi();
   useEffect(() => {
     filterTrainersList();
     //trainersList is designed to ensure that switching back still displays the original search results
   }, [currentPage, searchClub, searchSpecialty]);
 
   const filterTrainersList = async () => {
-    // console.log("trainersList", trainersList);
-    //后面要改成搜索代码
-    // const fTrainersList = trainersList.filter((trainer) =>
-    //   (searchClub === "" || trainer.club === searchClub) &&
-    //   (searchSpecialty === "" || trainer.specialty === searchSpecialty)
-    // );
     const res = await getTrainerList(currentPage, numPerPage, searchSpecialty, searchClub); //real logic
     let fTrainersList = res.data.records;
     console.log("fTrainersList", fTrainersList);
 
     setFilteredTrainersList(fTrainersList);
-    // setTrainersList(currentTrainers);
-    //要改成后端返回的内容
-    // setCount(Math.ceil(trainersData.length / numPerPage));
-    // setCurrentPage(res.data.current);
     setCount(res.data.total);
   }
   const searchClubChange = (event, newValue) => {
@@ -234,16 +219,13 @@ export default function Trainers() {
     setBookingSpecializations(specializations ? specializations.split(",") : []);
     setOpenSession(true);
     membertGetTrainerAvailability(trainerId).then(res => {
-      if (res.data?.length > 0) {
-        setAvailabilityList(res.data);
+      if (res.data?.availabilitySlots?.length > 0) {
+        setAvailabilityList(res.data.availabilitySlots);
       } else {
         setAvailabilityList([]);
       }
     })
   }
-  // useEffect(() => {
-  //   console.log("bookingSpecializations", bookingSpecializations);
-  // }, [bookingSpecializations])
 
   return (
     <>
@@ -292,79 +274,80 @@ export default function Trainers() {
                     </Select>
                   </FormControl>
                 </Stack>
-                <Stack
-                  spacing={2}
-                  sx={{
-                    flexGrow: 1,
-                    overflowY: "auto",
-                    p: 1.5
-                  }}
-                >
-                  {filteredTrainersList.map((trainer) => (
-                    <Card key={trainer.userId} sx={styles.card}>
-                      <Box sx={{ display: "flex", alignItems: "center" }}>
-                        <Avatar src={trainer.avatar} sx={styles.avatar} />
-                        <CardContent sx={{ flexGrow: 1 }}>
-                          <Typography variant="h6">{trainer.name || "-"}</Typography>
-                          <Typography variant="body2" color="text.secondary">{trainer.specializations || "-"}</Typography>
-                          <Typography variant="body2" color="text.secondary">{trainer.workplace || "-"}</Typography>
-                        </CardContent>
-                        <CardActions>
-                          {/* 如果这里是 connect 成功了，才可以订课 */}
-                          <Button
-                            variant="contained"
-                            color={trainer.connectStatus === "Accepted" ? "primary" : "primary"}
-                            sx={styles.button}
-                            disabled={!(trainer.connectStatus === "Accepted")} // 未连接时禁用
-                            onClick={handleBookSession(trainer.userId, trainer.specializations)}
-                          >
-                            Book a Session
-                          </Button>
-                          {/* 如果这里已经 connect 了，要改成 状态，而不是按钮了 */}
-                          {(trainer.connectStatus && trainer.connectStatus !== "NONE") ? (
-                            <Chip
-                              label={trainer.connectStatus}
-                              color="success"
-                              sx={styles.chip}
-                            />
-                          ) : (
+                {filteredTrainersList?.length > 0 ?
+                  <Stack
+                    spacing={2}
+                    sx={{
+                      flexGrow: 1,
+                      overflowY: "auto",
+                      p: 1.5
+                    }}
+                  >
+                    {filteredTrainersList.map((trainer) => (
+                      <Card key={trainer.userId} sx={styles.card}>
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                          <Avatar src={trainer.avatar} sx={styles.avatar} />
+                          <CardContent sx={{ flexGrow: 1 }}>
+                            <Typography variant="h6">{trainer.name || "-"}</Typography>
+                            <Typography variant="body2" color="text.secondary">{trainer.specializations || "-"}</Typography>
+                            <Typography variant="body2" color="text.secondary">{trainer.workplace || "-"}</Typography>
+                          </CardContent>
+                          <CardActions>
+                            {/* If connect is successful, you can book classes */}
                             <Button
                               variant="contained"
-                              color="primary"
+                              color={trainer.connectStatus === "Accepted" ? "primary" : "primary"}
                               sx={styles.button}
-                              onClick={handleConnect(trainer.userId)} // 模拟连接成功
+                              disabled={!(trainer.connectStatus === "Accepted")}
+                              onClick={handleBookSession(trainer.userId, trainer.specializations)}
                             >
-                              Connect Now
+                              Book a Session
                             </Button>
-                          )}
-                        </CardActions>
-                      </Box>
-                      <Box sx={{ display: "flex" }}>
-                        <Box sx={{ width: "112px" }}></Box>
-                        <Box>
-                          <Typography
-                            variant="body1" color="text.secondary"
-                            onClick={handleExpandClick(trainer.userId)}
-                            style={styles.moreInfo}
-                          >
-                            {expandedId.includes(trainer.userId) ? "Show Less" : "More Info"}
-                          </Typography>
-                          <Collapse in={expandedId.includes(trainer.userId)} timeout="auto" unmountOnExit>
-                            <Typography variant="body2" sx={{ mt: 1, color: "text.secondary", width: "80%" }}>
-                              Years Of Experience: {trainer.yearsOfExperience || 0}
-                            </Typography>
-                            <Typography variant="body2" sx={{ mt: 1, color: "text.secondary", width: "80%" }}>
-                              Certifications: {trainer.certifications || "-"}
-                            </Typography>
-                            <Typography variant="body2" sx={{ mt: 1, color: "text.secondary", width: "80%" }}>
-                              Biography: {trainer.biography || "-"}
-                            </Typography>
-                          </Collapse>
+                            {/* If it's already connected, change it to a status, not a button */}
+                            {(trainer.connectStatus && trainer.connectStatus !== "NONE") ? (
+                              <Chip
+                                label={trainer.connectStatus}
+                                color={getChipColor(trainer.connectStatus)}
+                                sx={styles.chip}
+                              />
+                            ) : (
+                              <Button
+                                variant="contained"
+                                color="primary"
+                                sx={styles.button}
+                                onClick={handleConnect(trainer.userId)}
+                              >
+                                Connect Now
+                              </Button>
+                            )}
+                          </CardActions>
                         </Box>
-                      </Box>
-                    </Card>
-                  ))}
-                </Stack>
+                        <Box sx={{ display: "flex" }}>
+                          <Box sx={{ width: "112px" }}></Box>
+                          <Box>
+                            <Typography
+                              variant="body1" color="text.secondary"
+                              onClick={handleExpandClick(trainer.userId)}
+                              style={styles.moreInfo}
+                            >
+                              {expandedId.includes(trainer.userId) ? "Show Less" : "More Info"}
+                            </Typography>
+                            <Collapse in={expandedId.includes(trainer.userId)} timeout="auto" unmountOnExit>
+                              <Typography variant="body2" sx={{ mt: 1, color: "text.secondary", width: "80%" }}>
+                                Years Of Experience: {trainer.yearsOfExperience || 0}
+                              </Typography>
+                              <Typography variant="body2" sx={{ mt: 1, color: "text.secondary", width: "80%" }}>
+                                Certifications: {trainer.certifications || "-"}
+                              </Typography>
+                              <Typography variant="body2" sx={{ mt: 1, color: "text.secondary", width: "80%" }}>
+                                Biography: {trainer.biography || "-"}
+                              </Typography>
+                            </Collapse>
+                          </Box>
+                        </Box>
+                      </Card>
+                    ))}
+                  </Stack> : <Empty sentence="No Found"></Empty>}
               </TabPanel>
               <Box sx={{ display: "flex", justifyContent: "center", mt: 1, md: 1 }}>
                 {count > numPerPage && <Pagination
