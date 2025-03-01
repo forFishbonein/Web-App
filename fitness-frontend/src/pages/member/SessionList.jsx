@@ -3,7 +3,7 @@
  * @Author: Aron
  * @Date: 2025-03-01 00:16:52
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2025-03-01 00:27:42
+ * @LastEditTime: 2025-03-01 01:03:43
  * Copyright: 2025 xxxTech CO.,LTD. All Rights Reserved.
  * @Descripttion:
  */
@@ -55,7 +55,7 @@ const trainersData = [
     "availabilityId": 3003,
     "projectName": "Yoga Class",
     "description": "Relaxing yoga session for flexibility and stress relief.",
-    "appointmentStatus": "Completed",
+    "appointmentStatus": "Rejected",
     "createdAt": "2025-02-28T08:00:00",
     "updatedAt": "2025-02-28T09:30:00"
   },
@@ -77,7 +77,7 @@ const trainersData = [
     "availabilityId": 3003,
     "projectName": "Yoga Class",
     "description": "Relaxing yoga session for flexibility and stress relief.",
-    "appointmentStatus": "Completed",
+    "appointmentStatus": "Expired",
     "createdAt": "2025-02-28T08:00:00",
     "updatedAt": "2025-02-28T09:30:00"
   },
@@ -88,7 +88,7 @@ const trainersData = [
     "availabilityId": 3003,
     "projectName": "Yoga Class",
     "description": "Relaxing yoga session for flexibility and stress relief.",
-    "appointmentStatus": "Completed",
+    "appointmentStatus": "Cancelled",
     "createdAt": "2025-02-28T08:00:00",
     "updatedAt": "2025-02-28T09:30:00"
   },
@@ -99,7 +99,7 @@ const trainersData = [
     "availabilityId": 3003,
     "projectName": "Yoga Class",
     "description": "Relaxing yoga session for flexibility and stress relief.",
-    "appointmentStatus": "Completed",
+    "appointmentStatus": "Rejected",
     "createdAt": "2025-02-28T08:00:00",
     "updatedAt": "2025-02-28T09:30:00"
   }
@@ -117,6 +117,8 @@ function getChipColor(status) {
       return "default";
     case "Completed":
       return "primary";
+    case "Expired":
+      return "error";
     default:
       return "default";
   }
@@ -174,6 +176,7 @@ function SessionList({ getSessionsList }) {
         <MenuItem value="Rejected">Rejected</MenuItem>
         <MenuItem value="Cancelled">Cancelled</MenuItem>
         <MenuItem value="Completed">Completed</MenuItem>
+        <MenuItem value="Expired">Expired</MenuItem>
       </Select>
     </FormControl>
     {/*  each row displays 3 */}
@@ -227,7 +230,8 @@ function SessionList({ getSessionsList }) {
             <CardActions sx={{ justifyContent: "flex-end", minHeight: "45px" }}>
               {appointment.appointmentStatus !== "Cancelled" &&
                 appointment.appointmentStatus !== "Completed" &&
-                appointment.appointmentStatus !== "Rejected" && (
+                appointment.appointmentStatus !== "Rejected" &&
+                appointment.appointmentStatus !== "Expired" && (
                   <Button
                     variant="outlined"
                     color="error"
