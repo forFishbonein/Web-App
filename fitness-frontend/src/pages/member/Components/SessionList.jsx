@@ -3,7 +3,7 @@
  * @Author: Aron
  * @Date: 2025-03-01 00:16:52
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2025-03-01 21:02:14
+ * @LastEditTime: 2025-03-02 19:59:50
  * Copyright: 2025 xxxTech CO.,LTD. All Rights Reserved.
  * @Descripttion:
  */
@@ -65,7 +65,7 @@ function SessionList({ getSessionsList, cancelAppointment, getDynamicAppointment
     // setSessionsList(currentTrainers);
 
     //real logic
-    const res = await getSessionsList(currentPage, numPerPage, searchStatus);
+    const res = await getSessionsList(currentPage, numPerPage, searchStatus == "All" ? "" : searchStatus);
     setSessionsList(res.data.records);
     setCount(res.data.total);
   }
@@ -87,8 +87,10 @@ function SessionList({ getSessionsList, cancelAppointment, getDynamicAppointment
   }
   const statusOptions = [
     { value: "All", label: "All" },
-    { value: "Pending", label: "Pending" },
-    { value: "Approved", label: "Approved" },
+    ...(type === "upcoming" ? [
+      { value: "Pending", label: "Pending" },
+      { value: "Approved", label: "Approved" },
+    ] : []),
     ...(type === "history" ? [
       { value: "Rejected", label: "Rejected" },
       { value: "Cancelled", label: "Cancelled" },
@@ -122,32 +124,36 @@ function SessionList({ getSessionsList, cancelAppointment, getDynamicAppointment
 
       </Box>
     }
+    {
+      viewMode !== "stats" && (<FormControl
+        variant="outlined"
+        size="small"
+        sx={{
+          width: 300,
+          mb: 1,
+          borderRadius: 2,
+          ml: 2
+        }}
+      >
+        <InputLabel>Status Filter</InputLabel>
+        <Select
+          label="Status Filter"
+          value={searchStatus}
+          onChange={searchSessionStatus}
+        >
+          {statusOptions.map((option) => (
+            <MenuItem key={option.value} value={option.value}>
+              {option.label}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>)
+
+    }
+
     {viewMode === "list" || type === "upcoming" ? (
       sessionsList?.length > 0 ?
         <>
-          <FormControl
-            variant="outlined"
-            size="small"
-            sx={{
-              width: 300,
-              mb: 1,
-              borderRadius: 2,
-              ml: 2
-            }}
-          >
-            <InputLabel>Status Filter</InputLabel>
-            <Select
-              label="Status Filter"
-              value={searchStatus}
-              onChange={searchSessionStatus}
-            >
-              {statusOptions.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
           {/*  each row displays 3 */}
           <Grid container spacing={2} sx={{ p: 1.5 }}>
             {sessionsList.map((appointment) => (
@@ -178,7 +184,6 @@ function SessionList({ getSessionsList, cancelAppointment, getDynamicAppointment
                       <Typography variant="body2" color="text.secondary">
                         <strong>Appointment Time:</strong> {appointment.sessionStartTime + " to " + dayjs(appointment.sessionEndTime).format("HH:mm")}
                       </Typography>
-
                       {/* <Typography variant="body2" color="text.secondary">
                             <strong>Availability ID:</strong> {appointment.availabilityId}
                           </Typography> */}

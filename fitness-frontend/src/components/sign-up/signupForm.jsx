@@ -247,14 +247,14 @@ const SignupForm = ({ onSubmit, role }) => {
       </Box>
 
       {/* Divider with OR */}
-      <Box display="flex" alignItems="center" my={1}>
+      {/* <Box display="flex" alignItems="center" my={1}>
         <Divider sx={{ flex: 1 }} />
         <Typography sx={{ mx: 1 }}>OR</Typography>
         <Divider sx={{ flex: 1 }} />
-      </Box>
+      </Box> */}
 
       {/* Social Login Buttons */}
-      <Box display="flex" justifyContent="center" gap={2}>
+      {/* <Box display="flex" justifyContent="center" gap={2}>
         <Button
           variant="contained"
           startIcon={<GoogleIcon />}
@@ -279,7 +279,7 @@ const SignupForm = ({ onSubmit, role }) => {
         >
           Facebook
         </Button>
-      </Box>
+      </Box> */}
     </Container>
   );
 };

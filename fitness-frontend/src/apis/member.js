@@ -21,16 +21,16 @@ const useMemberApi = () => {
       url: `/member/appointments/statistics/dynamic?startDate=${startDate}&endDate=${endDate}`,
     });
   };
-  const getUpcomingAppointments = (page, pageSize) => {
+  const getUpcomingAppointments = (page, pageSize, status) => {
     return httpRequest({
       method: "get",
-      url: `/member/appointments/upcoming?page=${page}&pageSize=${pageSize}`,
+      url: `/member/appointments/upcoming?page=${page}&pageSize=${pageSize}&status=${status}`,
     });
   };
-  const getHistoricalAppointments = (page, pageSize) => {
+  const getHistoricalAppointments = (page, pageSize, status) => {
     return httpRequest({
       method: "get",
-      url: `/member/appointments/history?page=${page}&pageSize=${pageSize}`,
+      url: `/member/appointments/history?page=${page}&pageSize=${pageSize}&status=${status}`,
     });
   };
   const cancelAppointment = (appointmentId) => {
