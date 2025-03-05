@@ -3,7 +3,7 @@
  * @Author: Aron
  * @Date: 2025-03-05 15:07:18
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2025-03-05 18:24:06
+ * @LastEditTime: 2025-03-05 19:45:48
  * Copyright: 2025 xxxTech CO.,LTD. All Rights Reserved.
  * @Descripttion:
  */
@@ -51,7 +51,6 @@ function LoginButton({ type }) {
         //You can log in with a token
         await setToken(newToken, "member", getUserInfo);
         showSnackbar({ message: "Login Successful!", severity: "success" });
-        console.log("Login Successful!", role);
       }
     } catch (error) {
       if (error) {

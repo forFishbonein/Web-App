@@ -24,6 +24,7 @@ const ResetPassword = () => {
   const { setUserInfo, setToken } = useUserStore();
   // If there is a userRole, it means that you are logged in
   const userRole = useUserStore((state) => state.userInfo?.role);
+  const isGoogle = useUserStore((state) => state.userInfo?.isGoogle);
   const handleLogout = () => {
     setUserInfo({}); // clear zustand data
     setToken("");
@@ -56,7 +57,7 @@ const ResetPassword = () => {
   const validate = () => {
     let tempErrors = {};
 
-    if (userRole) {
+    if (userRole && !isGoogle) {
       tempErrors.currentPassword = formData.currentPassword ? "" : "Current password is required";
     }
 
@@ -108,9 +109,7 @@ const ResetPassword = () => {
         //     password: formData.newPassword,
         //   });
         // }
-        if (userRole) {
-          // 这里将来调用resetCurrentPassword
-          // await resetCurrentPassword(formData.currentPassword, formData.newPassword);
+        if (userRole && !isGoogle) {
           await changePassword(formData.newPassword, formData.currentPassword);
           setTimeout(() => {
             handleLogout();
@@ -122,12 +121,6 @@ const ResetPassword = () => {
           }, 2000);
         }
         setMessage("Password successfully updated!");
-        // if (response.status === 200) {
-        //   setMessage("Password successfully updated!");
-        //   setTimeout(() => {
-        //     handleLogout();
-        //   }, 3000);
-        // }
       } catch (error) {
         setMessage(error?.response?.data?.message || "Password reset failed.");
       }
@@ -138,12 +131,12 @@ const ResetPassword = () => {
     <Container maxWidth="sm">
       <Box textAlign="center" mt={5}>
         <Typography variant="h4" gutterBottom>
-          {userRole ? "Reset Password" : "Create New Password"}
+          {userRole && !isGoogle ? "Reset Password" : "Create New Password"}
         </Typography>
       </Box>
       <form onSubmit={handleSubmit}>
         {/* Show Current Password Field Only for Logged-in Users */}
-        {userRole && (
+        {userRole && !isGoogle && (
           <TextField
             fullWidth
             label="Current Password"
@@ -220,7 +213,7 @@ const ResetPassword = () => {
         <Button type="submit"
           // className="update-btn"
           variant="contained" fullWidth sx={{ mt: 3 }}>
-          {userRole ? "Update Password" : "Reset Password"}
+          {userRole ? isGoogle ? "Set Password" : "Update Password" : "Reset Password"}
         </Button>
       </form>
     </Container>

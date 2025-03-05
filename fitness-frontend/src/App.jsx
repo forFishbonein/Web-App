@@ -30,6 +30,7 @@ function App() {
 
   //now
   const userRole = useUserStore((state) => state.userInfo?.role);
+  const isGoogle = useUserStore((state) => state.userInfo?.isGoogle);
   const getDefaultPath = useUserStore((state) => state.getDefaultPath);
   const isAuthorized = (role, allowedRoles) => allowedRoles.includes(role);
   console.log("defaultPath", getDefaultPath());
@@ -41,7 +42,7 @@ function App() {
           {/* The login page can be accessed before login, but not after login */}
           <Route path="/" element={!userRole ? <HomePage /> : <Navigate to={getDefaultPath()} replace />} />
           <Route path="/authenticate" element={!userRole ? <AuthenticationPage /> : <Navigate to={getDefaultPath()} replace />} />
-          <Route path="/forgot-password" element={!userRole ? <EmailComponent /> : <Navigate to={getDefaultPath()} replace />} />
+          <Route path="/forgot-password" element={(!userRole || isGoogle) ? <EmailComponent /> : <Navigate to={getDefaultPath()} replace />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           {/* Perform role access control after login */}
           {isAuthorized(userRole, ["member"]) && (
