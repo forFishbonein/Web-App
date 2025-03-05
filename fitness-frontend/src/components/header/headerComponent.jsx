@@ -84,6 +84,10 @@ const Header = ({ firstName, lastName, children }) => {
     // window.open("/reset-password?token=default", "_blank", "noopener,noreferrer");
     navigate("/reset-password?token=default");
   };
+  const handleSetPassword = () => {
+    navigate(`/forgot-password?email=${userInfo.email}&setPassword=true`);
+  }
+  const isGoogle = useUserStore((state) => state.userInfo?.isGoogle);
   return (
     <AppBar position="static" sx={{ backgroundColor: "#023047", padding: "2px 20px", height: "10vh", display: "flex", justifyContent: "center" }}>
       <Toolbar sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -186,9 +190,10 @@ const Header = ({ firstName, lastName, children }) => {
           </DialogContent>
           <DialogActions>
             {/* 跳转到 Reset Password 按钮 */}
-            <Button variant="contained" color="warning" onClick={handleResetPassword}>
+            {!isGoogle ? <Button variant="contained" color="warning" onClick={handleResetPassword}>
               Update Password
-            </Button>
+            </Button> : <Button variant="contained" color="warning" onClick={handleSetPassword}>Set Password</Button>}
+
             {updating ? <Button onClick={handleCancle} variant="outlined" color="error">Cancel</Button> : <Button onClick={() => setUpdating(true)} variant="contained" color="secondary">Update</Button>}
 
             {updating && <Button onClick={handleSubmit} variant="contained" color="success">

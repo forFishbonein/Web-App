@@ -45,7 +45,7 @@ const ResetPassword = () => {
     new: false,
     confirm: false,
   });
-  const { resetPassword } = useLoginApi();
+  const { resetPassword, changePassword } = useLoginApi();
   useEffect(() => {
     if (!token) {
       // If the user is NOT logged in & there's no token, redirect to login
@@ -111,10 +111,10 @@ const ResetPassword = () => {
         if (userRole) {
           // 这里将来调用resetCurrentPassword
           // await resetCurrentPassword(formData.currentPassword, formData.newPassword);
-          alert(111);
+          await changePassword(formData.newPassword, formData.currentPassword);
           setTimeout(() => {
             handleLogout();
-          }, 500);
+          }, 1000);
         } else {
           await resetPassword(formData.newPassword, token);
           setTimeout(() => {

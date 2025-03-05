@@ -15,6 +15,15 @@ const useLoginApi = () => {
       },
     });
   };
+  const googleLoginForMember = (idToken) => {
+    return httpRequest({
+      method: "post",
+      url: `/user/google-login`,
+      data: {
+        idToken,
+      },
+    });
+  };
   const getCaptchaAndSignUp = (data) => {
     return httpRequest({
       method: "post",
@@ -53,12 +62,24 @@ const useLoginApi = () => {
       },
     });
   };
+  const changePassword = (newPassword, oldPassword) => {
+    return httpRequest({
+      method: "post",
+      url: `/user/change-password`,
+      data: {
+        newPassword,
+        oldPassword,
+      },
+    });
+  };
   return {
     passwordLogin,
+    googleLoginForMember,
     getCaptchaAndSignUp,
     verifyCode,
     forgetPassword,
     resetPassword,
+    changePassword,
   };
 };
 export default useLoginApi;

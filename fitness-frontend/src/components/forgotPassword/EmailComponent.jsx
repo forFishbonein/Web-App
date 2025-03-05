@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Container,
   TextField,
@@ -6,7 +6,7 @@ import {
   Typography,
   Paper,
 } from "@mui/material";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import "./EmailComponent.css";
 import useCaptcha from "../../utils/Hooks/useCaptcha.js";
 import useLoginApi from "../../apis/login.js";
@@ -20,11 +20,15 @@ const EmailComponent = ({ onCancel }) => {
   const { showSnackbar } = useSnackbar();
   const { onCaptchaShow } = useCaptcha();
   const { forgetPassword } = useLoginApi();
+  const [searchParams] = useSearchParams();
+  useEffect(() => {
+    setEmail(searchParams.get("email"));
+  }, [searchParams])
   const handleChange = (event) => {
     setEmail(event.target.value);
     setError("");
   };
-
+  const setPassword = searchParams.get("setPassword");
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -38,7 +42,11 @@ const EmailComponent = ({ onCancel }) => {
         let res = await forgetPassword(email, ticket, randstr); //real logic
         // let res = {};
         showSnackbar({ message: res?.data?.message || "Check your email for password reset instructions.", severity: "success" });
-        navigate("/authenticate", { state: { activeTab: 1 } });
+        if (!setPassword) {
+          navigate("/authenticate", { state: { activeTab: 1 } });
+        } else {
+          navigate("/member/trainers");
+        }
       } catch (error) {
         if (error) {
           setError(error?.response?.data?.message || "Something went wrong. Please try again.");
@@ -55,11 +63,11 @@ const EmailComponent = ({ onCancel }) => {
     <Container maxWidth="sm" sx={{ marginTop: "20px" }}>
       <Paper elevation={3} sx={{ padding: "20px", borderRadius: "10px", textAlign: "center" }}>
         <Typography variant="h5" fontWeight="bold" sx={{ mb: 2 }}>
-          Forgot Password?
+          {setPassword ? "Set Password" : "Forgot Password"}
         </Typography>
 
         <Typography variant="body1" sx={{ mt: 2, mb: 3 }}>
-          Enter your email address below and we’ll send you a link to reset your password.
+          Enter your email address below and we’ll send you a link to {setPassword ? "set" : "reset"} your password.
         </Typography>
 
         <form onSubmit={handleSubmit}>
@@ -93,9 +101,7 @@ const EmailComponent = ({ onCancel }) => {
             {message}
           </Typography>
         )}
-
-        {/* Back to Login */}
-        <Link to="/authenticate" state={{ activeTab: 1 }}>
+        {!setPassword ? <Link to="/authenticate" state={{ activeTab: 1 }}>
           <Button
             variant="text"
             fullWidth
@@ -104,7 +110,8 @@ const EmailComponent = ({ onCancel }) => {
           >
             Back to Login
           </Button>
-        </Link>
+        </Link> : <></>}
+        {/* Back to Login */}
       </Paper>
     </Container>
   );

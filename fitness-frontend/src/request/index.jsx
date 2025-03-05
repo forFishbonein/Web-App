@@ -37,7 +37,7 @@ const useAxios = () => {
         // If message is not set, let the page handle it
         if (res?.message && res?.code) {
           errorNotifier.showError(res.message);
-          // return Promise.reject();
+          return Promise.reject(); //这个地方必须要返回，否则不知道代码出了错误，默认会返回 resolve 的！会导致页面中代码逻辑意外向下执行
         } else { //If message is not set, let the page handle it
           console.log("error：", res);
           return Promise.reject(new Error(""));
@@ -50,7 +50,7 @@ const useAxios = () => {
     (error) => {
       // Only axios errors are handled here
       errorNotifier.showError(error?.message || "Error");
-      // return Promise.reject();
+      return Promise.reject(); //必须返回错误，否则会导致页面中代码逻辑意外向下执行
     }
   );
   return { httpRequest: service };

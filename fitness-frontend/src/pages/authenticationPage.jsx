@@ -127,7 +127,7 @@ const AuthenticationPage = () => {
                   <SignupForm onSubmit={handleAuthSubmit} role={role} />
                 ) : (
                   //The role should also be followed by admin, then admin can also login！
-                  <LoginForm onSubmit={handleAuthSubmit} role={role} />
+                  <LoginForm onSubmit={handleAuthSubmit} roleLogin={role} />
                 )}
               </Box>
             </>

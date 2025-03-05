@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 import "./LoginForm.css";
@@ -21,6 +21,7 @@ import useAdminApi from "../../apis/admin";
 import { useUserStore } from "../../store/useUserStore"; // Zustand Store
 import { useSnackbar } from "../../utils/Hooks/SnackbarContext.jsx";
 import useCaptcha from "../../utils/Hooks/useCaptcha.js";
+import LoginButton from "../google/LoginButton.jsx"
 const LoginForm = ({ roleLogin }) => {
   const { showSnackbar } = useSnackbar();
   const navigate = useNavigate();
@@ -116,7 +117,6 @@ const LoginForm = ({ roleLogin }) => {
       )
     }
   };
-
   return (
     <Container maxWidth="sm">
       <Box>
@@ -186,15 +186,11 @@ const LoginForm = ({ roleLogin }) => {
           </Button>
         </form>
       </Box>
-      {/* Divider with OR */}
-      <Box display="flex" alignItems="center" my={1}>
-        <Divider sx={{ flex: 1 }} />
-        <Typography sx={{ mx: 1 }}>OR</Typography>
-        <Divider sx={{ flex: 1 }} />
-      </Box>
 
       {/* Social Login Buttons */}
-      <Box display="flex" justifyContent="center" gap={2}>
+      {roleLogin == "member" && <LoginButton type="login"></LoginButton>}
+      {/* <Box display="flex" justifyContent="center" gap={2}>
+        <div id="google-signin-button"></div>
         <Button
           variant="contained"
           startIcon={<GoogleIcon />}
@@ -203,6 +199,10 @@ const LoginForm = ({ roleLogin }) => {
             color: "white",
             "&:hover": { backgroundColor: "#C1351D" },
             flex: 1,
+          }}
+          // 可根据业务需要触发 google 登录流程
+          onClick={() => {
+            google.accounts.id.prompt(); // 主动调用 prompt 以弹出选择框
           }}
         >
           Google
@@ -219,7 +219,7 @@ const LoginForm = ({ roleLogin }) => {
         >
           Facebook
         </Button>
-      </Box>
+      </Box> */}
     </Container>
   );
 };
