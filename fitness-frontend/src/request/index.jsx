@@ -9,7 +9,8 @@ const useAxios = () => {
   const token = useUserStore((state) => state.token); // get token
   const service = axios.create({
     baseURL: config.baseApi,
-    timeout: 10000,
+    // timeout: 10000,
+    timeout: 0,
     withCredentials: true,
     headers: {
       "Content-Type": "application/json",
