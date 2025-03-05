@@ -13,6 +13,7 @@ import HomePage from "./pages/HomePage";
 import MemberLayout from "./pages/member/MemberLayout";
 import Trainers from "./pages/member/Trainers";
 import Sessions from "./pages/member/Sessions";
+import Locations from "./pages/member/Locations";
 import EmailComponent from "./components/forgotPassword/EmailComponent";
 import ResetPassword from "./components/resetPassword/resetPassword";
 import { useUserStore } from "./store/useUserStore";
@@ -50,6 +51,7 @@ function App() {
               <Route index element={<Navigate to="/member/trainers" replace />} />
               <Route path="trainers" element={<Trainers />} />
               <Route path="sessions" element={<Sessions />} />
+              <Route path="locations" element={<Locations />} />
             </Route>
           )}
           {isAuthorized(userRole, ["trainer"]) && (

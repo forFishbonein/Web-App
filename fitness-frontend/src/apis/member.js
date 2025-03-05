@@ -39,6 +39,7 @@ const useMemberApi = () => {
       url: `/member/appointment/cancel/${appointmentId}`,
     });
   };
+
   return {
     bookASession,
     membertGetTrainerAvailability,

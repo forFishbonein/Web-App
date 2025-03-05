@@ -24,11 +24,17 @@ const useTrainerApi = () => {
       data,
     });
   };
-
+  const listSpecializations = () => {
+    return httpRequest({
+      method: "get",
+      url: `/user/specializations`,
+    });
+  };
   return {
     getTrainerList,
     getTrainerInfo,
     connectTrainer,
+    listSpecializations,
   };
 };
 export default useTrainerApi;

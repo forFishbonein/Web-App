@@ -14,7 +14,8 @@ import useNotificationApi from "../../apis/notification"
 const pages = [
   { name: "Trainers", path: "/member/trainers" },
   // { name: "Applications", path: "/member/applications" },
-  { name: "Sessions", path: "/member/sessions" }
+  { name: "Sessions", path: "/member/sessions" },
+  { name: "Locations", path: "/member/locations" },
 ];
 
 

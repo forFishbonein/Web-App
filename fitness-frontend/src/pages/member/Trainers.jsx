@@ -22,6 +22,7 @@ import {
   DialogContent,
   DialogActions,
   TextField,
+  Autocomplete
 } from "@mui/material";
 
 import { TabContext, TabPanel } from "@mui/lab";
@@ -30,6 +31,7 @@ import useMemberApi from "../../apis/member";
 import { useSnackbar } from "../../utils/Hooks/SnackbarContext.jsx";
 import dayjs from "dayjs";
 import Empty from "../../components/empty/Empty"
+
 // Sample trainers data
 // const trainersData = [
 //   { id: 1, name: "John Doe", specialty: "Strength Training", club: "City Gym", avatar: "https://i.pravatar.cc/150?img=1" },
@@ -57,18 +59,52 @@ export default function Trainers() {
   const [tabValue, setTabValue] = useState("1");
   const [searchClub, setSearchClub] = useState("");
   const [searchSpecialty, setSearchSpecialty] = useState("");
+  const [specializationsList, setSpecializationsList] = useState([]);
+  // const [filteredSpecializations, setFilteredSpecializations] = useState([]);
   const [filteredTrainersList, setFilteredTrainersList] = useState([]);
   // paging
   const [currentPage, setCurrentPage] = useState(1);
   const [count, setCount] = useState(0);
   const numPerPage = 3;
-  const { getTrainerList, connectTrainer } = useTrainerApi();
+  const { getTrainerList, connectTrainer, listSpecializations } = useTrainerApi();
   const { bookASession, membertGetTrainerAvailability } = useMemberApi();
+  const [inputValue, setInputValue] = useState("");
+
+
   useEffect(() => {
     filterTrainersList();
     //trainersList is designed to ensure that switching back still displays the original search results
   }, [currentPage, searchClub, searchSpecialty]);
-
+  useEffect(() => {
+    listSpecializations().then((res) => {
+      if (res.data?.length > 0) {
+        const seen = new Set();
+        const uniqueList = res.data.filter((item) => {
+          if (seen.has(item.description)) {
+            return false;
+          }
+          seen.add(item.description);
+          return true;
+        });
+        setSpecializationsList(uniqueList);
+      } else {
+        setSpecializationsList([]);
+      }
+      // console.log("specializationsList", res.data);
+    });
+  }, [])
+  // const [filterText, setFilterText] = useState("");
+  // useEffect(() => {
+  //   if (filterText === "") {
+  //     setFilteredSpecializations(specializationsList);
+  //   } else {
+  //     setFilteredSpecializations(
+  //       specializationsList.filter((e) =>
+  //         e.name.toLowerCase().includes(filterText.toLowerCase())
+  //       )
+  //     );
+  //   }
+  // }, [filterText]);
   const filterTrainersList = async () => {
     const res = await getTrainerList(currentPage, numPerPage, searchSpecialty, searchClub); //real logic
     let fTrainersList = res.data.records;
@@ -84,7 +120,8 @@ export default function Trainers() {
   }
   const searchSpecialtyChange = (event, newValue) => {
     setCurrentPage(1);
-    setSearchSpecialty(event.target.value);
+    // console.log("searchSpecialtyChange：", event.target.value);
+    setSearchSpecialty(event.target.value || "");
   }
 
   const handlePageChange = (event, page) => {
@@ -226,7 +263,6 @@ export default function Trainers() {
       }
     })
   }
-
   return (
     <>
       <Box sx={{ width: "100%", height: "calc(90vh - 64px)", display: "flex", justifyContent: "center", mt: 4, mb: 4 }}>
@@ -265,13 +301,21 @@ export default function Trainers() {
                     </Select>
                   </FormControl>
                   <FormControl fullWidth>
-                    <InputLabel>Filter by Specialty</InputLabel>
-                    <Select value={searchSpecialty} onChange={searchSpecialtyChange}>
-                      <MenuItem value="">All Specialties</MenuItem>
-                      <MenuItem value="Strength Training">Strength Training</MenuItem>
-                      <MenuItem value="Yoga & Flexibility">Yoga & Flexibility</MenuItem>
-                      <MenuItem value="Cardio & Endurance">Cardio & Endurance</MenuItem>
-                    </Select>
+                    <Autocomplete
+                      freeSolo
+                      options={specializationsList.map((e) => e.description)}
+                      value={searchSpecialty}
+                      onChange={(event, newValue) => searchSpecialtyChange({ target: { value: newValue } })}
+                      inputValue={inputValue}
+                      onInputChange={(event, newInputValue) => setInputValue(newInputValue)}
+                      renderInput={(params) => (
+                        <TextField {...params} label="Filter by Specialty" variant="outlined" />
+                      )}
+                      sx={{
+                        maxHeight: 200,
+                        overflowY: "auto"
+                      }}
+                    />
                   </FormControl>
                 </Stack>
                 {filteredTrainersList?.length > 0 ?
