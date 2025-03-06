@@ -39,6 +39,12 @@ const useMemberApi = () => {
       url: `/member/appointment/cancel/${appointmentId}`,
     });
   };
+  const getFitnessCentreLocations = () => {
+    return httpRequest({
+      method: "get",
+      url: `/user/locations`,
+    });
+  };
 
   return {
     bookASession,
@@ -47,6 +53,7 @@ const useMemberApi = () => {
     getUpcomingAppointments,
     getHistoricalAppointments,
     cancelAppointment,
+    getFitnessCentreLocations,
   };
 };
 export default useMemberApi;
