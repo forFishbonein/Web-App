@@ -3,7 +3,7 @@
  * @Author: Aron
  * @Date: 2025-03-01 00:16:52
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2025-03-02 19:59:50
+ * @LastEditTime: 2025-03-06 22:15:07
  * Copyright: 2025 xxxTech CO.,LTD. All Rights Reserved.
  * @Descripttion:
  */
@@ -29,7 +29,9 @@ import HistoryChart from "./HistoryChart.jsx";
 import { useSnackbar } from "../../../utils/Hooks/SnackbarContext.jsx";
 import { ToggleButton, ToggleButtonGroup } from "@mui/material";
 import Empty from "../../../components/empty/Empty.jsx"
-
+import useTrainerApi from "../../../apis/trainer";
+import useMemberApi from "../../../apis/member.js";
+import BookSessionDialog from "./BookSessionDialog.jsx"
 // Return the corresponding color according to the reservation status
 function getChipColor(status) {
   switch (status) {
@@ -105,6 +107,30 @@ function SessionList({ getSessionsList, cancelAppointment, getDynamicAppointment
       setViewMode(newView);
     }
   };
+  // Session Dialog logic
+  const [openSession, setOpenSession] = useState(false);
+  const [bookingId, setBookingId] = useState(null);
+  const [bookingSpecializations, setBookingSpecializations] = useState([]);
+  const { getTrainerList } = useTrainerApi();
+  const { isConnectedWithTrainer } = useMemberApi();
+  const handleOpenSessionDialog = async (trainerId) => {
+    const res = await getTrainerList(1, 100000, "", "");
+    let specializations = res.data.records.find(e => {
+      return e.userId == trainerId;
+    }).specializations;
+    console.log("specializations", specializations);
+    setBookingId(trainerId);
+    setOpenSession(true);
+    setBookingSpecializations(specializations ? specializations.split(",") : []);
+  }
+  const handleBookSession = (trainerId) => async () => {
+    const res = await isConnectedWithTrainer(trainerId);
+    if (res.data) {
+      handleOpenSessionDialog(trainerId);
+    } else {
+      showSnackbar({ message: "You have not successfully connected this trainer!", severity: "warning" });
+    }
+  }
   return (<>
     {type == "history" &&
       <Box sx={{
@@ -151,6 +177,7 @@ function SessionList({ getSessionsList, cancelAppointment, getDynamicAppointment
 
     }
 
+    {/*  In the list panel where tab is history, or tab is upcoming */}
     {viewMode === "list" || type === "upcoming" ? (
       sessionsList?.length > 0 ?
         <>
@@ -167,7 +194,7 @@ function SessionList({ getSessionsList, cancelAppointment, getDynamicAppointment
                     mb: 2,
                   }}
                 >
-                  <CardContent>
+                  <CardContent sx={{ pr: 0 }}>
                     <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
                       <Typography variant="h6" component="div">
                         Appointment #{appointment.appointmentId}
@@ -184,9 +211,6 @@ function SessionList({ getSessionsList, cancelAppointment, getDynamicAppointment
                       <Typography variant="body2" color="text.secondary">
                         <strong>Appointment Time:</strong> {appointment.sessionStartTime + " to " + dayjs(appointment.sessionEndTime).format("HH:mm")}
                       </Typography>
-                      {/* <Typography variant="body2" color="text.secondary">
-                            <strong>Availability ID:</strong> {appointment.availabilityId}
-                          </Typography> */}
                       <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                         <Typography variant="body2" color="text.secondary">
                           <strong>Status:</strong>
@@ -197,14 +221,21 @@ function SessionList({ getSessionsList, cancelAppointment, getDynamicAppointment
                           size="small"
                         />
                       </Box>
+                      {appointment.appointmentStatus === "Rejected" &&
+                        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "flex-start", flexWrap: "wrap" }}>
+                          <Typography variant="body2" color="text.secondary" sx={{ display: "flex", alignItems: "center" }}>
+                            <strong>Recommended trainer:</strong>
+                          </Typography>
+                          <Button sx={{ textDecoration: "underline" }} onClick={handleBookSession(appointment.alternativeTrainerId)}>
+                            George Active
+                          </Button>
+                        </Box>}
                       <Typography variant="body2" color="text.secondary">
                         <strong>Created:</strong> {appointment.bookingCreatedAt ? dayjs(appointment.bookingCreatedAt).format("YYYY-MM-DD HH:mm") : "-"}
                       </Typography>
-                      {/* <Typography variant="caption" color="text.secondary">
-                            Updated: {dayjs(appointment.updatedAt).format("YYYY-MM-DD HH:mm")}
-                          </Typography> */}
                     </Box>
                   </CardContent>
+                  {/* upcoming only needs to be cancelled */}
                   {type == "upcoming" && <ActionsPart cancelAppoint={cancelAppoint} appointment={appointment}></ActionsPart>}
                 </Card>
               </Grid>
@@ -227,7 +258,8 @@ function SessionList({ getSessionsList, cancelAppointment, getDynamicAppointment
     ) : (
       <HistoryChart getDynamicAppointmentStatistics={getDynamicAppointmentStatistics}></HistoryChart>
     )}
-
+    {/* Session Dialog logic */}
+    {openSession && <BookSessionDialog setOpenSession={setOpenSession} bookingSpecializations={bookingSpecializations} bookingId={bookingId}></BookSessionDialog>}
   </>);
 }
 

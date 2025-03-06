@@ -45,7 +45,12 @@ const useMemberApi = () => {
       url: `/user/locations`,
     });
   };
-
+  const isConnectedWithTrainer = (trainerId) => {
+    return httpRequest({
+      method: "get",
+      url: `/member/is-connected/${trainerId}`,
+    });
+  };
   return {
     bookASession,
     membertGetTrainerAvailability,
@@ -54,6 +59,7 @@ const useMemberApi = () => {
     getHistoricalAppointments,
     cancelAppointment,
     getFitnessCentreLocations,
+    isConnectedWithTrainer,
   };
 };
 export default useMemberApi;
