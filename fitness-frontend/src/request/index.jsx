@@ -4,9 +4,11 @@
 import axios, { AxiosError } from "axios";
 import config from "./config";
 import { useUserStore } from "../store/useUserStore";
+import { useLoadingStore } from "../store/useLoadingStore";
 import { errorNotifier } from "../utils/Hooks/SnackbarContext.jsx";
 const useAxios = () => {
   const token = useUserStore((state) => state.token); // get token
+  const setLoading = useLoadingStore((state) => state.setLoading);
   const service = axios.create({
     baseURL: config.baseApi,
     // timeout: 10000,
@@ -23,14 +25,17 @@ const useAxios = () => {
       if (token && !config.headers["Authorization"]) {
         config.headers['Authorization'] = `Bearer ${token}`;
       }
+      setLoading(true);
       return config;
     },
     function (error) {
+      setLoading(false);
       return Promise.reject(error);
     }
   );
   service.interceptors.response.use(
     (response) => {
+      setLoading(false);
       const res = response?.data;
       if (res?.code !== 200) {
         console.log("response：", res, { response });
@@ -49,6 +54,7 @@ const useAxios = () => {
       }
     },
     (error) => {
+      setLoading(false);
       // Only axios errors are handled here
       errorNotifier.showError(error?.message || "Error");
       return Promise.reject(); //必须返回错误，否则会导致页面中代码逻辑意外向下执行

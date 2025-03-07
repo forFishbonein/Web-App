@@ -69,7 +69,7 @@ function HistoryChart({ getDynamicAppointmentStatistics }) {
           onChange={(ranges) => handleSelect(ranges)}
           moveRangeOnFirstSelection={false}
           minDate={thirtyDaysAgo.toDate()}  // Minimum optional date
-        // maxDate={today.toDate()}  // TODO Maximum optional date
+          maxDate={today.toDate()}  // TODO Maximum optional date
         />
       </Popover>
       <Button

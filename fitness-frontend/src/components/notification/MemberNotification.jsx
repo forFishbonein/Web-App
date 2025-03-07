@@ -135,13 +135,6 @@ function MemberNotification({ getNotificationList, markNotificationAsRead, setBa
                   </Typography>
                 </CardContent>
                 <Tooltip title={notification.isRead ? "Click to Delete" : "Mark as Read"} arrow>
-                  {/* <IconButton
-              onClick={() => markAsRead(notification.notificationId)}
-              color={notification.isRead ? "success" : "primary"}
-              sx={{ ml: 2 }}
-            >
-              {notification.isRead ? <CheckCircleIcon /> : <RadioButtonUncheckedIcon />}
-            </IconButton> */}
                   <IconButton
                     onClick={notification.isRead ? (event) => handleOpenPopover(event, notification.notificationId) : () => markAsRead(notification.notificationId)}
                     color={notification.isRead ? "error" : "primary"}
@@ -162,11 +155,6 @@ function MemberNotification({ getNotificationList, markNotificationAsRead, setBa
                     horizontal: "center",
                   }}
                 >
-                  {/* <Box sx={{ p: 1, display: "flex", alignItems: "center", gap: 1 }}>
-              <Typography>Confirm deletion?</Typography>
-              <Button size="small" onClick={handleClosePopover}>Cancel</Button>
-              <Button size="small" color="error" onClick={handleConfirmDelete}>Delete</Button>
-            </Box> */}
                   <Box
                     sx={{
                       p: 1,

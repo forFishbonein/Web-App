@@ -3,7 +3,7 @@
  * @Author: Aron
  * @Date: 2025-03-01 00:16:52
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2025-03-06 22:15:07
+ * @LastEditTime: 2025-03-07 23:09:40
  * Copyright: 2025 xxxTech CO.,LTD. All Rights Reserved.
  * @Descripttion:
  */
@@ -21,6 +21,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Popover
 } from "@mui/material";
 import { useState, useEffect } from "react";
 import dayjs from "dayjs"
@@ -123,10 +124,28 @@ function SessionList({ getSessionsList, cancelAppointment, getDynamicAppointment
     setOpenSession(true);
     setBookingSpecializations(specializations ? specializations.split(",") : []);
   }
-  const handleBookSession = (trainerId) => async () => {
-    const res = await isConnectedWithTrainer(trainerId);
+
+  //Popover logic
+  const [anchorEl, setAnchorEl] = useState(null);
+  let [selectTrainerId, setSelectTrainerId] = useState(null);
+  const handleOpenPopover = (event, trainerId) => {
+    setAnchorEl(event.currentTarget);
+    setSelectTrainerId(trainerId);
+  };
+  const handleClosePopover = () => {
+    setAnchorEl(null);
+    setSelectTrainerId(null);
+  };
+  const handleConfirmBook = () => {
+    handleBookSession();
+    handleClosePopover();
+  };
+
+  const handleBookSession = async () => {
+    // console.log("selectTrainerId", selectTrainerId);
+    const res = await isConnectedWithTrainer(selectTrainerId);
     if (res.data) {
-      handleOpenSessionDialog(trainerId);
+      handleOpenSessionDialog(selectTrainerId);
     } else {
       showSnackbar({ message: "You have not successfully connected this trainer!", severity: "warning" });
     }
@@ -226,9 +245,46 @@ function SessionList({ getSessionsList, cancelAppointment, getDynamicAppointment
                           <Typography variant="body2" color="text.secondary" sx={{ display: "flex", alignItems: "center" }}>
                             <strong>Recommended trainer:</strong>
                           </Typography>
-                          <Button sx={{ textDecoration: "underline" }} onClick={handleBookSession(appointment.alternativeTrainerId)}>
-                            George Active
+                          <Button sx={{ textDecoration: "underline" }} onClick={(event) => handleOpenPopover(event, appointment.alternativeTrainerId)}>
+                            {appointment.alternativeTrainerName}
                           </Button>
+                          <Popover
+                            anchorEl={anchorEl}
+                            open={Boolean(anchorEl)}
+                            onClose={handleClosePopover}
+                            anchorOrigin={{
+                              vertical: "bottom",
+                              horizontal: "center",
+                            }}
+                            transformOrigin={{
+                              vertical: "top",
+                              horizontal: "center",
+                            }}
+                          >
+                            <Box
+                              sx={{
+                                p: 1,
+                                pl: 2,
+                                pr: 2,
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "stretch", // Let Typography fill the line
+                                gap: 1,
+                              }}
+                            >
+                              <Typography sx={{ textAlign: "left", fontWeight: "bold" }}>Confirm to book a session with this trainer?</Typography>
+                              <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
+                                <Button size="small" variant="outlined" onClick={handleClosePopover} color="primary">
+                                  Cancel
+                                </Button>
+                                <Button size="small" variant="outlined" color="error" onClick={handleConfirmBook}>
+                                  Confirm
+                                </Button>
+                              </Box>
+                            </Box>
+
+                          </Popover>
+
                         </Box>}
                       <Typography variant="body2" color="text.secondary">
                         <strong>Created:</strong> {appointment.bookingCreatedAt ? dayjs(appointment.bookingCreatedAt).format("YYYY-MM-DD HH:mm") : "-"}

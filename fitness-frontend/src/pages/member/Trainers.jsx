@@ -27,6 +27,7 @@ import {
 
 import { TabContext, TabPanel } from "@mui/lab";
 import useTrainerApi from "../../apis/trainer";
+import useMemberApi from "../../apis/member";
 
 import { useSnackbar } from "../../utils/Hooks/SnackbarContext.jsx";
 
@@ -61,6 +62,7 @@ export default function Trainers() {
   const [searchClub, setSearchClub] = useState("");
   const [searchSpecialty, setSearchSpecialty] = useState("");
   const [specializationsList, setSpecializationsList] = useState([]);
+  const [locationsList, setLocationsList] = useState([]);
   // const [filteredSpecializations, setFilteredSpecializations] = useState([]);
   const [filteredTrainersList, setFilteredTrainersList] = useState([]);
   // paging
@@ -68,7 +70,9 @@ export default function Trainers() {
   const [count, setCount] = useState(0);
   const numPerPage = 3;
   const { getTrainerList, connectTrainer, listSpecializations } = useTrainerApi();
+  const { getFitnessCentreLocations } = useMemberApi();
   const [inputValue, setInputValue] = useState("");
+  const [inputValueLocation, setInputValueLocation] = useState("");
 
 
   useEffect(() => {
@@ -76,6 +80,16 @@ export default function Trainers() {
     //trainersList is designed to ensure that switching back still displays the original search results
   }, [currentPage, searchClub, searchSpecialty]);
   useEffect(() => {
+    getFitnessCentreLocations().then((res) => {
+      if (res.data?.length > 0) {
+        const list = res.data.map((item) => {
+          return item.title;
+        });
+        setLocationsList(list);
+      } else {
+        setLocationsList([]);
+      }
+    });
     listSpecializations().then((res) => {
       if (res.data?.length > 0) {
         const seen = new Set();
@@ -93,18 +107,6 @@ export default function Trainers() {
       // console.log("specializationsList", res.data);
     });
   }, [])
-  // const [filterText, setFilterText] = useState("");
-  // useEffect(() => {
-  //   if (filterText === "") {
-  //     setFilteredSpecializations(specializationsList);
-  //   } else {
-  //     setFilteredSpecializations(
-  //       specializationsList.filter((e) =>
-  //         e.name.toLowerCase().includes(filterText.toLowerCase())
-  //       )
-  //     );
-  //   }
-  // }, [filterText]);
   const filterTrainersList = async () => {
     const res = await getTrainerList(currentPage, numPerPage, searchSpecialty, searchClub); //real logic
     let fTrainersList = res.data.records;
@@ -116,7 +118,7 @@ export default function Trainers() {
   const searchClubChange = (event, newValue) => {
     // console.log(event.target.value)
     setCurrentPage(1);
-    setSearchClub(event.target.value);
+    setSearchClub(event.target.value || "");
   }
   const searchSpecialtyChange = (event, newValue) => {
     setCurrentPage(1);
@@ -218,17 +220,26 @@ export default function Trainers() {
                   flexGrow: 1,
                   overflowY: "auto",
                   maxHeight: "100%",
+                  pt: 0
                 }}
               >
                 <Stack spacing={2} direction={{ xs: "column", sm: "row" }} sx={{ mb: 3 }}>
                   <FormControl fullWidth>
-                    <InputLabel>Filter by Club Location</InputLabel>
-                    <Select value={searchClub} onChange={searchClubChange}>
-                      <MenuItem value="">All Locations</MenuItem>
-                      <MenuItem value="City Gym">City Gym</MenuItem>
-                      <MenuItem value="Downtown Fitness">Downtown Fitness</MenuItem>
-                      <MenuItem value="Elite Sports Club">Elite Sports Club</MenuItem>
-                    </Select>
+                    <Autocomplete
+                      freeSolo
+                      options={locationsList}
+                      value={searchClub}
+                      onChange={(event, newValue) => searchClubChange({ target: { value: newValue } })}
+                      inputValue={inputValueLocation}
+                      onInputChange={(event, newInputValue) => setInputValueLocation(newInputValue)}
+                      renderInput={(params) => (
+                        <TextField {...params} label="Filter by Club Location" variant="outlined" margin="normal" />
+                      )}
+                      sx={{
+                        maxHeight: 200,
+                        overflowY: "auto"
+                      }}
+                    />
                   </FormControl>
                   <FormControl fullWidth>
                     <Autocomplete
@@ -239,7 +250,7 @@ export default function Trainers() {
                       inputValue={inputValue}
                       onInputChange={(event, newInputValue) => setInputValue(newInputValue)}
                       renderInput={(params) => (
-                        <TextField {...params} label="Filter by Specialty" variant="outlined" />
+                        <TextField {...params} label="Filter by Specialty" variant="outlined" margin="normal" />
                       )}
                       sx={{
                         maxHeight: 200,

@@ -25,6 +25,8 @@ import Trainings from "./pages/trainer/training/Trainings";
 import Session from "./pages/trainer/training/Session";
 import Member from "./pages/trainer/training/Member";
 import { SnackbarProvider } from "./utils/Hooks/SnackbarContext.jsx";
+import { useLoadingStore } from "./store/useLoadingStore";
+import { Backdrop, CircularProgress } from '@mui/material';
 function App() {
   // before
   // const isAuthenticated = false;
@@ -33,6 +35,7 @@ function App() {
   const userRole = useUserStore((state) => state.userInfo?.role);
   const isGoogle = useUserStore((state) => state.userInfo?.isGoogle);
   const getDefaultPath = useUserStore((state) => state.getDefaultPath);
+  const loading = useLoadingStore((state) => state.loading);
   const isAuthorized = (role, allowedRoles) => allowedRoles.includes(role);
   console.log("defaultPath", getDefaultPath());
   return (
@@ -76,6 +79,10 @@ function App() {
           <Route path="*" element={!userRole ? <Navigate to="/authenticate" replace /> : <Navigate to={getDefaultPath()} replace />} />
         </Routes>
       </SnackbarProvider>
+      {/* The global load circle */}
+      <Backdrop open={loading} sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+        <CircularProgress color="inherit" />
+      </Backdrop>
     </ThemeProvider>
   );
 }

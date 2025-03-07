@@ -87,8 +87,9 @@ function BookSessionDialog({ setOpenSession, bookingSpecializations, bookingId }
       <DialogContent>
         <Stack spacing={2} mt={1}>
           <FormControl sx={{ minWidth: 150 }} required>
-            <InputLabel>Training Program</InputLabel>
+            <InputLabel variant="outlined">Training Program</InputLabel>
             <Select
+              label="Training Program"
               name="projectName"
               value={formDataSession.projectName || ""}
               onChange={handleChangeSession}
@@ -103,6 +104,7 @@ function BookSessionDialog({ setOpenSession, bookingSpecializations, bookingId }
           <FormControl sx={{ minWidth: 150 }} required>
             <InputLabel>Available Training Time</InputLabel>
             <Select
+              label="Available Training Time"
               name="availabilityId"
               value={formDataSession.availabilityId || ""}
               onChange={handleChangeSession}
