@@ -13,7 +13,7 @@ import {
   Divider,
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import { Google as GoogleIcon, Facebook as FacebookIcon } from "@mui/icons-material";
+
 import useLoginApi from "../../apis/login";
 import useUserApi from "../../apis/user";
 import useTrainerApi from "../../apis/trainer";
@@ -21,7 +21,8 @@ import useAdminApi from "../../apis/admin";
 import { useUserStore } from "../../store/useUserStore"; // Zustand Store
 import { useSnackbar } from "../../utils/Hooks/SnackbarContext.jsx";
 import useCaptcha from "../../utils/Hooks/useCaptcha.js";
-import LoginButton from "../google/LoginButton.jsx"
+import GoogleLoginButton from "./google/LoginButton.jsx"
+import FacebookLoginButton from "./facebook/LoginButton.jsx"
 const LoginForm = ({ roleLogin }) => {
   const { showSnackbar } = useSnackbar();
   const navigate = useNavigate();
@@ -186,40 +187,20 @@ const LoginForm = ({ roleLogin }) => {
           </Button>
         </form>
       </Box>
-
+      {/* Divider with OR */}
+      <Box display="flex" alignItems="center" my={1}>
+        <Divider sx={{ flex: 1 }} />
+        <Typography sx={{ mx: 1 }}>OR</Typography>
+        <Divider sx={{ flex: 1 }} />
+      </Box>
       {/* Social Login Buttons */}
-      {roleLogin == "member" && <LoginButton type="login"></LoginButton>}
-      {/* <Box display="flex" justifyContent="center" gap={2}>
-        <div id="google-signin-button"></div>
-        <Button
-          variant="contained"
-          startIcon={<GoogleIcon />}
-          sx={{
-            backgroundColor: "#DB4437",
-            color: "white",
-            "&:hover": { backgroundColor: "#C1351D" },
-            flex: 1,
-          }}
-          // 可根据业务需要触发 google 登录流程
-          onClick={() => {
-            google.accounts.id.prompt(); // 主动调用 prompt 以弹出选择框
-          }}
-        >
-          Google
-        </Button>
-        <Button
-          variant="contained"
-          startIcon={<FacebookIcon />}
-          sx={{
-            backgroundColor: "#1877F2",
-            color: "white",
-            "&:hover": { backgroundColor: "#145DBF" },
-            flex: 1,
-          }}
-        >
-          Facebook
-        </Button>
-      </Box> */}
+      {
+        roleLogin == "member" &&
+        <Box display="flex" justifyContent="center" gap={2}>
+          <GoogleLoginButton type="login"></GoogleLoginButton>
+          <FacebookLoginButton></FacebookLoginButton>
+        </Box>
+      }
     </Container>
   );
 };

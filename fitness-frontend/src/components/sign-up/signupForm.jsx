@@ -17,7 +17,8 @@ import { Google as GoogleIcon, Facebook as FacebookIcon } from "@mui/icons-mater
 import useCaptcha from "../../utils/Hooks/useCaptcha.js";
 import { useSnackbar } from "../../utils/Hooks/SnackbarContext.jsx";
 import useLoginApi from "../../apis/login";
-import LoginButton from "../google/LoginButton.jsx"
+import GoogleLoginButton from "../login/google/LoginButton.jsx"
+import FacebookLoginButton from "../login/facebook/LoginButton.jsx"
 const SignupForm = ({ onSubmit, role }) => {
   const [formData, setFormData] = useState({
     firstName: "",
@@ -246,16 +247,20 @@ const SignupForm = ({ onSubmit, role }) => {
           </Button>
         </form>
       </Box>
-      {role == "member" && <LoginButton type="signup"></LoginButton>}
-      {/* <Box display="flex" justifyContent="center" gap={2}>
-        <div id="google-signin-button"></div>
-      </Box> */}
       {/* Divider with OR */}
-      {/* <Box display="flex" alignItems="center" my={1}>
+      <Box display="flex" alignItems="center" my={1}>
         <Divider sx={{ flex: 1 }} />
         <Typography sx={{ mx: 1 }}>OR</Typography>
         <Divider sx={{ flex: 1 }} />
-      </Box> */}
+      </Box>
+      {/* Social Login Buttons */}
+      {
+        role == "member" &&
+        <Box display="flex" justifyContent="center" gap={2}>
+          <GoogleLoginButton type="login"></GoogleLoginButton>
+          <FacebookLoginButton></FacebookLoginButton>
+        </Box>
+      }
 
       {/* Social Login Buttons */}
       {/* <Box display="flex" justifyContent="center" gap={2}>
