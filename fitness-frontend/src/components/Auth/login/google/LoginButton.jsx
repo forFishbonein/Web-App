@@ -11,10 +11,10 @@ import React, { useState, useEffect } from "react";
 import {
   Button
 } from "@mui/material";
-import useLoginApi from "../../../apis/login.js";
-import useUserApi from "../../../apis/user.js";
-import { useSnackbar } from "../../../utils/Hooks/SnackbarContext.jsx";
-import { useUserStore } from "../../../store/useUserStore.js"; // Zustand Store
+import useLoginApi from "../../../../apis/login.js";
+import useUserApi from "../../../../apis/user.js";
+import { useSnackbar } from "../../../../utils/Hooks/SnackbarContext.jsx";
+import { useUserStore } from "../../../../store/useUserStore.js"; // Zustand Store
 import { Google as GoogleIcon } from "@mui/icons-material";
 function LoginButton({ type }) {
   const { googleLoginForMember } = useLoginApi();

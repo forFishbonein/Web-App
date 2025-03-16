@@ -14,9 +14,9 @@ import {
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { Google as GoogleIcon, Facebook as FacebookIcon } from "@mui/icons-material";
-import useCaptcha from "../../utils/Hooks/useCaptcha.js";
-import { useSnackbar } from "../../utils/Hooks/SnackbarContext.jsx";
-import useLoginApi from "../../apis/login";
+import useCaptcha from "../../../utils/Hooks/useCaptcha.js";
+import { useSnackbar } from "../../../utils/Hooks/SnackbarContext.jsx";
+import useLoginApi from "../../../apis/login.js";
 import GoogleLoginButton from "../login/google/LoginButton.jsx"
 import FacebookLoginButton from "../login/facebook/LoginButton.jsx"
 const SignupForm = ({ onSubmit, role }) => {

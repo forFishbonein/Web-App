@@ -8,9 +8,9 @@ import {
 } from "@mui/material";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import "./EmailComponent.css";
-import useCaptcha from "../../utils/Hooks/useCaptcha.js";
-import useLoginApi from "../../apis/login.js";
-import { useSnackbar } from "../../utils/Hooks/SnackbarContext.jsx";
+import useCaptcha from "../../../utils/Hooks/useCaptcha.js";
+import useLoginApi from "../../../apis/login.js";
+import { useSnackbar } from "../../../utils/Hooks/SnackbarContext.jsx";
 
 const EmailComponent = ({ onCancel }) => {
   const [email, setEmail] = useState("");

@@ -14,13 +14,13 @@ import {
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 
-import useLoginApi from "../../apis/login";
-import useUserApi from "../../apis/user";
-import useTrainerApi from "../../apis/trainer";
-import useAdminApi from "../../apis/admin";
-import { useUserStore } from "../../store/useUserStore"; // Zustand Store
-import { useSnackbar } from "../../utils/Hooks/SnackbarContext.jsx";
-import useCaptcha from "../../utils/Hooks/useCaptcha.js";
+import useLoginApi from "../../../apis/login.js";
+import useUserApi from "../../../apis/user.js";
+import useTrainerApi from "../../../apis/trainer.js";
+import useAdminApi from "../../../apis/admin.js";
+import { useUserStore } from "../../../store/useUserStore.js"; // Zustand Store
+import { useSnackbar } from "../../../utils/Hooks/SnackbarContext.jsx";
+import useCaptcha from "../../../utils/Hooks/useCaptcha.js";
 import GoogleLoginButton from "./google/LoginButton.jsx"
 import FacebookLoginButton from "./facebook/LoginButton.jsx"
 const LoginForm = ({ roleLogin }) => {

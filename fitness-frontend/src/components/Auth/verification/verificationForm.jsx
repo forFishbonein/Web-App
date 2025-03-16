@@ -3,8 +3,8 @@ import axios from "axios";
 import { TextField, Button, Box, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import "./VerificationForm.css"
-import useLoginApi from "../../apis/login";
-import { useSnackbar } from "../../utils/Hooks/SnackbarContext.jsx";
+import useLoginApi from "../../../apis/login.js";
+import { useSnackbar } from "../../../utils/Hooks/SnackbarContext.jsx";
 const VerificationForm = ({ onVerified, email }) => {
   const { showSnackbar } = useSnackbar();
   console.log(email);
