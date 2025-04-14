@@ -8,14 +8,10 @@ const HomePage = () => {
   const navigate = useNavigate();
   const [selectedRole, setSelectedRole] = useState("");
 
-  // const tabs = [
-  //   { label: "Member", role: "member" },
-  //   { label: "Trainer", role: "trainer" },
-  // ];
-
   const handleTabClick = (role) => {
     setSelectedRole(role);
-    navigate(`/authenticate?role=${role}`); // Pass role as query param
+    // navigate(`/authenticate?role=${role}`); // Pass role as query param
+    navigate(`/authenticate?role=${role}${role === "admin" ? "&activeTab=1" : ""}`);
   };
 
   return (

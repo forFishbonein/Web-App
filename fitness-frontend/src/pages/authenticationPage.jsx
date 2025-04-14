@@ -16,7 +16,8 @@ const AuthenticationPage = () => {
   const queryParams = new URLSearchParams(location.search);
   const role = queryParams.get("role") || "member"; // Default to 'member' if no role is passed
 
-  const [activeTab, setActiveTab] = useState(0); // 0 -> Signup, 1 -> Login
+  // const [activeTab, setActiveTab] = useState(0); // 0 -> Signup, 1 -> Login
+  const [activeTab, setActiveTab] = useState(role === "admin" ? 1 : 0);
   const [isVerificationVisible, setVerificationVisible] = useState(false);
   const [email, setEmail] = useState("");
 
@@ -31,9 +32,21 @@ const AuthenticationPage = () => {
   };
 
   const handleAuthSubmit = (data) => {
-    console.log("Form submitted with: ", data);
-    setEmail(data.email);
-    setVerificationVisible(true);
+    // console.log("Form submitted with: ", data);
+    // setEmail(data.email);
+    // setVerificationVisible(true);
+    if (role === "admin") {
+      if (data.email === "admin@fitquest.com" && data.password === "FitQuestAdmin1!") {
+        console.log("Admin logged in successfully!");
+        // Redirect to admin dashboard or any admin-specific route
+      } else {
+        alert("Invalid Admin Credentials!");
+      }
+    } else {
+      console.log("Form submitted with: ", data);
+      setEmail(data.email);
+      setVerificationVisible(true);
+    }
   };
 
   const handleVerificationSuccess = () => {
@@ -59,36 +72,79 @@ const AuthenticationPage = () => {
         }}
       >
         <Typography variant="h4" color="#f4d35e" fontWeight="600" gutterBottom>
-          {role === "trainer" ? "Empower Your Clients" : "Achieve Your Fitness Goals"}
+          {role === "trainer"
+            ? "Empower Your Clients"
+            : role === "admin"
+            ? "Manage and Optimize the Platform"
+            : "Achieve Your Fitness Goals"}
         </Typography>
         {role === "trainer" ? (
           <>
             <Box display="flex" alignItems="center" gap={1} mb={2}>
               <GroupIcon fontSize="large" sx={{ color: "#f4d35e" }} />
-              <Typography variant="h6" color="white">Manage your clients</Typography>
+              <Typography variant="h6" color="white">
+                Manage your clients
+              </Typography>
             </Box>
             <Box display="flex" alignItems="center" gap={1} mb={2}>
               <FitnessCenterIcon fontSize="large" sx={{ color: "#f4d35e" }} />
-              <Typography variant="h6" color="white">Assign personalized workouts</Typography>
+              <Typography variant="h6" color="white">
+                Assign personalized workouts
+              </Typography>
             </Box>
             <Box display="flex" alignItems="center" gap={1} mb={2}>
               <AssessmentIcon fontSize="large" sx={{ color: "#f4d35e" }} />
-              <Typography variant="h6" color="white">Track client progress</Typography>
+              <Typography variant="h6" color="white">
+                Track client progress
+              </Typography>
+            </Box>
+          </>
+        ) : role === "admin" ? (
+          <>
+            <Box display="flex" alignItems="center" gap={1} mb={2}>
+              <GroupIcon fontSize="large" sx={{ color: "#f4d35e" }} />
+              <Typography variant="h6" color="white">
+                Manage users and roles
+              </Typography>
+            </Box>
+            <Box display="flex" alignItems="center" gap={1} mb={2}>
+              <AssessmentIcon fontSize="large" sx={{ color: "#f4d35e" }} />
+              <Typography variant="h6" color="white">
+                Oversee platform activity
+              </Typography>
+            </Box>
+            <Box display="flex" alignItems="center" gap={1} mb={2}>
+              <FitnessCenterIcon fontSize="large" sx={{ color: "#f4d35e" }} />
+              <Typography variant="h6" color="white">
+                Monitor training sessions
+              </Typography>
+            </Box>
+            <Box display="flex" alignItems="center" gap={1} mb={2}>
+              <MonitorHeartIcon fontSize="large" sx={{ color: "#f4d35e" }} />
+              <Typography variant="h6" color="white">
+                Ensure smooth operations
+              </Typography>
             </Box>
           </>
         ) : (
           <>
             <Box display="flex" alignItems="center" gap={1} mb={2}>
               <GroupIcon fontSize="large" sx={{ color: "#f4d35e" }} />
-              <Typography variant="h6" color="white">Connect with trainers</Typography>
+              <Typography variant="h6" color="white">
+                Connect with trainers
+              </Typography>
             </Box>
             <Box display="flex" alignItems="center" gap={1} mb={2}>
               <FitnessCenterIcon fontSize="large" sx={{ color: "#f4d35e" }} />
-              <Typography variant="h6" color="white">Track your workouts</Typography>
+              <Typography variant="h6" color="white">
+                Track your workouts
+              </Typography>
             </Box>
             <Box display="flex" alignItems="center" gap={1} mb={2}>
               <MonitorHeartIcon fontSize="large" sx={{ color: "#f4d35e" }} />
-              <Typography variant="h6" color="white">Monitor your progress</Typography>
+              <Typography variant="h6" color="white">
+                Monitor your progress
+              </Typography>
             </Box>
           </>
         )}
@@ -106,22 +162,41 @@ const AuthenticationPage = () => {
           flexDirection: "column",
         }}
       >
-        <Paper elevation={3} sx={{ paddingBottom: "16px", borderRadius: 2, textAlign: "center" }}>
+        <Paper
+          elevation={3}
+          sx={{ paddingBottom: "16px", borderRadius: 2, textAlign: "center" }}
+        >
           {isVerificationVisible ? (
-            <VerificationForm onVerified={handleVerificationSuccess} email={email} />
+            <VerificationForm
+              onVerified={handleVerificationSuccess}
+              email={email}
+            />
           ) : (
             <>
-              <Typography className="tabHeaders" variant="h5" gutterBottom sx={{ marginTop: "0.35em" }}>
+              <Typography
+                className="tabHeaders"
+                variant="h5"
+                gutterBottom
+                sx={{ marginTop: "0.35em" }}
+              >
                 {activeTab === 0
                   ? role === "trainer"
                     ? "Join as a Trainer!"
                     : "Join as a Member!"
+                  : role === "admin"
+                  ? "Welcome Admin!"
                   : "Welcome Back!"}
               </Typography>
-              <Tabs value={activeTab} onChange={handleTabChange} centered>
-                <Tab className="tab" label="Register" />
-                <Tab className="tab" label="Login" />
-              </Tabs>
+              {role !== "admin" ? (
+                <Tabs value={activeTab} onChange={handleTabChange} centered>
+                  <Tab className="tab" label="Register" />
+                  <Tab className="tab" label="Login" />
+                </Tabs>
+              ) : (
+                <Typography variant="h6" className="tabHeaders">
+                  Please Login
+                </Typography>
+              )}
               <Box>
                 {activeTab === 0 ? (
                   <SignupForm onSubmit={handleAuthSubmit} role={role} />
@@ -134,7 +209,7 @@ const AuthenticationPage = () => {
           )}
         </Paper>
       </Grid>
-    </Grid >
+    </Grid>
   );
 };
 

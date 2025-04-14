@@ -4,7 +4,8 @@ import { AppBar, Toolbar, Typography, Tabs, Tab } from "@mui/material";
 const Header = ({ onTabClick }) => {
   const tabs = [
     { label: "Member", role: "member" },
-    { label: "Trainer", role: "trainer" }
+    { label: "Trainer", role: "trainer" },
+    { label: "Admin", role: "admin" }
   ];
   const [tabValue, setTabValue] = React.useState(0);
   return (

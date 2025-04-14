@@ -18,12 +18,21 @@ import EmailComponent from "./components/Auth/forgotPassword/EmailComponent";
 import ResetPassword from "./components/Auth/resetPassword/resetPassword";
 import { useUserStore } from "./store/useUserStore";
 import TrainerLayout from "./pages/trainer/TrainerLayout";
-import Applications from "./pages/trainer/application/Applications";
-import Appointment from "./pages/trainer/application/Appointment";
-import Training from "./pages/trainer/application/Training";
-import Trainings from "./pages/trainer/training/Trainings";
-import Session from "./pages/trainer/training/Session";
-import Member from "./pages/trainer/training/Member";
+import AdminLayout from "./pages/admin/AdminLayout.jsx";
+// import Applications from "./pages/trainer/application/Applications";
+// import Appointment from "./pages/trainer/application/Appointment";
+// import Training from "./pages/trainer/application/Training";
+// import Trainings from "./pages/trainer/training/Trainings";
+// import Session from "./pages/trainer/training/Session";
+// import Member from "./pages/trainer/training/Member";
+import TrainerHome from "./pages/trainer/TrainerHome.jsx";
+import MemberManagement from "./pages/trainer/MemberManagement.jsx";
+import SessionRequests from "./pages/trainer/SessionRequests";
+import MySessions from "./pages/trainer/MySessions";
+import WorkoutPlans from "./pages/trainer/WorkoutPlans";
+import MemberProgress from "./pages/trainer/MemberProgress";
+import History from "./pages/trainer/History";
+import Availability from "./pages/trainer/TrainerAvailability.jsx"
 import { SnackbarProvider } from "./utils/Hooks/SnackbarContext.jsx";
 import { useLoadingStore } from "./store/useLoadingStore";
 import { Backdrop, CircularProgress } from '@mui/material';
@@ -59,21 +68,19 @@ function App() {
           )}
           {isAuthorized(userRole, ["trainer"]) && (
             <Route path="/trainer" element={<TrainerLayout />} >
-              <Route index element={<Navigate to="/trainer/applications" replace />} />
-              <Route path="applications" element={<Applications />} >
-                <Route index element={<Navigate to="/trainer/applications/training" replace />} />
-                <Route path="training" element={<Training />} />
-                <Route path="appointment" element={<Appointment />} />
-              </Route>
-              <Route path="trainings" element={<Trainings />} >
-                <Route index element={<Navigate to="/trainer/trainings/session" replace />} />
-                <Route path="session" element={<Session />} />
-                <Route path="member" element={<Member />} />
-              </Route>
+              <Route index element={<Navigate to="/trainer/home" replace />} />
+            <Route path="home" element={<TrainerHome />} />
+            <Route path="member-management" element={<MemberManagement />} />
+            <Route path="session-requests" element={<SessionRequests />} />
+            <Route path="sessions" element={<MySessions />} />
+            <Route path="workout-plans" element={<WorkoutPlans />} />
+            <Route path="member-progress" element={<MemberProgress />} />
+            <Route path="history" element={<History />} />
+            <Route path="availability" element={<Availability />} />
             </Route>
           )}
           {isAuthorized(userRole, ["admin"]) && (
-            <Route path="/admin" element={<MemberLayout />} ></Route>
+            <Route path="/admin" element={<AdminLayout />} ></Route>
           )}
 
           <Route path="*" element={!userRole ? <Navigate to="/authenticate" replace /> : <Navigate to={getDefaultPath()} replace />} />

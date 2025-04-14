@@ -1,40 +1,58 @@
 import React, { useState, useEffect } from "react";
 import Box from "@mui/material/Box";
-import { AppBar, Toolbar, Typography, Avatar, Dialog, DialogTitle, DialogContent, Stack, TextField, DialogActions, Button } from "@mui/material";
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Avatar,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  Stack,
+  TextField,
+  DialogActions,
+  Button,
+  Menu,
+  MenuItem,
+  IconButton
+} from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import Menu from "@mui/material/Menu";
-import MenuItem from "@mui/material/MenuItem";
-import IconButton from "@mui/material/IconButton";
 import { useUserStore } from "../../store/useUserStore";
 import useUserApi from "../../apis/user";
 import { useSnackbar } from "../../utils/Hooks/SnackbarContext.jsx";
 import { useNavigate } from "react-router-dom";
-const Header = ({ firstName, lastName, children }) => {
-  const { showSnackbar } = useSnackbar();
-  // Generate avatar initials
-  const initials = `${firstName?.charAt(0) ?? ""}${lastName?.charAt(0) ?? ""}`;
-  const [anchorElUser, setAnchorElUser] = React.useState(null);
-  const { updateUserInfo } = useUserApi();
-  // Open user menu dropdown
-  const handleOpenUserMenu = (event) => {
-    setAnchorElUser(event.currentTarget);
-  };
 
-  // Close user menu dropdown
-  const handleCloseUserMenu = () => {
-    setAnchorElUser(null);
-  };
+const drawerWidth = 250;
+const miniDrawerWidth = 60;
+
+const Header = ({ firstName, lastName, children, drawerOpen }) => {
+  const { showSnackbar } = useSnackbar();
+  const initials = `${firstName?.charAt(0) ?? ""}${lastName?.charAt(0) ?? ""}`;
+  const [anchorElUser, setAnchorElUser] = useState(null);
+  const { updateUserInfo } = useUserApi();
   const { setUserInfo, setToken } = useUserStore();
+  const userInfo = useUserStore((state) => state.userInfo);
+  const isGoogle = useUserStore((state) => state.userInfo?.isGoogle);
+  const navigate = useNavigate();
+
+  // Avatar menu handlers
+  const handleOpenUserMenu = (event) => setAnchorElUser(event.currentTarget);
+  const handleCloseUserMenu = () => setAnchorElUser(null);
   const handleLogout = () => {
-    setUserInfo({}); // clear zustand data
+    setUserInfo({});
     setToken("");
   };
 
   // Dialog logic
-  const userInfo = useUserStore((state) => state.userInfo);
   const [open, setOpen] = useState(false);
   const [updating, setUpdating] = useState(false);
-  const [formData, setFormData] = useState({ name: "", dateOfBirth: "", address: "", email: "" });
+  const [formData, setFormData] = useState({
+    name: "",
+    dateOfBirth: "",
+    address: "",
+    email: ""
+  });
+
   useEffect(() => {
     if (userInfo) {
       setFormData({
@@ -45,12 +63,13 @@ const Header = ({ firstName, lastName, children }) => {
       });
     }
   }, [userInfo]);
-  const handleProfile = () => {
-    setOpen(true);
-  }
+
+  const handleProfile = () => setOpen(true);
+
   const handleChange = (event) => {
     setFormData({ ...formData, [event.target.name]: event.target.value });
   };
+
   const handleCancle = () => {
     setFormData({
       name: userInfo.name || "",
@@ -60,78 +79,96 @@ const Header = ({ firstName, lastName, children }) => {
     });
     setUpdating(false);
   };
+
   const handleClose = () => {
     setUpdating(false);
     setOpen(false);
-  }
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
-      console.log("profile:", formData);
       await updateUserInfo(formData.address, formData.dateOfBirth, formData.name);
       showSnackbar({ message: "Update Successful!", severity: "success" });
       setOpen(false);
       setUpdating(false);
     } catch (e) {
-      if (e) {
-        showSnackbar({ message: "Update Failed! Please try again.", severity: "error" });
-      }
+      showSnackbar({ message: "Update Failed! Please try again.", severity: "error" });
     }
   };
 
-  const navigate = useNavigate();
   const handleResetPassword = () => {
-    // window.open("/reset-password?token=default", "_blank", "noopener,noreferrer");
     navigate("/reset-password?token=default");
   };
+
   const handleSetPassword = () => {
     navigate(`/forgot-password?email=${userInfo.email}&setPassword=true`);
-  }
-  const isGoogle = useUserStore((state) => state.userInfo?.isGoogle);
+  };
+
   return (
-    <AppBar position="static" sx={{ backgroundColor: "#023047", padding: "2px 20px", height: "10vh", display: "flex", justifyContent: "center" }}>
-      <Toolbar sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        {/* Application Name */}
+    <AppBar
+      position="static"
+      sx={{
+        backgroundColor: "#023047",
+        padding: "2px 20px",
+        height: "10vh",
+        display: "flex",
+        justifyContent: "center",
+      }}
+    >
+      <Toolbar
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          pl: drawerOpen ? `${drawerWidth}px` : `${miniDrawerWidth}px`,
+          transition: "padding 0.3s ease",
+        }}
+      >
+        {/* App Title */}
         <Typography variant="h4" sx={{ color: "white", fontWeight: "bold" }}>
           FitQuest
         </Typography>
-        {/* the slot */}
+
+        {/* Slot for injected content (menu toggle, notifications, etc.) */}
         {children}
-        {/* User Avatar with Initials */}
+
+        {/* Avatar + Menu */}
         <Box sx={{ flexGrow: 0 }}>
           <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-            <Avatar sx={{ bgcolor: "#f4d35e", color: "#023047", fontWeight: "bold", cursor: "pointer" }}>
+            <Avatar
+              sx={{
+                bgcolor: "#f4d35e",
+                color: "#023047",
+                fontWeight: "bold",
+                cursor: "pointer"
+              }}
+            >
               {initials.toUpperCase()}
             </Avatar>
           </IconButton>
-          {/* <Tooltip title="Open settings">
-          </Tooltip> */}
+
           <Menu
             sx={{ mt: "45px" }}
             anchorEl={anchorElUser}
-            anchorOrigin={{
-              vertical: "top",
-              horizontal: "right",
-            }}
-            keepMounted
-            transformOrigin={{
-              vertical: "top",
-              horizontal: "right",
-            }}
+            anchorOrigin={{ vertical: "top", horizontal: "right" }}
+            transformOrigin={{ vertical: "top", horizontal: "right" }}
             open={Boolean(anchorElUser)}
             onClose={handleCloseUserMenu}
           >
-            <MenuItem key="Profile" onClick={handleProfile}>
+            <MenuItem onClick={handleProfile}>
               <Typography sx={{ textAlign: "center" }}>Profile</Typography>
             </MenuItem>
-            <MenuItem key="Logout" onClick={handleLogout}>
+            <MenuItem onClick={handleLogout}>
               <Typography sx={{ textAlign: "center" }}>Logout</Typography>
             </MenuItem>
           </Menu>
         </Box>
-        {/* Dialog logic */}
+
+        {/* Profile Dialog */}
         <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-          <DialogTitle>{userInfo.role.charAt(0).toUpperCase() + userInfo.role.slice(1)} Profile
+          <DialogTitle>
+            {userInfo.role.charAt(0).toUpperCase() + userInfo.role.slice(1)} Profile
             <IconButton
               aria-label="close"
               onClick={handleClose}
@@ -157,7 +194,7 @@ const Header = ({ firstName, lastName, children }) => {
                 disabled={!updating}
               />
               <TextField
-                label="DateOfBirth"
+                label="Date of Birth"
                 name="dateOfBirth"
                 type="date"
                 value={formData.dateOfBirth}
@@ -189,16 +226,29 @@ const Header = ({ firstName, lastName, children }) => {
             </Stack>
           </DialogContent>
           <DialogActions>
-            {/* 跳转到 Reset Password 按钮 */}
-            {!isGoogle ? <Button variant="contained" color="warning" onClick={handleResetPassword}>
-              Update Password
-            </Button> : <Button variant="contained" color="warning" onClick={handleSetPassword}>Set Password</Button>}
-
-            {updating ? <Button onClick={handleCancle} variant="outlined" color="error">Cancel</Button> : <Button onClick={() => setUpdating(true)} variant="contained" color="secondary">Update</Button>}
-
-            {updating && <Button onClick={handleSubmit} variant="contained" color="success">
-              Submit
-            </Button>}
+            {!isGoogle ? (
+              <Button variant="contained" color="warning" onClick={handleResetPassword}>
+                Update Password
+              </Button>
+            ) : (
+              <Button variant="contained" color="warning" onClick={handleSetPassword}>
+                Set Password
+              </Button>
+            )}
+            {updating ? (
+              <Button onClick={handleCancle} variant="outlined" color="error">
+                Cancel
+              </Button>
+            ) : (
+              <Button onClick={() => setUpdating(true)} variant="contained" color="secondary">
+                Update
+              </Button>
+            )}
+            {updating && (
+              <Button onClick={handleSubmit} variant="contained" color="success">
+                Submit
+              </Button>
+            )}
           </DialogActions>
         </Dialog>
       </Toolbar>

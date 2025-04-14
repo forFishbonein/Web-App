@@ -1,0 +1,499 @@
+import React, { useState } from "react";
+import {
+  Box,
+  Typography,
+  Paper,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  Chip,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  IconButton,
+  TextField,
+  Stack,
+  Tooltip,
+} from "@mui/material";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
+import useSessionStore from "/src/store/useSessionStore";
+import useWorkoutPlanStore from "/src/store/useWorkoutPlanStore";
+import SaveIcon from "@mui/icons-material/Save";
+import DeleteIcon from "@mui/icons-material/Delete";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import { useSnackbar } from "/src/utils/Hooks/SnackbarContext.jsx";
+
+function MySessions() {
+  const acceptedSessions = useSessionStore((state) => state.acceptedSessions);
+  const [workoutPlans, setWorkoutPlans] = useState({});
+  const [openDialog, setOpenDialog] = useState(false);
+  const [currentSessionId, setCurrentSessionId] = useState(null);
+  const [planRows, setPlanRows] = useState([]);
+  const [minTime, setMinTime] = useState("");
+  const [maxTime, setMaxTime] = useState("");
+  const [recordedSessions, setRecordedSessions] = useState([]);
+  const savePlan = useWorkoutPlanStore((state) => state.savePlan);
+  const recordSession = useSessionStore((state) => state.recordSession);
+  const cancelSession = useSessionStore((state) => state.cancelSession);
+  const { showSnackbar } = useSnackbar();
+  const [confirmCancelOpen, setConfirmCancelOpen] = useState(false);
+  const [sessionToCancel, setSessionToCancel] = useState(null);
+
+  const handleOpenDialog = (sessionId) => {
+    setCurrentSessionId(sessionId);
+
+    const existingPlan = workoutPlans[sessionId];
+    const session = acceptedSessions.find((s) => s.id === sessionId);
+
+    const timeRange = session.timeSlot
+      .slice(session.timeSlot.indexOf(" ") + 1)
+      .split(" to ");
+    const min = timeRange[0];
+    const max = timeRange[1];
+
+    setMinTime(min);
+    setMaxTime(max);
+
+    if (existingPlan) {
+      setPlanRows(existingPlan);
+    } else {
+      setPlanRows([{ from: min, to: min, notes: "" }]);
+    }
+
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setCurrentSessionId(null);
+    setPlanRows([]);
+  };
+
+  const handleAddRow = () => {
+    setPlanRows((prev) => {
+      const lastRow = prev[prev.length - 1];
+      return [
+        ...prev,
+        {
+          from: lastRow.to || minTime, // If no to time yet, fallback to minTime
+          to: maxTime,
+          notes: "",
+        },
+      ];
+    });
+  };
+
+  const handleInputChange = (index, field, value) => {
+    const updatedRows = [...planRows];
+    updatedRows[index][field] = value;
+    setPlanRows(updatedRows);
+  };
+
+  const handleSavePlan = () => {
+    setWorkoutPlans((prev) => ({ ...prev, [currentSessionId]: planRows }));
+    showSnackbar({ message: "Workout plan created!", severity: "success" });
+    handleCloseDialog();
+  };
+
+  return (
+    <Box>
+      <Typography
+        variant="h5"
+        sx={{ fontWeight: "bold", mb: 3, color: "primary.main" }}
+      >
+        My Sessions
+        <Box
+          component="sup"
+          sx={{
+            fontStyle: "italic",
+            fontSize: "1rem",
+            ml: 1,
+            color: "#f4d35e",
+          }}
+        >
+          {acceptedSessions.length}
+        </Box>
+      </Typography>
+
+      {acceptedSessions.length === 0 ? (
+        <Typography color="text.secondary">
+          No accepted sessions yet.
+        </Typography>
+      ) : (
+        <Paper elevation={3} sx={{ p: 2 }}>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>
+                  <strong>Member</strong>
+                </TableCell>
+                <TableCell>
+                  <strong>Program</strong>
+                </TableCell>
+                <TableCell>
+                  <strong>Date</strong>
+                </TableCell>
+                <TableCell>
+                  <strong>Time</strong>
+                </TableCell>
+                <TableCell>
+                  <strong>Status</strong>
+                </TableCell>
+                <TableCell>
+                  <strong>Workout Plan</strong>
+                </TableCell>
+                <TableCell>
+                  <strong>Actions</strong>
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {acceptedSessions.map((session) => {
+                const [date, time] = session.timeSlot.split(" ", 2);
+                const hasPlan = workoutPlans[session.id];
+                return (
+                  <TableRow key={session.id}>
+                    <TableCell>{session.name}</TableCell>
+                    <TableCell>{session.program}</TableCell>
+                    <TableCell>{date}</TableCell>
+                    <TableCell>
+                      {session.timeSlot.slice(
+                        session.timeSlot.indexOf(" ") + 1
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label="Confirmed"
+                        color="success"
+                        size="small"
+                        variant="outlined"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Stack direction="row" spacing={1}>
+                        {/* <Button
+                          variant={hasPlan ? "outlined" : "contained"}
+                          size="small"
+                          color={hasPlan ? "info" : "primary"}
+                          startIcon={
+                            hasPlan ? (
+                              <VisibilityIcon />
+                            ) : (
+                              <AddCircleOutlineIcon />
+                            )
+                          }
+                          onClick={() => handleOpenDialog(session.id)}
+                        >
+                          {hasPlan ? "View" : "Create"}
+                        </Button> */}
+                        <Tooltip
+                          title={hasPlan ? "View Plan" : "Create Plan"}
+                          arrow
+                        >
+                          <IconButton
+                            color={hasPlan ? "info" : "primary"}
+                            onClick={() => handleOpenDialog(session.id)}
+                            aria-label={hasPlan ? "View Plan" : "Create Plan"}
+                          >
+                            {hasPlan ? (
+                              <VisibilityIcon />
+                            ) : (
+                              <AddCircleOutlineIcon />
+                            )}
+                          </IconButton>
+                        </Tooltip>
+                        {hasPlan && (
+                          // <Button
+                          //   variant="contained"
+                          //   color="secondary"
+                          //   size="small"
+                          //   startIcon={<SaveIcon />}
+                          //   onClick={() => {
+                          //     const time = session.timeSlot.slice(
+                          //       session.timeSlot.indexOf(" ") + 1
+                          //     );
+                          //     savePlan({
+                          //       program: session.program,
+                          //       sessionTime: time,
+                          //       rows: workoutPlans[session.id],
+                          //       assignedTo: [session.name],
+                          //     });
+                          //     showSnackbar({
+                          //       message: "Workout plan saved!",
+                          //       severity: "success",
+                          //     });
+                          //   }}
+                          // >
+                          //   Save
+                          // </Button>
+                          <Tooltip title="Save Plan" arrow>
+                            <IconButton
+                              color="secondary"
+                              onClick={() => {
+                                const time = session.timeSlot.slice(
+                                  session.timeSlot.indexOf(" ") + 1
+                                );
+                                savePlan({
+                                  program: session.program,
+                                  sessionTime: time,
+                                  rows: workoutPlans[session.id],
+                                  assignedTo: [session.name],
+                                });
+                                showSnackbar({
+                                  message: "Workout plan saved!",
+                                  severity: "success",
+                                });
+                              }}
+                              aria-label="Save Plan"
+                            >
+                              <SaveIcon />
+                            </IconButton>
+                          </Tooltip>
+                        )}
+                      </Stack>
+                    </TableCell>
+                    <TableCell>
+                      <Stack direction="row" spacing={1}>
+                        {/* <Button
+                          size="small"
+                          variant="outlined"
+                          color="error"
+                          startIcon={<DeleteIcon />}
+                          onClick={() => {
+                            setSessionToCancel(session);
+                            setConfirmCancelOpen(true);
+                          }}
+                        >
+                          Cancel
+                        </Button> */}
+                        <Tooltip title="Cancel Session" arrow>
+                          <IconButton
+                            color="error"
+                            onClick={() => {
+                              setSessionToCancel(session);
+                              setConfirmCancelOpen(true);
+                            }}
+                            aria-label="Cancel Session"
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </Tooltip>
+
+                        {/* <Button
+                          size="small"
+                          variant="contained"
+                          color="success"
+                          startIcon={<CheckCircleIcon />}
+                          onClick={() => {
+                            recordSession(session);
+                            showSnackbar({
+                              message: "Session recorded as completed",
+                              severity: "success",
+                            });
+                          }}
+                        >
+                          Record
+                        </Button> */}
+                        <Tooltip title="Record as Completed" arrow>
+                          <IconButton
+                            color="success"
+                            onClick={() => {
+                              recordSession(session);
+                              showSnackbar({
+                                message: "Session recorded as completed",
+                                severity: "success",
+                              });
+                            }}
+                            aria-label="Record Session"
+                          >
+                            <CheckCircleIcon />
+                          </IconButton>
+                        </Tooltip>
+                      </Stack>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </Paper>
+      )}
+
+      {/* Workout Plan Dialog */}
+      <Dialog
+        open={openDialog}
+        onClose={handleCloseDialog}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          {workoutPlans[currentSessionId]
+            ? "View Workout Plan"
+            : "Create Workout Plan"}
+
+          {workoutPlans[currentSessionId] && (
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => {
+                const session = acceptedSessions.find(
+                  (s) => s.id === currentSessionId
+                );
+                savePlan({
+                  program: session.program,
+                  sessionTime: session.timeSlot.slice(
+                    session.timeSlot.indexOf(" ") + 1
+                  ),
+                  rows: workoutPlans[currentSessionId],
+                  assignedTo: [session.name],
+                });
+                showSnackbar({
+                  message: "Workout plan saved!",
+                  severity: "success",
+                });
+              }}
+            >
+              Save to Workout Plans
+            </Button>
+          )}
+        </DialogTitle>
+
+        <DialogContent>
+          <div style={{ marginBottom: "10px" }}>
+            <Typography variant="caption">
+              Session Time: {minTime} to {maxTime}
+            </Typography>
+          </div>
+
+          {planRows.map((row, index) => (
+            <Stack
+              key={index}
+              direction={{ xs: "column", sm: "row" }}
+              spacing={2}
+              alignItems="center"
+              sx={{ mb: 2 }}
+            >
+              <TextField
+                label="From Time"
+                type="time"
+                value={row.from}
+                onChange={(e) =>
+                  handleInputChange(index, "from", e.target.value)
+                }
+                disabled={!!workoutPlans[currentSessionId]}
+                InputLabelProps={{ shrink: true }}
+                inputProps={{
+                  min: minTime,
+                  max: maxTime,
+                  step: 60,
+                }}
+                sx={{ width: "40%" }}
+              />
+
+              <TextField
+                label="To Time"
+                type="time"
+                value={row.to}
+                onChange={(e) => handleInputChange(index, "to", e.target.value)}
+                disabled={!!workoutPlans[currentSessionId]}
+                InputLabelProps={{ shrink: true }}
+                inputProps={{
+                  min: minTime,
+                  max: maxTime,
+                  step: 60,
+                }}
+                sx={{ width: "40%" }}
+              />
+
+              <TextField
+                label="Notes"
+                value={row.notes}
+                onChange={(e) =>
+                  handleInputChange(index, "notes", e.target.value)
+                }
+                fullWidth
+                disabled={!!workoutPlans[currentSessionId]}
+              />
+
+              {!workoutPlans[currentSessionId] && (
+                <Box display="flex" flexDirection="row">
+                  <IconButton onClick={handleAddRow} color="primary">
+                    <AddCircleOutlineIcon />
+                  </IconButton>
+                  {planRows.length > 1 && (
+                    <IconButton
+                      onClick={() => {
+                        const updatedRows = [...planRows];
+                        updatedRows.splice(index, 1);
+                        setPlanRows(updatedRows);
+                      }}
+                      color="error"
+                    >
+                      <RemoveCircleOutlineIcon />
+                    </IconButton>
+                  )}
+                </Box>
+              )}
+            </Stack>
+          ))}
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={handleCloseDialog}>Close</Button>
+          {!workoutPlans[currentSessionId] && (
+            <Button variant="contained" onClick={handleSavePlan}>
+              Save
+            </Button>
+          )}
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        open={confirmCancelOpen}
+        onClose={() => setConfirmCancelOpen(false)}
+      >
+        <DialogTitle>Confirm Cancellation</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to cancel this session? This action cannot be
+            undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmCancelOpen(false)}>No</Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={() => {
+              if (!sessionToCancel) return;
+              setWorkoutPlans((prev) => {
+                const updated = { ...prev };
+                delete updated[sessionToCancel.id];
+                return updated;
+              });
+              cancelSession(sessionToCancel);
+              showSnackbar({ message: "Session cancelled", severity: "info" });
+              setConfirmCancelOpen(false);
+              setSessionToCancel(null);
+            }}
+          >
+            Yes, Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
+  );
+}
+
+export default MySessions;

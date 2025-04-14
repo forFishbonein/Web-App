@@ -206,14 +206,14 @@ export default function Trainers() {
             borderRadius: 2,
             p: 3,
             pb: 1,
-            pt: 1,
+            
             height: "100%",
             display: "flex",
             flexDirection: "column",
           }}
         >
           <TabContext value={tabValue}>
-            <Box sx={{ mt: 2, p: 1, pb: 1, flexGrow: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+            <Box sx={{ pb: 1, flexGrow: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
               <TabPanel
                 value="1"
                 sx={{
@@ -223,7 +223,7 @@ export default function Trainers() {
                   pt: 0
                 }}
               >
-                <Stack spacing={2} direction={{ xs: "column", sm: "row" }} sx={{ mb: 3 }}>
+                <Stack spacing={2} direction={{ xs: "column", sm: "row" }} sx={{ mb: 1 }}>
                   <FormControl fullWidth>
                     <Autocomplete
                       freeSolo
@@ -233,7 +233,7 @@ export default function Trainers() {
                       inputValue={inputValueLocation}
                       onInputChange={(event, newInputValue) => setInputValueLocation(newInputValue)}
                       renderInput={(params) => (
-                        <TextField {...params} label="Filter by Club Location" variant="outlined" margin="normal" />
+                        <TextField {...params} label="Filter by Club Location" variant="outlined" sx={{marginTop: "5px"}} />
                       )}
                       sx={{
                         maxHeight: 200,
@@ -250,7 +250,7 @@ export default function Trainers() {
                       inputValue={inputValue}
                       onInputChange={(event, newInputValue) => setInputValue(newInputValue)}
                       renderInput={(params) => (
-                        <TextField {...params} label="Filter by Specialty" variant="outlined" margin="normal" />
+                        <TextField {...params} label="Filter by Specialty" variant="outlined" sx={{marginTop: "5px"}}/>
                       )}
                       sx={{
                         maxHeight: 200,
