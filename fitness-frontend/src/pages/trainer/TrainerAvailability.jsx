@@ -11,6 +11,8 @@ import {
 } from "@mui/material";
 import AvailabilityCalendar from "./Components/AvailabilityCalender";
 import useTrainerStore from "../../store/useAvailabilityStore";
+import EditIcon from "@mui/icons-material/Edit";
+import SaveIcon from "@mui/icons-material/Save";
 import { useSnackbar } from "/src/utils/Hooks/SnackbarContext.jsx";
 
 const TrainerAvailability = () => {
@@ -66,6 +68,7 @@ const TrainerAvailability = () => {
         <Button
           variant="contained"
           color={isEditing ? "success" : "primary"}
+          startIcon={isEditing ? <SaveIcon /> : <EditIcon />}
           onClick={() => {
             if (isEditing) {
               handleSave();
