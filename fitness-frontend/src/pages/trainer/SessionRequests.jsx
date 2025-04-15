@@ -107,7 +107,7 @@ function SessionRequests() {
     <Box>
       <Typography
         variant="h5"
-        sx={{ mb: 1, fontWeight: 600, color: "primary.main" }}
+        sx={{ mb: 2, fontWeight: 600, color: "primary.main" }}
       >
         Session Requests
         <Box
