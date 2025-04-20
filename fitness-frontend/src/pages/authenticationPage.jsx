@@ -10,11 +10,15 @@ import MonitorHeartIcon from "@mui/icons-material/MonitorHeart";
 import GroupIcon from "@mui/icons-material/Group";
 import AssessmentIcon from "@mui/icons-material/Assessment";
 import "./authenticationPage.css";
+import { useNavigate } from "react-router-dom";
+
+
 
 const AuthenticationPage = () => {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const role = queryParams.get("role") || "member"; // Default to 'member' if no role is passed
+  const navigate = useNavigate();
 
   // const [activeTab, setActiveTab] = useState(0); // 0 -> Signup, 1 -> Login
   const [activeTab, setActiveTab] = useState(role === "admin" ? 1 : 0);
@@ -38,7 +42,7 @@ const AuthenticationPage = () => {
     if (role === "admin") {
       if (data.email === "admin@fitquest.com" && data.password === "FitQuestAdmin1!") {
         console.log("Admin logged in successfully!");
-        // Redirect to admin dashboard or any admin-specific route
+        navigate("/admin/home");
       } else {
         alert("Invalid Admin Credentials!");
       }
