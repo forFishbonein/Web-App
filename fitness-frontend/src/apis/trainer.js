@@ -30,11 +30,83 @@ const useTrainerApi = () => {
       url: `/user/specializations`,
     });
   };
+  const getPendingConnectRequests = () => {
+    return httpRequest({
+      method: "get",
+      url: `/trainer/connect-requests/pending`,
+    });
+  };
+  const acceptConnectRequest = (requestId, responseMessage = "") => {
+    return httpRequest({
+      method: "put",
+      url: `/trainer/connect-request/accept`,
+      data: {
+        requestId,
+        responseMessage,
+      },
+    });
+  };
+  const rejectConnectRequest = (requestId, responseMessage = "") => {
+    return httpRequest({
+      method: "put",
+      url: `/trainer/connect-request/reject`,
+      data: {
+        requestId,
+        responseMessage,
+      },
+    });
+  };
+  const getConnectedMembers = () => {
+    return httpRequest({
+      method: "get",
+      url: `/trainer/connected-members`,
+    });
+  };
+  const getPendingAppointments = () => {
+    return httpRequest({
+      method: "get",
+      url: `/trainer/appointments/pending`,
+    });
+  };  
+  const acceptAppointment = (appointmentId, responseMessage = "") => {
+    return httpRequest({
+      method: "put",
+      url: `/trainer/appointment/accept`,
+      data: {
+        appointmentId,
+        responseMessage,
+      },
+    });
+  };  
+  const getApprovedAppointments = () => {
+    return httpRequest({
+      method: "get",
+      url: `/trainer/appointments/approved`,
+    });
+  };
+  const updateAvailability = (availabilitySlots) => {
+    return httpRequest({
+      method: "post",
+      url: "/trainer/availability",
+      data: {
+        availabilitySlots,
+      },
+    });
+  };  
+  
   return {
     getTrainerList,
     getTrainerInfo,
     connectTrainer,
     listSpecializations,
+    getPendingConnectRequests,
+    acceptConnectRequest,
+    rejectConnectRequest,
+    getConnectedMembers,
+    getPendingAppointments,
+    acceptAppointment,
+    getApprovedAppointments,
+    updateAvailability,
   };
 };
 export default useTrainerApi;

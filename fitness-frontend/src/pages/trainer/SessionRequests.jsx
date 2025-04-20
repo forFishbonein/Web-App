@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -17,65 +17,16 @@ import {
 } from "@mui/material";
 import PersonIcon from "@mui/icons-material/Person";
 import useSessionStore from "/src/store/useSessionStore";
+import useTrainerApi from "/src/apis/trainer";
 import { useSnackbar } from "/src/utils/Hooks/SnackbarContext.jsx";
 
-const initialRequests = [
-  {
-    id: 1,
-    name: "Priya Mehta",
-    program: "Strength Training",
-    timeSlot: "2025-04-25 14:11 to 15:19",
-    remark: "Looking for muscle toning and core strength improvement.",
-  },
-  {
-    id: 2,
-    name: "John Doe",
-    program: "Weight Loss",
-    timeSlot: "2025-04-26 09:30 to 10:15",
-    remark:
-      "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.",
-  },
-  {
-    id: 3,
-    name: "Emily Tran",
-    program: "Yoga and Flexibility",
-    timeSlot: "2025-04-27 08:00 to 09:00",
-    remark: "Interested in early morning yoga to improve flexibility and focus.",
-  },
-  {
-    id: 4,
-    name: "Carlos Mendez",
-    program: "HIIT",
-    timeSlot: "2025-04-28 17:00 to 17:45",
-    remark: "Need a high-intensity program to boost stamina quickly.",
-  },
-  {
-    id: 5,
-    name: "Sophie Zhang",
-    program: "Strength & Conditioning",
-    timeSlot: "2025-04-29 10:00 to 11:00",
-    remark: "Wants to build overall strength for marathon training.",
-  },
-  {
-    id: 6,
-    name: "Liam Patel",
-    program: "Cardio Endurance",
-    timeSlot: "2025-04-30 18:30 to 19:15",
-    remark: "Prefers evenings, aiming to build cardiovascular endurance.",
-  },
-  {
-    id: 7,
-    name: "Ava Singh",
-    program: "Pilates",
-    timeSlot: "2025-05-01 07:30 to 08:15",
-    remark: "Looking for low-impact training to improve posture and core strength.",
-  },
-];
-
 function SessionRequests() {
+  const { getPendingAppointments, acceptAppointment } = useTrainerApi();
   const { showSnackbar } = useSnackbar();
-  const [requests, setRequests] = useState(initialRequests);
+  const [requests, setRequests] = useState([]);
   const [page, setPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
+  
   const requestsPerPage = 3;
   const totalPages = Math.ceil(requests.length / requestsPerPage);
   const paginatedRequests = requests.slice(
@@ -85,12 +36,16 @@ function SessionRequests() {
 
   const addSession = useSessionStore((state) => state.addSession);
 
-  const handleAccept = (id) => {
-    const session = requests.find((r) => r.id === id);
-    if (session) {
-    addSession(session);
-    setRequests((prev) => prev.filter((req) => req.id !== id));
-    showSnackbar({ message: `${session.name}'s session accepted`, severity: "success" });
+  const handleAccept = async (id) => {
+    try {
+      await acceptAppointment(id); // 👈 call backend
+      const session = requests.find((r) => r.id === id);
+      addSession(session); // update state
+      setRequests((prev) => prev.filter((req) => req.id !== id));
+      showSnackbar({ message: `${session.name}'s session accepted`, severity: "success" });
+    } catch (err) {
+      console.error("Error accepting appointment", err);
+      showSnackbar({ message: "Failed to accept session request", severity: "error" });
     }
   };
 
@@ -102,6 +57,23 @@ function SessionRequests() {
   const handleSuggest = (id) => {
     showSnackbar({ message: `Suggesting another trainer for request ID: ${id}`, severity: "info" });
   };
+
+  useEffect(() => {
+    const fetchRequests = async () => {
+      setIsLoading(true);
+      try {
+        const res = await getPendingAppointments();
+        setRequests(res.data);
+      } catch (err) {
+        console.error("Failed to load pending appointments", err);
+        showSnackbar({ message: "Failed to load session requests", severity: "error" });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchRequests();
+  }, []);
 
   return (
     <Box>

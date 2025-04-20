@@ -3,6 +3,11 @@ import { create } from 'zustand';
 const useSessionStore = create((set) => ({
   acceptedSessions: [],
 
+  setAcceptedSessions: (sessions) =>
+    set(() => ({
+      acceptedSessions: sessions,
+    })),
+
   addSession: (session) =>
     set((state) => ({
       acceptedSessions: [...state.acceptedSessions, session],

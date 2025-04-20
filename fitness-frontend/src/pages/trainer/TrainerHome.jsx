@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Grid,
@@ -27,6 +27,7 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import GroupIcon from "@mui/icons-material/Group";
 import EventNoteIcon from "@mui/icons-material/EventNote";
 import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
+import useTrainerApi from "../../apis/trainer";
 
 const weeklyData = [
   { day: "Mon", sessions: 2 },
@@ -60,28 +61,19 @@ const yearlyData = [
   { day: "Dec", sessions: 23 },
 ];
 
-// Mock upcoming and pending sessions
-const upcomingSessions = [
-  {
-    id: 1,
-    member: "John Doe",
-    program: "Weight Loss",
-    date: "2025-04-26",
-    time: "09:30 - 10:15",
-    status: "Upcoming",
-  },
-  {
-    id: 2,
-    member: "Priya Mehta",
-    program: "Strength Training",
-    date: "2025-04-25",
-    time: "14:11 - 15:19",
-    status: "Pending",
-  },
-];
-
 function TrainerHome() {
   const [filter, setFilter] = useState("week");
+  const {
+    getPendingConnectRequests,
+    getConnectedMembers,
+    getPendingAppointments,
+    getApprovedAppointments,
+  } = useTrainerApi();
+  const [pendingMemberCount, setPendingMemberCount] = useState(0);
+  const [connectedMemberCount, setConnectedMemberCount] = useState(0);
+  const [pendingSessionCount, setPendingSessionCount] = useState(0);
+  const [approvedSessions, setApprovedSessions] = useState([]);
+  const [isLoadingStats, setIsLoadingStats] = useState(true);
 
   const handleFilterChange = (event, newFilter) => {
     if (newFilter !== null) setFilter(newFilter);
@@ -98,22 +90,51 @@ function TrainerHome() {
     }
   };
 
+  useEffect(() => {
+    const fetchStats = async () => {
+      setIsLoadingStats(true);
+      try {
+        const [
+          pendingMembers,
+          connected,
+          pendingSessions,
+          approvedSessionsRes,
+        ] = await Promise.all([
+          getPendingConnectRequests(),
+          getConnectedMembers(),
+          getPendingAppointments(),
+          getApprovedAppointments(),
+        ]);
+        setPendingMemberCount(pendingMembers.data.length);
+        setConnectedMemberCount(connected.data.length);
+        setPendingSessionCount(pendingSessions.data.length);
+        setApprovedSessions(approvedSessionsRes.data);
+      } catch (err) {
+        console.error("Failed to fetch trainer stats", err);
+      } finally {
+        setIsLoadingStats(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
   const statCards = [
     {
       label: "Total Members",
-      value: 10,
+      value: connectedMemberCount,
       icon: <GroupIcon sx={{ fontSize: 40, color: "primary.main" }} />,
     },
     {
       label: "Pending Member Requests",
-      value: 3,
+      value: pendingMemberCount,
       icon: <PersonAddAlt1Icon sx={{ fontSize: 40, color: "primary.main" }} />,
     },
     {
       label: "Pending Session Requests",
-      value: 5,
+      value: pendingSessionCount,
       icon: <EventNoteIcon sx={{ fontSize: 40, color: "primary.main" }} />,
-    },    
+    },
     {
       label: "Hours Trained",
       value: "9h 30m",
@@ -196,8 +217,7 @@ function TrainerHome() {
             <Typography variant="h6" sx={{ mb: 2 }}>
               Upcoming Sessions
             </Typography>
-
-            {upcomingSessions.length === 0 ? (
+            {approvedSessions.length === 0 ? (
               <Typography color="text.secondary">
                 No upcoming sessions
               </Typography>
@@ -223,28 +243,31 @@ function TrainerHome() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {upcomingSessions
-                    .sort((a, b) => new Date(a.date) - new Date(b.date))
-                    .map((session) => (
-                      <TableRow key={session.id}>
-                        <TableCell>{session.member}</TableCell>
-                        <TableCell>{session.program}</TableCell>
-                        <TableCell>{session.date}</TableCell>
-                        <TableCell>{session.time}</TableCell>
-                        <TableCell>
-                          <Chip
-                            label={session.status}
-                            color={
-                              session.status === "Pending"
-                                ? "warning"
-                                : "success"
-                            }
-                            size="small"
-                            variant="outlined"
-                          />
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                  {approvedSessions
+                    .sort(
+                      (a, b) =>
+                        new Date(a.timeSlot.split(" ")[0]) -
+                        new Date(b.timeSlot.split(" ")[0])
+                    )
+                    .map((session) => {
+                      const [date, time] = session.timeSlot.split(" ", 2);
+                      return (
+                        <TableRow key={session.id}>
+                          <TableCell>{session.name}</TableCell>
+                          <TableCell>{session.program}</TableCell>
+                          <TableCell>{date}</TableCell>
+                          <TableCell>{time.replace("to", "-")}</TableCell>
+                          <TableCell>
+                            <Chip
+                              label="Upcoming"
+                              color="success"
+                              size="small"
+                              variant="outlined"
+                            />
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                 </TableBody>
               </Table>
             )}

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -14,66 +14,72 @@ import {
 } from "@mui/material";
 import PersonIcon from "@mui/icons-material/Person";
 import { useSnackbar } from "/src/utils/Hooks/SnackbarContext.jsx";
+import useTrainerApi from "../../apis/trainer";
 
-const initialRequests = [
-  {
-    id: 1,
-    name: "Priya Mehta",
-    remark: "Looking for strength training sessions.",
-    time: "5 mins ago",
-  },
-  {
-    id: 2,
-    name: "John Doe",
-    remark: "Interested in evening sessions after 6 PM.",
-    time: "30 mins ago",
-  },
-  {
-    id: 5,
-    name: "Emily Tran",
-    remark: "Wants early morning yoga sessions.",
-    time: "1 hour ago",
-  },
-  {
-    id: 6,
-    name: "Chris Paul",
-    remark: "Looking to improve endurance.",
-    time: "2 hours ago",
-  },
-];
+// const initialRequests = [
+//   {
+//     id: 1,
+//     name: "Priya Mehta",
+//     remark: "Looking for strength training sessions.",
+//     time: "5 mins ago",
+//   },
+//   {
+//     id: 2,
+//     name: "John Doe",
+//     remark: "Interested in evening sessions after 6 PM.",
+//     time: "30 mins ago",
+//   },
+//   {
+//     id: 5,
+//     name: "Emily Tran",
+//     remark: "Wants early morning yoga sessions.",
+//     time: "1 hour ago",
+//   },
+//   {
+//     id: 6,
+//     name: "Chris Paul",
+//     remark: "Looking to improve endurance.",
+//     time: "2 hours ago",
+//   },
+// ];
 
-const initialConnections = [
-  {
-    id: 3,
-    name: "Sarah Malik",
-    location: "The Gym Group, London",
-    time: "2 days ago",
-  },
-  {
-    id: 4,
-    name: "David Kim",
-    location: "Snap Fitness, Brighton",
-    time: "1 week ago",
-  },
-  {
-    id: 7,
-    name: "Lina Smith",
-    location: "Anytime Fitness, Leeds",
-    time: "4 days ago",
-  },
-  {
-    id: 8,
-    name: "Tom Jackson",
-    location: "PureGym, Sheffield",
-    time: "3 days ago",
-  },
-];
+// const initialConnections = [
+//   {
+//     id: 3,
+//     name: "Sarah Malik",
+//     location: "The Gym Group, London",
+//     time: "2 days ago",
+//   },
+//   {
+//     id: 4,
+//     name: "David Kim",
+//     location: "Snap Fitness, Brighton",
+//     time: "1 week ago",
+//   },
+//   {
+//     id: 7,
+//     name: "Lina Smith",
+//     location: "Anytime Fitness, Leeds",
+//     time: "4 days ago",
+//   },
+//   {
+//     id: 8,
+//     name: "Tom Jackson",
+//     location: "PureGym, Sheffield",
+//     time: "3 days ago",
+//   },
+// ];
 
 function MemberConnections() {
-  const [requests, setRequests] = useState(initialRequests);
-  const [connections, setConnections] = useState(initialConnections);
+  const [requests, setRequests] = useState([]);
+  const [connections, setConnections] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const { showSnackbar } = useSnackbar();
+  const { getPendingConnectRequests } = useTrainerApi();
+  const { acceptConnectRequest } = useTrainerApi();
+  const { rejectConnectRequest } = useTrainerApi();
+  const { getConnectedMembers } = useTrainerApi();
+  const [isLoading, setIsLoading] = useState(true);
 
   // Connection Request Pagination
   const [reqPage, setReqPage] = useState(1);
@@ -88,7 +94,7 @@ function MemberConnections() {
   const [connPage, setConnPage] = useState(1);
   const connectionsPerPage = 3;
   const filteredConnections = connections.filter((member) =>
-    member.name.toLowerCase().includes(searchTerm.toLowerCase())
+    (member.memberName || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
   const connTotalPages = Math.ceil(filteredConnections.length / connectionsPerPage);
   const paginatedConnections = filteredConnections.slice(
@@ -96,16 +102,52 @@ function MemberConnections() {
     connPage * connectionsPerPage
   );
 
-  const handleAccept = (member) => {
-    setRequests((prev) => prev.filter((req) => req.id !== member.id));
-    setConnections((prev) => [...prev, member]);
-    showSnackbar({ message: `${member.name} connected successfully!`, severity: "success" });
-  };
+  const handleAccept = async (member) => {
+    try {
+      await acceptConnectRequest(member.requestId);
+      setRequests((prev) => prev.filter((req) => req.requestId !== member.requestId));
+      setConnections((prev) => [...prev, member]);
+      showSnackbar({ message: `${member.memberName } connected successfully!`, severity: "success" });
+    } catch (err) {
+      console.error("Error accepting request", err?.response || err);
+      showSnackbar({ message: `Failed to accept ${member.memberName }'s request.`, severity: "error" });
+    }
+  };    
 
-  const handleReject = (id) => {
-    setRequests((prev) => prev.filter((req) => req.id !== id));
-    showSnackbar({ message: `Connection request rejected.`, severity: "info" });
-  };
+  const handleReject = async (requestId) => {
+    try {
+      await rejectConnectRequest(requestId);
+      setRequests((prev) => prev.filter((req) => req.requestId !== requestId));
+      showSnackbar({ message: `Connection request rejected.`, severity: "info" });
+    } catch (err) {
+      console.error("Error rejecting request", err?.response || err);
+      showSnackbar({ message: `Failed to reject connection request.`, severity: "error" });
+    }
+  };  
+
+  useEffect(() => {
+    const fetchPendingRequests = async () => {
+      try {
+        const res = await getPendingConnectRequests();
+        setRequests(res.data);
+      } catch (err) {
+        showSnackbar({ message: "Failed to load requests", severity: "error" });
+      }
+    };
+  
+    const fetchConnectedMembers = async () => {
+      try {
+        const res = await getConnectedMembers();
+        setConnections(res.data);
+      } catch (err) {
+        showSnackbar({ message: "Failed to load connected members", severity: "error" });
+      }
+    };
+  
+    fetchPendingRequests();
+    fetchConnectedMembers();
+    setIsLoading(false);
+  }, []);  
 
   const Card = ({ member, isRequest, onAccept, onReject }) => (
     <Paper
@@ -130,14 +172,14 @@ function MemberConnections() {
           </Avatar>
           <Box>
             <Typography variant="subtitle1" fontWeight={600}>
-              {member.name}
+              {member.memberName}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {isRequest ? `📝 ${member.remark}` : `📍 ${member.location}`}
+              {isRequest ? `📝 ${member.requestMessage}` : `📍 ${member.location}`}
             </Typography>
-            <Typography variant="caption" color="text.secondary">
+            {/* <Typography variant="caption" color="text.secondary">
               🕒 {member.time}
-            </Typography>
+            </Typography> */}
           </Box>
         </Stack>
 
@@ -155,7 +197,7 @@ function MemberConnections() {
               variant="outlined"
               color="error"
               size="small"
-              onClick={() => onReject(member.id)}
+              onClick={() => onReject(member.requestId)}
             >
               Reject
             </Button>
@@ -268,7 +310,7 @@ function MemberConnections() {
           <>
             <Grid container spacing={3} mt={1}>
               {paginatedConnections.map((member) => (
-                <Grid item xs={12} sm={6} md={4} key={member.id}>
+                <Grid item xs={12} sm={6} md={4} key={member.memberId}>
                   <Card member={member} />
                 </Grid>
               ))}

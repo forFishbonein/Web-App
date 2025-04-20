@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -28,6 +28,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import { useSnackbar } from "/src/utils/Hooks/SnackbarContext.jsx";
+import useTrainerApi from "/src/apis/trainer";
 
 function MySessions() {
   const acceptedSessions = useSessionStore((state) => state.acceptedSessions);
@@ -44,6 +45,9 @@ function MySessions() {
   const { showSnackbar } = useSnackbar();
   const [confirmCancelOpen, setConfirmCancelOpen] = useState(false);
   const [sessionToCancel, setSessionToCancel] = useState(null);
+  const { getApprovedAppointments } = useTrainerApi();
+  const setAcceptedSessions = useSessionStore((state) => state.setAcceptedSessions);
+  const [isLoading, setIsLoading] = useState(true);
 
   const handleOpenDialog = (sessionId) => {
     setCurrentSessionId(sessionId);
@@ -88,6 +92,22 @@ function MySessions() {
       ];
     });
   };
+
+  useEffect(() => {
+    const fetchAccepted = async () => {
+      setIsLoading(true);
+      try {
+        const res = await getApprovedAppointments();
+        setAcceptedSessions(res.data);
+      } catch (err) {
+        console.error("Failed to fetch approved appointments", err);
+        showSnackbar({ message: "Could not load sessions", severity: "error" });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchAccepted();
+  }, []); 
 
   const handleInputChange = (index, field, value) => {
     const updatedRows = [...planRows];
