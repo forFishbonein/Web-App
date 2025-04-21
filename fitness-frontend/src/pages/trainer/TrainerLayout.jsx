@@ -22,6 +22,7 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import HistoryIcon from "@mui/icons-material/History";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 
 const drawerWidth = 250;
 const miniDrawerWidth = 60;
@@ -34,7 +35,8 @@ const pages = [
   { name: "Workout Plans", path: "/trainer/workout-plans", icon: <FitnessCenterIcon /> },
   { name: "Member Progress", path: "/trainer/member-progress", icon: <TrendingUpIcon /> },
   { name: "History", path: "/trainer/history", icon: <HistoryIcon /> },
-  { name: "Availability", path: "/trainer/availability", icon: <EventAvailableIcon /> }
+  { name: "Availability", path: "/trainer/availability", icon: <EventAvailableIcon /> },
+  { name: "Profile", path: "/trainer/profile", icon: <AccountCircleIcon /> },
 ];
 
 function TrainerLayout() {

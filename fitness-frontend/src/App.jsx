@@ -33,6 +33,7 @@ import WorkoutPlans from "./pages/trainer/WorkoutPlans";
 import MemberProgress from "./pages/trainer/MemberProgress";
 import History from "./pages/trainer/History";
 import Availability from "./pages/trainer/TrainerAvailability.jsx"
+import TrainerProfile from "./pages/trainer/TrainerProfile.jsx";
 import { SnackbarProvider } from "./utils/Hooks/SnackbarContext.jsx";
 import { useLoadingStore } from "./store/useLoadingStore";
 import { Backdrop, CircularProgress } from '@mui/material';
@@ -77,6 +78,7 @@ function App() {
             <Route path="member-progress" element={<MemberProgress />} />
             <Route path="history" element={<History />} />
             <Route path="availability" element={<Availability />} />
+            <Route path="profile" element={<TrainerProfile />} />
             </Route>
           )}
           {isAuthorized(userRole, ["admin"]) && (

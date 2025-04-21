@@ -93,6 +93,19 @@ const useTrainerApi = () => {
       },
     });
   };  
+  const updateTrainerProfile = (data) => {
+    return httpRequest({
+      method: "put",
+      url: "/trainer/profile",
+      data,
+    });
+  };
+  const getTrainerProfile = () => {
+    return httpRequest({
+      method: "get",
+      url: "/trainer/profile",
+    });
+  };
   
   return {
     getTrainerList,
@@ -107,6 +120,8 @@ const useTrainerApi = () => {
     acceptAppointment,
     getApprovedAppointments,
     updateAvailability,
+    updateTrainerProfile,
+    getTrainerProfile,
   };
 };
 export default useTrainerApi;
