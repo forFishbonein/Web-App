@@ -73,7 +73,7 @@ function App() {
             <Route path="home" element={<TrainerHome />} />
             <Route path="member-management" element={<MemberManagement />} />
             <Route path="session-requests" element={<SessionRequests />} />
-            <Route path="sessions" element={<MySessions />} />
+            <Route path="upcoming-sessions" element={<MySessions />} />
             <Route path="workout-plans" element={<WorkoutPlans />} />
             <Route path="member-progress" element={<MemberProgress />} />
             <Route path="history" element={<History />} />

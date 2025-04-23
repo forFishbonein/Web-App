@@ -40,38 +40,45 @@ function MySessions() {
   const [maxTime, setMaxTime] = useState("");
   const [recordedSessions, setRecordedSessions] = useState([]);
   const savePlan = useWorkoutPlanStore((state) => state.savePlan);
-  const recordSession = useSessionStore((state) => state.recordSession);
+  // const recordSession = useSessionStore((state) => state.recordSession);
   const cancelSession = useSessionStore((state) => state.cancelSession);
   const { showSnackbar } = useSnackbar();
   const [confirmCancelOpen, setConfirmCancelOpen] = useState(false);
   const [sessionToCancel, setSessionToCancel] = useState(null);
-  const { getApprovedAppointments } = useTrainerApi();
-  const setAcceptedSessions = useSessionStore((state) => state.setAcceptedSessions);
+  const { getApprovedAppointments, completeAppointment } = useTrainerApi();
+  const setAcceptedSessions = useSessionStore(
+    (state) => state.setAcceptedSessions
+  );
   const [isLoading, setIsLoading] = useState(true);
+  const [completingSessionId, setCompletingSessionId] = useState(null);
 
   const handleOpenDialog = (sessionId) => {
     setCurrentSessionId(sessionId);
-
+  
     const existingPlan = workoutPlans[sessionId];
-    const session = acceptedSessions.find((s) => s.id === sessionId);
-
-    const timeRange = session.timeSlot
-      .slice(session.timeSlot.indexOf(" ") + 1)
-      .split(" to ");
-    const min = timeRange[0];
-    const max = timeRange[1];
-
+    const session = acceptedSessions.find((s) => s.appointmentId === sessionId);
+  
+    if (!session) {
+      showSnackbar({ message: "Session not found", severity: "error" });
+      return;
+    }
+  
+    // ✅ Extract only the time part from startTime and endTime
+    const min = session.startTime?.split(" ")[1] || "00:00";
+    const max = session.endTime?.split(" ")[1] || "00:00";
+  
     setMinTime(min);
     setMaxTime(max);
-
+  
     if (existingPlan) {
       setPlanRows(existingPlan);
     } else {
       setPlanRows([{ from: min, to: min, notes: "" }]);
     }
-
+  
     setOpenDialog(true);
   };
+  
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
@@ -107,7 +114,7 @@ function MySessions() {
       }
     };
     fetchAccepted();
-  }, []); 
+  }, []);
 
   const handleInputChange = (index, field, value) => {
     const updatedRows = [...planRows];
@@ -175,17 +182,18 @@ function MySessions() {
             </TableHead>
             <TableBody>
               {acceptedSessions.map((session) => {
-                const [date, time] = session.timeSlot.split(" ", 2);
+                const date = session.startTime?.split(" ")[0] || "-";
+                const start = session.startTime?.split(" ")[1] || "-";
+                const end = session.endTime?.split(" ")[1] || "-";
+
                 const hasPlan = workoutPlans[session.id];
                 return (
                   <TableRow key={session.id}>
-                    <TableCell>{session.name}</TableCell>
-                    <TableCell>{session.program}</TableCell>
+                    <TableCell>{session.memberName}</TableCell>
+                    <TableCell>{session.projectName}</TableCell>
                     <TableCell>{date}</TableCell>
                     <TableCell>
-                      {session.timeSlot.slice(
-                        session.timeSlot.indexOf(" ") + 1
-                      )}
+                      {start} - {end}
                     </TableCell>
                     <TableCell>
                       <Chip
@@ -197,28 +205,13 @@ function MySessions() {
                     </TableCell>
                     <TableCell>
                       <Stack direction="row" spacing={1}>
-                        {/* <Button
-                          variant={hasPlan ? "outlined" : "contained"}
-                          size="small"
-                          color={hasPlan ? "info" : "primary"}
-                          startIcon={
-                            hasPlan ? (
-                              <VisibilityIcon />
-                            ) : (
-                              <AddCircleOutlineIcon />
-                            )
-                          }
-                          onClick={() => handleOpenDialog(session.id)}
-                        >
-                          {hasPlan ? "View" : "Create"}
-                        </Button> */}
                         <Tooltip
                           title={hasPlan ? "View Plan" : "Create Plan"}
                           arrow
                         >
                           <IconButton
                             color={hasPlan ? "info" : "primary"}
-                            onClick={() => handleOpenDialog(session.id)}
+                            onClick={() => handleOpenDialog(session.appointmentId)}
                             aria-label={hasPlan ? "View Plan" : "Create Plan"}
                           >
                             {hasPlan ? (
@@ -229,41 +222,16 @@ function MySessions() {
                           </IconButton>
                         </Tooltip>
                         {hasPlan && (
-                          // <Button
-                          //   variant="contained"
-                          //   color="secondary"
-                          //   size="small"
-                          //   startIcon={<SaveIcon />}
-                          //   onClick={() => {
-                          //     const time = session.timeSlot.slice(
-                          //       session.timeSlot.indexOf(" ") + 1
-                          //     );
-                          //     savePlan({
-                          //       program: session.program,
-                          //       sessionTime: time,
-                          //       rows: workoutPlans[session.id],
-                          //       assignedTo: [session.name],
-                          //     });
-                          //     showSnackbar({
-                          //       message: "Workout plan saved!",
-                          //       severity: "success",
-                          //     });
-                          //   }}
-                          // >
-                          //   Save
-                          // </Button>
                           <Tooltip title="Save Plan" arrow>
                             <IconButton
                               color="secondary"
                               onClick={() => {
-                                const time = session.timeSlot.slice(
-                                  session.timeSlot.indexOf(" ") + 1
-                                );
+                                const time = `${minTime} - ${maxTime}`;
                                 savePlan({
-                                  program: session.program,
+                                  program: session.projectName,
                                   sessionTime: time,
-                                  rows: workoutPlans[session.id],
-                                  assignedTo: [session.name],
+                                  rows: workoutPlans[session.appointmentId],
+                                  assignedTo: [session.memberName],
                                 });
                                 showSnackbar({
                                   message: "Workout plan saved!",
@@ -321,19 +289,44 @@ function MySessions() {
                           Record
                         </Button> */}
                         <Tooltip title="Record as Completed" arrow>
-                          <IconButton
-                            color="success"
-                            onClick={() => {
-                              recordSession(session);
-                              showSnackbar({
-                                message: "Session recorded as completed",
-                                severity: "success",
-                              });
-                            }}
-                            aria-label="Record Session"
-                          >
-                            <CheckCircleIcon />
-                          </IconButton>
+                          <span>
+                            <IconButton
+                              color="success"
+                              onClick={async () => {
+                                setCompletingSessionId(session.appointmentId);
+                                try {
+                                  await completeAppointment(
+                                    session.appointmentId
+                                  );
+                                  // recordSession(session);
+                                  showSnackbar({
+                                    message: "Session recorded as completed",
+                                    severity: "success",
+                                  });
+                                  const res = await getApprovedAppointments();
+                                  setAcceptedSessions(res.data);
+                                } catch (err) {
+                                  console.error(
+                                    "Failed to record session",
+                                    err
+                                  );
+                                  showSnackbar({
+                                    message:
+                                      "Failed to mark session as complete",
+                                    severity: "error",
+                                  });
+                                } finally {
+                                  setCompletingSessionId(null);
+                                }
+                              }}
+                              aria-label="Record Session"
+                              disabled={
+                                completingSessionId === session.appointmentId
+                              }
+                            >
+                              <CheckCircleIcon />
+                            </IconButton>
+                          </span>
                         </Tooltip>
                       </Stack>
                     </TableCell>
@@ -365,28 +358,39 @@ function MySessions() {
 
           {workoutPlans[currentSessionId] && (
             <Button
-              variant="outlined"
-              size="small"
-              onClick={() => {
-                const session = acceptedSessions.find(
-                  (s) => s.id === currentSessionId
-                );
-                savePlan({
-                  program: session.program,
-                  sessionTime: session.timeSlot.slice(
-                    session.timeSlot.indexOf(" ") + 1
-                  ),
-                  rows: workoutPlans[currentSessionId],
-                  assignedTo: [session.name],
-                });
+            variant="outlined"
+            size="small"
+            onClick={() => {
+              const session = acceptedSessions.find(
+                (s) => s.appointmentId === currentSessionId
+              );
+          
+              if (!session) {
                 showSnackbar({
-                  message: "Workout plan saved!",
-                  severity: "success",
+                  message: "Session not found",
+                  severity: "error",
                 });
-              }}
-            >
-              Save to Workout Plans
-            </Button>
+                return;
+              }
+          
+              const time = `${session.startTime?.split(" ")[1] || "00:00"} - ${session.endTime?.split(" ")[1] || "00:00"}`;
+          
+              savePlan({
+                program: session.projectName,
+                sessionTime: time,
+                rows: workoutPlans[currentSessionId],
+                assignedTo: [session.memberName],
+              });
+          
+              showSnackbar({
+                message: "Workout plan saved!",
+                severity: "success",
+              });
+            }}
+          >
+            Save to Workout Plans
+          </Button>
+          
           )}
         </DialogTitle>
 

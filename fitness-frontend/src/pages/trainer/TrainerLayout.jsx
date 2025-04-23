@@ -31,7 +31,7 @@ const pages = [
   { name: "Home", path: "/trainer/home", icon: <DashboardIcon /> },
   { name: "Member Management", path: "/trainer/member-management", icon: <PeopleAltIcon /> },
   { name: "Session Requests", path: "/trainer/session-requests", icon: <EventNoteIcon /> },
-  { name: "My Sessions", path: "/trainer/sessions", icon: <CalendarTodayIcon /> },
+  { name: "My Sessions", path: "/trainer/upcoming-sessions", icon: <CalendarTodayIcon /> },
   { name: "Workout Plans", path: "/trainer/workout-plans", icon: <FitnessCenterIcon /> },
   { name: "Member Progress", path: "/trainer/member-progress", icon: <TrendingUpIcon /> },
   { name: "History", path: "/trainer/history", icon: <HistoryIcon /> },

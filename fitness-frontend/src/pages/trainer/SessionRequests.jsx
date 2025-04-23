@@ -14,6 +14,15 @@ import {
   Paper,
   Pagination,
   Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Select,
 } from "@mui/material";
 import PersonIcon from "@mui/icons-material/Person";
 import useSessionStore from "/src/store/useSessionStore";
@@ -21,12 +30,19 @@ import useTrainerApi from "/src/apis/trainer";
 import { useSnackbar } from "/src/utils/Hooks/SnackbarContext.jsx";
 
 function SessionRequests() {
-  const { getPendingAppointments, acceptAppointment } = useTrainerApi();
+  const { getPendingAppointments, acceptAppointment, getAlternativeTrainers, rejectAppointment } =
+    useTrainerApi();
   const { showSnackbar } = useSnackbar();
   const [requests, setRequests] = useState([]);
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
-  
+
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState(null);
+  const [reason, setReason] = useState("");
+  const [alternativeTrainer, setAlternativeTrainer] = useState("");
+  const [trainers, setTrainers] = useState([]);
+
   const requestsPerPage = 3;
   const totalPages = Math.ceil(requests.length / requestsPerPage);
   const paginatedRequests = requests.slice(
@@ -34,28 +50,50 @@ function SessionRequests() {
     page * requestsPerPage
   );
 
-  const addSession = useSessionStore((state) => state.addSession);
+  // const addSession = useSessionStore((state) => state.addSession);
 
   const handleAccept = async (id) => {
     try {
-      await acceptAppointment(id); // 👈 call backend
-      const session = requests.find((r) => r.id === id);
-      addSession(session); // update state
-      setRequests((prev) => prev.filter((req) => req.id !== id));
-      showSnackbar({ message: `${session.name}'s session accepted`, severity: "success" });
+      await acceptAppointment(id);
+      const session = requests.find((r) => r.appointmentId === id);
+      // addSession(session);
+      showSnackbar({
+        message: `${session.memberName}'s session accepted`,
+        severity: "success",
+      });
+      const res = await getPendingAppointments();
+      setRequests(res.data);
     } catch (err) {
       console.error("Error accepting appointment", err);
-      showSnackbar({ message: "Failed to accept session request", severity: "error" });
+      showSnackbar({
+        message: "Failed to accept session request",
+        severity: "error",
+      });
     }
   };
 
-  const handleReject = (id) => {
-    setRequests((prev) => prev.filter((req) => req.id !== id));
-    showSnackbar({ message: `Session request rejected`, severity: "info" }); 
-  };
+  // const handleReject = (id) => {
+  //   setRequests((prev) => prev.filter((req) => req.id !== id));
+  //   showSnackbar({ message: `Session request rejected`, severity: "info" });
+  // };
 
-  const handleSuggest = (id) => {
-    showSnackbar({ message: `Suggesting another trainer for request ID: ${id}`, severity: "info" });
+  const handleRejectClick = async (req) => {
+    setSelectedRequest(req);
+    setReason("");
+    setAlternativeTrainer("");
+
+    try {
+      const res = await getAlternativeTrainers();
+      setTrainers(res.data || []);
+    } catch (err) {
+      console.error("Failed to fetch alternate trainers", err);
+      showSnackbar({
+        message: "Could not load trainer list",
+        severity: "error",
+      });
+    }
+
+    setRejectDialogOpen(true);
   };
 
   useEffect(() => {
@@ -66,7 +104,10 @@ function SessionRequests() {
         setRequests(res.data);
       } catch (err) {
         console.error("Failed to load pending appointments", err);
-        showSnackbar({ message: "Failed to load session requests", severity: "error" });
+        showSnackbar({
+          message: "Failed to load session requests",
+          severity: "error",
+        });
       } finally {
         setIsLoading(false);
       }
@@ -96,7 +137,9 @@ function SessionRequests() {
       </Typography>
 
       {requests.length === 0 ? (
-        <Typography color="text.secondary">No pending session requests</Typography>
+        <Typography color="text.secondary">
+          No pending session requests
+        </Typography>
       ) : (
         <>
           <Paper
@@ -111,7 +154,7 @@ function SessionRequests() {
           >
             <List sx={{ width: "100%" }}>
               {paginatedRequests.map((req, index) => (
-                <React.Fragment key={req.id}>
+                <React.Fragment key={req.appointmentId}>
                   <ListItem
                     alignItems="flex-start"
                     sx={{
@@ -131,12 +174,14 @@ function SessionRequests() {
                       <ListItemText
                         primary={
                           <Typography variant="subtitle1" fontWeight={600}>
-                            {req.name}
+                            {req.memberName}
                           </Typography>
                         }
                         secondary={
                           <Typography variant="body2" color="text.secondary">
-                            {req.program} — {req.timeSlot}
+                            {req.projectName} — {req.startTime.split(" ")[0]} (
+                            {req.startTime.split(" ")[1]} -{" "}
+                            {req.endTime.split(" ")[1]})
                           </Typography>
                         }
                       />
@@ -158,7 +203,7 @@ function SessionRequests() {
                           whiteSpace: "nowrap",
                         }}
                       >
-                        📝 {req.remark}
+                        📝 {req.description}
                       </Typography>
                     </Tooltip>
 
@@ -172,30 +217,24 @@ function SessionRequests() {
                         variant="outlined"
                         color="error"
                         size="small"
-                        onClick={() => handleReject(req.id)}
+                        onClick={() => handleRejectClick(req)}
                       >
                         Reject
-                      </Button>
-                      <Button
-                        variant="outlined"
-                        color="secondary"
-                        size="small"
-                        onClick={() => handleSuggest(req.id)}
-                      >
-                        Suggest Trainer
                       </Button>
                       <Button
                         variant="contained"
                         color="success"
                         size="small"
-                        onClick={() => handleAccept(req.id)}
+                        onClick={() => handleAccept(req.appointmentId)}
                       >
                         Accept
                       </Button>
                     </Stack>
                   </ListItem>
 
-                  {index !== paginatedRequests.length - 1 && <Divider component="li" />}
+                  {index !== paginatedRequests.length - 1 && (
+                    <Divider component="li" />
+                  )}
                 </React.Fragment>
               ))}
             </List>
@@ -211,6 +250,93 @@ function SessionRequests() {
           </Box>
         </>
       )}
+      <Dialog
+        open={rejectDialogOpen}
+        onClose={() => setRejectDialogOpen(false)}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>Reject Session Request</DialogTitle>
+        <DialogContent
+          sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+        >
+          <TextField
+            label="Reason for Rejection"
+            multiline
+            rows={3}
+            fullWidth
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+          />
+          <FormControl fullWidth>
+            <InputLabel id="trainer-select-label">
+              Suggest Alternate Trainer
+            </InputLabel>
+            <Select
+              labelId="trainer-select-label"
+              value={alternativeTrainer || ""}
+              onChange={(e) => setAlternativeTrainer(e.target.value)}
+              label="Suggest Alternate Trainer"
+            >
+              {trainers.map((trainer) => (
+                <MenuItem key={trainer.trainerId} value={trainer.trainerId}>
+                  {trainer.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+  <Button onClick={() => setRejectDialogOpen(false)}>Cancel</Button>
+  <Button
+    variant="contained"
+    color="error"
+    onClick={async () => {
+      if (!selectedRequest) return;
+
+      if (!reason.trim()) {
+        showSnackbar({
+          message: "Please enter a rejection reason",
+          severity: "warning",
+        });
+        return;
+      }
+
+      try {
+        const altTrainerObj = trainers.find(
+          (t) => t.trainerId
+          === alternativeTrainer
+        );
+        await rejectAppointment(
+          selectedRequest.appointmentId,
+          reason,
+          alternativeTrainer || null,
+          altTrainerObj?.name || ""
+        );
+
+        showSnackbar({
+          message: "Session request rejected",
+          severity: "info",
+        });
+
+        const res = await getPendingAppointments();
+        setRequests(res.data);
+      } catch (err) {
+        console.error("Failed to reject session", err);
+        showSnackbar({
+          message: "Failed to reject session",
+          severity: "error",
+        });
+      } finally {
+        setRejectDialogOpen(false);
+      }
+    }}
+  >
+    Confirm Reject
+  </Button>
+</DialogActions>
+
+      </Dialog>
     </Box>
   );
 }

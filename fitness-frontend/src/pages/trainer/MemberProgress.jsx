@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Grid,
@@ -30,43 +30,44 @@ import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { CalendarPicker } from "@mui/x-date-pickers/CalendarPicker";
 import { PickersDay } from "@mui/x-date-pickers/PickersDay";
+import useTrainerApi from "/src/apis/trainer";
 
-const mockMembers = [
-  {
-    id: 1,
-    name: "Priya Mehta",
-    booked: 15,
-    successful: 12,
-    cancelled: 3,
-    upcomingSessions: [
-      { date: new Date(2025, 3, 22), time: "5:30 PM", program: "Strength Training" },
-      { date: new Date(2025, 3, 26), time: "4:00 PM", program: "HIIT" },
-      { date: new Date(2025, 3, 30), time: "6:00 PM", program: "Cardio Blast" },
-    ],
-  },
-  {
-    id: 2,
-    name: "John Doe",
-    booked: 10,
-    successful: 8,
-    cancelled: 2,
-    upcomingSessions: [
-      { date: new Date(2025, 3, 4), time: "5:00 PM", program: "Pilates" },
-      { date: new Date(2025, 3, 8), time: "6:15 PM", program: "Yoga" },
-    ],
-  },
-  {
-    id: 3,
-    name: "Ava Singh",
-    booked: 17,
-    successful: 15,
-    cancelled: 2,
-    upcomingSessions: [
-      { date: new Date(2025, 3, 5), time: "7:00 PM", program: "Core Training" },
-      { date: new Date(2025, 3, 7), time: "4:30 PM", program: "Strength" },
-    ],
-  },
-];
+// const mockMembers = [
+//   {
+//     id: 1,
+//     name: "Priya Mehta",
+//     booked: 15,
+//     successful: 12,
+//     cancelled: 3,
+//     upcomingSessions: [
+//       { date: new Date(2025, 3, 22), time: "5:30 PM", program: "Strength Training" },
+//       { date: new Date(2025, 3, 26), time: "4:00 PM", program: "HIIT" },
+//       { date: new Date(2025, 3, 30), time: "6:00 PM", program: "Cardio Blast" },
+//     ],
+//   },
+//   {
+//     id: 2,
+//     name: "John Doe",
+//     booked: 10,
+//     successful: 8,
+//     cancelled: 2,
+//     upcomingSessions: [
+//       { date: new Date(2025, 3, 4), time: "5:00 PM", program: "Pilates" },
+//       { date: new Date(2025, 3, 8), time: "6:15 PM", program: "Yoga" },
+//     ],
+//   },
+//   {
+//     id: 3,
+//     name: "Ava Singh",
+//     booked: 17,
+//     successful: 15,
+//     cancelled: 2,
+//     upcomingSessions: [
+//       { date: new Date(2025, 3, 5), time: "7:00 PM", program: "Core Training" },
+//       { date: new Date(2025, 3, 7), time: "4:30 PM", program: "Strength" },
+//     ],
+//   },
+// ];
 
 const weeklyData = [
   { label: "Week 1", hours: 3 },
@@ -86,13 +87,66 @@ const MemberProgress = () => {
   const [selectedMember, setSelectedMember] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [chartView, setChartView] = useState("weekly");
+  const { getAppointmentsGroupedByMember } = useTrainerApi();
+const [members, setMembers] = useState([]);
+const [isLoading, setIsLoading] = useState(true);
 
-  const filteredMembers = mockMembers.filter((member) =>
-    member.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+
+const filteredMembers = members.filter((member) =>
+  member.name.toLowerCase().includes(searchTerm.toLowerCase())
+);
+
 
   const normalize = (date) =>
     new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      try {
+        setIsLoading(true);
+        const res = await getAppointmentsGroupedByMember();
+        const rawMembers = res.data;
+  
+        const formattedMembers = rawMembers.map((member) => {
+          const appointments = member.appointments || [];
+  
+          const successful = appointments.filter(
+            (a) => a.appointmentStatus === "Completed"
+          ).length;
+  
+          const cancelled = appointments.filter(
+            (a) => a.appointmentStatus === "Cancelled"
+          ).length;
+  
+          const upcomingSessions = appointments
+            .filter((a) => a.appointmentStatus === "Approved")
+            .map((a, i) => ({
+              date: new Date(2025, 3, 23 + i), // placeholder date since API has no date
+              time: "5:30 PM", // placeholder time
+              program: a.projectName.trim(),
+            }));
+  
+          return {
+            id: member.memberId,
+            name: member.memberName,
+            booked: appointments.length,
+            successful,
+            cancelled,
+            upcomingSessions,
+          };
+        });
+  
+        setMembers(formattedMembers);
+      } catch (err) {
+        console.error("Failed to load appointments", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+  
+    fetchAppointments();
+  }, []);
+  
 
   return (
     <Box>

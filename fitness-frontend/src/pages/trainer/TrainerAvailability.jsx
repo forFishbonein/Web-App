@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -14,12 +14,15 @@ import useTrainerStore from "../../store/useAvailabilityStore";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
 import { useSnackbar } from "/src/utils/Hooks/SnackbarContext.jsx";
+import useTrainerApi from "../../apis/trainer";
+import dayjs from "dayjs";
 
 const TrainerAvailability = () => {
   const { availability, setAvailability } = useTrainerStore();
   const [isEditing, setIsEditing] = useState(false);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const { showSnackbar } = useSnackbar();
+  const { updateAvailability, getAvailability } = useTrainerApi();
 
   const handleSlotAdd = (slot) => {
     setAvailability([...availability, slot]);
@@ -42,15 +45,68 @@ const TrainerAvailability = () => {
     setConfirmDialogOpen(true);
   };
 
-  const confirmSave = () => {
-    // Persist to backend here
-    console.log("Saving availability:", availability);
-    showSnackbar({
-      message: "Availability saved successfully!",
-      severity: "success",
-    });
-    setConfirmDialogOpen(false);
-    setIsEditing(false);
+  useEffect(() => {
+    const fetchAvailability = async () => {
+      try {
+        const response = await getAvailability();
+        const data = response?.data;
+
+        if (Array.isArray(data)) {
+          const parsed = data.map((slot) => ({
+            id: `${slot.availabilityId}`,
+            start: dayjs(slot.startTime, "YYYY-MM-DD HH:mm").toDate(),
+            end: dayjs(slot.endTime, "YYYY-MM-DD HH:mm").toDate(),
+            title: "Available",
+          }));
+          setAvailability(parsed);
+        } else {
+          showSnackbar({
+            message: "No availability data found.",
+            severity: "info",
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching availability:", error);
+        showSnackbar({
+          message: "Failed to load availability.",
+          severity: "error",
+        });
+      }
+    };
+
+    fetchAvailability();
+  }, []);
+
+  const confirmSave = async () => {
+    if (availability.length === 0) {
+      showSnackbar({
+        message: "Please add at least one time slot before saving.",
+        severity: "error",
+      });
+      return;
+    }
+
+    const formattedSlots = availability.map((slot) => ({
+      availabilityId: 0, // Assuming 0 for new slots
+      startTime: dayjs(slot.start).format("YYYY-MM-DD HH:mm:ss"),
+      endTime: dayjs(slot.end).format("YYYY-MM-DD HH:mm:ss"),
+    }));
+
+    try {
+      await updateAvailability(formattedSlots);
+      showSnackbar({
+        message: "Availability saved successfully!",
+        severity: "success",
+      });
+      setConfirmDialogOpen(false);
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Error saving availability:", error);
+      showSnackbar({
+        message: "Failed to save availability. Please try again.",
+        severity: "error",
+      });
+    }
   };
 
   return (
@@ -75,7 +131,8 @@ const TrainerAvailability = () => {
             } else {
               setIsEditing(true);
               showSnackbar({
-                message: "Calendar is now editable. Click slots to add/remove availability.",
+                message:
+                  "Calendar is now editable. Click slots to add/remove availability.",
                 severity: "info",
               });
             }
@@ -101,7 +158,8 @@ const TrainerAvailability = () => {
         <DialogTitle>Confirm Save</DialogTitle>
         <DialogContent>
           <Typography>
-            Are you sure you want to save this availability? This will be visible to members for booking.
+            Are you sure you want to save this availability? This will be
+            visible to members for booking.
           </Typography>
         </DialogContent>
         <DialogActions>

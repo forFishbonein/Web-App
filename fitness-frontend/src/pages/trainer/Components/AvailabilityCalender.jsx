@@ -8,6 +8,8 @@ import isSameDay from "date-fns/isSameDay";
 import enGB from "date-fns/locale/en-GB";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { Box } from "@mui/material";
+import useTrainerApi from "../../../apis/trainer";
+import dayjs from "dayjs";
 
 const locales = {
   "en-GB": enGB,
@@ -30,6 +32,7 @@ const AvailabilityCalendar = ({
 }) => {
   const [view, setView] = useState(Views.WEEK);
   const [date, setDate] = useState(new Date());
+  const { updateAvailability } = useTrainerApi();
 
   const calendarEvents = events.map((e) => ({
     ...e,
@@ -74,19 +77,20 @@ const AvailabilityCalendar = ({
         },
         "& .rbc-today": {
           backgroundColor: "#f0faff",
-        },"& .rbc-label": {
+        },
+        "& .rbc-label": {
           fontSize: "0.9rem",
         },
         "& .rbc-event": {
-          backgroundColor: "#1976d2", // Blue
+          backgroundColor: "#1976d2",
           color: "#fff",
           fontSize: "0.8rem",
           padding: "4px 8px",
-          borderRadius: "8px", // Rounded!
+          borderRadius: "8px",
           border: "1px solid #1565c0",
           transition: "0.3s ease",
           "&:hover": {
-            backgroundColor: "#1565c0", // Hover darker
+            backgroundColor: "#1565c0",
             cursor: "pointer",
           },
         },

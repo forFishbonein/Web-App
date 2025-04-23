@@ -24,18 +24,21 @@ const useTrainerApi = () => {
       data,
     });
   };
+  // List of specializations - TrainerProfile
   const listSpecializations = () => {
     return httpRequest({
       method: "get",
       url: `/user/specializations`,
     });
   };
+  // MemberManagement
   const getPendingConnectRequests = () => {
     return httpRequest({
       method: "get",
       url: `/trainer/connect-requests/pending`,
     });
   };
+  // MemberManagement
   const acceptConnectRequest = (requestId, responseMessage = "") => {
     return httpRequest({
       method: "put",
@@ -46,6 +49,7 @@ const useTrainerApi = () => {
       },
     });
   };
+  // MemberManagement
   const rejectConnectRequest = (requestId, responseMessage = "") => {
     return httpRequest({
       method: "put",
@@ -56,18 +60,21 @@ const useTrainerApi = () => {
       },
     });
   };
+  // MemberManagement
   const getConnectedMembers = () => {
     return httpRequest({
       method: "get",
       url: `/trainer/connected-members`,
     });
   };
+  // SessionRequests
   const getPendingAppointments = () => {
     return httpRequest({
       method: "get",
       url: `/trainer/appointments/pending`,
     });
   };  
+  // SessionRequests
   const acceptAppointment = (appointmentId, responseMessage = "") => {
     return httpRequest({
       method: "put",
@@ -77,13 +84,15 @@ const useTrainerApi = () => {
         responseMessage,
       },
     });
-  };  
+  };
+  // MySessions
   const getApprovedAppointments = () => {
     return httpRequest({
       method: "get",
       url: `/trainer/appointments/approved`,
     });
   };
+  // TrainerAvailability
   const updateAvailability = (availabilitySlots) => {
     return httpRequest({
       method: "post",
@@ -92,7 +101,15 @@ const useTrainerApi = () => {
         availabilitySlots,
       },
     });
+  };
+  // TrainerAvailability
+  const getAvailability = () => {
+    return httpRequest({
+      method: "get",
+      url: `/trainer/availability`,
+    });
   };  
+  // TrainerProfile
   const updateTrainerProfile = (data) => {
     return httpRequest({
       method: "put",
@@ -100,12 +117,51 @@ const useTrainerApi = () => {
       data,
     });
   };
+  // TrainerProfile
   const getTrainerProfile = () => {
     return httpRequest({
       method: "get",
       url: "/trainer/profile",
     });
   };
+  // MySessions
+  const completeAppointment = (appointmentId) => {
+    return httpRequest({
+      method: "put",
+      url: "/trainer/appointment/complete",
+      data: {
+        appointmentId,
+      },
+    });
+  };
+  // MemberProgress
+  const getAppointmentsGroupedByMember = () => {
+    return httpRequest({
+      method: "get",
+      url: "/trainer/appointments/by-member",
+    });
+  };  
+  // SessionRequests
+  const getAlternativeTrainers = () => {
+    return httpRequest({
+      method: "get",
+      url: "/trainer/alternative-trainers",
+    });
+  };
+  // SessionRequests
+  const rejectAppointment = (appointmentId, responseMessage, alternativeTrainerId, alternativeTrainerName) => {
+    return httpRequest({
+      method: "put",
+      url: "/trainer/appointment/reject",
+      data: {
+        appointmentId,
+        responseMessage,
+        alternativeTrainerId,
+        alternativeTrainerName,
+      },
+    });
+  };
+  
   
   return {
     getTrainerList,
@@ -120,8 +176,13 @@ const useTrainerApi = () => {
     acceptAppointment,
     getApprovedAppointments,
     updateAvailability,
+    getAvailability,
     updateTrainerProfile,
     getTrainerProfile,
+    completeAppointment,
+    getAppointmentsGroupedByMember,
+    getAlternativeTrainers,
+    rejectAppointment
   };
 };
 export default useTrainerApi;

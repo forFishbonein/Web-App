@@ -245,18 +245,20 @@ function TrainerHome() {
                 <TableBody>
                   {approvedSessions
                     .sort(
-                      (a, b) =>
-                        new Date(a.timeSlot.split(" ")[0]) -
-                        new Date(b.timeSlot.split(" ")[0])
+                      (a, b) => new Date(a.startTime) - new Date(b.startTime)
                     )
                     .map((session) => {
-                      const [date, time] = session.timeSlot.split(" ", 2);
+                      const date = session.startTime?.split(" ")[0] || "-";
+                      const start = session.startTime?.split(" ")[1] || "-";
+                      const end = session.endTime?.split(" ")[1] || "-";
                       return (
-                        <TableRow key={session.id}>
-                          <TableCell>{session.name}</TableCell>
-                          <TableCell>{session.program}</TableCell>
+                        <TableRow key={session.appointmentId}>
+                          <TableCell>{session.memberName || "N/A"}</TableCell>
+                          <TableCell>
+                            {session.projectName?.trim() || "N/A"}
+                          </TableCell>
                           <TableCell>{date}</TableCell>
-                          <TableCell>{time.replace("to", "-")}</TableCell>
+                          <TableCell>{`${start} - ${end}`}</TableCell>
                           <TableCell>
                             <Chip
                               label="Upcoming"

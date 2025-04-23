@@ -17,19 +17,12 @@ import useTrainerApi from "../../apis/trainer";
 import { useNavigate } from "react-router-dom";
 import { useSnackbar } from "/src/utils/Hooks/SnackbarContext.jsx";
 
-const specializationsList = [
-  "Strength Training",
-  "Cardio",
-  "Yoga",
-  "CrossFit",
-  "Nutrition",
-  "Weight Loss",
-];
-
 const TrainerProfile = () => {
-  const { getTrainerProfile, updateTrainerProfile } = useTrainerApi();
+  const { getTrainerProfile, updateTrainerProfile, listSpecializations } =
+    useTrainerApi();
   const navigate = useNavigate();
   const { showSnackbar } = useSnackbar();
+  const [specializationsList, setSpecializationsList] = useState([]);
 
   const [profile, setProfile] = useState({
     specialization: [],
@@ -62,8 +55,28 @@ const TrainerProfile = () => {
     }
   };
 
+  const fetchSpecializations = async () => {
+    try {
+      const res = await listSpecializations();
+      const specs = res?.data;
+
+      if (Array.isArray(specs)) {
+        setSpecializationsList(specs);
+      } else {
+        throw new Error("Specializations response is not an array.");
+      }
+    } catch (err) {
+      console.error("Failed to load specializations", err);
+      showSnackbar({
+        message: "Failed to load specializations.",
+        severity: "error",
+      });
+    }
+  };
+
   useEffect(() => {
     fetchProfile();
+    fetchSpecializations();
   }, []);
 
   const handleChange = (e) => {
@@ -134,8 +147,8 @@ const TrainerProfile = () => {
               )}
             >
               {specializationsList.map((spec) => (
-                <MenuItem key={spec} value={spec}>
-                  {spec}
+                <MenuItem key={spec.specializationId} value={spec.description}>
+                  {spec.description}
                 </MenuItem>
               ))}
             </Select>
@@ -165,7 +178,27 @@ const TrainerProfile = () => {
           />
         </Grid>
 
-        <Grid item xs={12}>
+        {/* <Grid item xs={12}>
+          <TextField
+            label="Location"
+            name="location"
+            value={profile.location}
+            onChange={handleChange}
+            fullWidth
+          />
+        </Grid> */}
+
+        <Grid item xs={12} sm={6}>
+          <TextField
+            label="Workplace"
+            name="Workplace"
+            value={profile.workplace}
+            onChange={handleChange}
+            fullWidth
+          />
+        </Grid>
+
+        <Grid item xs={12} sm={6}>
           <TextField
             label="Location"
             name="location"
