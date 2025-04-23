@@ -32,43 +32,6 @@ import { CalendarPicker } from "@mui/x-date-pickers/CalendarPicker";
 import { PickersDay } from "@mui/x-date-pickers/PickersDay";
 import useTrainerApi from "/src/apis/trainer";
 
-// const mockMembers = [
-//   {
-//     id: 1,
-//     name: "Priya Mehta",
-//     booked: 15,
-//     successful: 12,
-//     cancelled: 3,
-//     upcomingSessions: [
-//       { date: new Date(2025, 3, 22), time: "5:30 PM", program: "Strength Training" },
-//       { date: new Date(2025, 3, 26), time: "4:00 PM", program: "HIIT" },
-//       { date: new Date(2025, 3, 30), time: "6:00 PM", program: "Cardio Blast" },
-//     ],
-//   },
-//   {
-//     id: 2,
-//     name: "John Doe",
-//     booked: 10,
-//     successful: 8,
-//     cancelled: 2,
-//     upcomingSessions: [
-//       { date: new Date(2025, 3, 4), time: "5:00 PM", program: "Pilates" },
-//       { date: new Date(2025, 3, 8), time: "6:15 PM", program: "Yoga" },
-//     ],
-//   },
-//   {
-//     id: 3,
-//     name: "Ava Singh",
-//     booked: 17,
-//     successful: 15,
-//     cancelled: 2,
-//     upcomingSessions: [
-//       { date: new Date(2025, 3, 5), time: "7:00 PM", program: "Core Training" },
-//       { date: new Date(2025, 3, 7), time: "4:30 PM", program: "Strength" },
-//     ],
-//   },
-// ];
-
 const weeklyData = [
   { label: "Week 1", hours: 3 },
   { label: "Week 2", hours: 5 },

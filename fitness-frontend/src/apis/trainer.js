@@ -176,7 +176,16 @@ const useTrainerApi = () => {
       params: { startDate, endDate },
     });
   };  
+  // MySessions.jsx
+  const createPlan = ({ title, content }) => {
+    return httpRequest({
+      method: "post",
+      url: "/trainer/workout-plans",
+      data: { title, content },
+    });
+  };
   
+
   return {
     getTrainerList,
     getTrainerInfo,
@@ -199,6 +208,7 @@ const useTrainerApi = () => {
     rejectAppointment,
     getCompletedAppointments,
     getDynamicTrainerStatistics,
+    createPlan
   };
 };
 export default useTrainerApi;

@@ -51,6 +51,7 @@ function MySessions() {
   );
   const [isLoading, setIsLoading] = useState(true);
   const [completingSessionId, setCompletingSessionId] = useState(null);
+  const [availableDuration, setAvailableDuration] = useState(0);
 
   const handleOpenDialog = (sessionId) => {
     setCurrentSessionId(sessionId);
@@ -70,16 +71,19 @@ function MySessions() {
     setMinTime(min);
     setMaxTime(max);
   
+    // ✅ Now safely compute available time
+    const availableMinutes = timeToMinutes(max) - timeToMinutes(min);
+    setAvailableDuration(availableMinutes);
+  
     if (existingPlan) {
       setPlanRows(existingPlan);
     } else {
-      setPlanRows([{ from: min, to: min, notes: "" }]);
+      setPlanRows([{ duration: "", notes: "" }]);
     }
   
     setOpenDialog(true);
   };
   
-
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setCurrentSessionId(null);
@@ -87,18 +91,21 @@ function MySessions() {
   };
 
   const handleAddRow = () => {
-    setPlanRows((prev) => {
-      const lastRow = prev[prev.length - 1];
-      return [
-        ...prev,
-        {
-          from: lastRow.to || minTime, // If no to time yet, fallback to minTime
-          to: maxTime,
-          notes: "",
-        },
-      ];
-    });
-  };
+    const totalMinutes = planRows.reduce(
+      (sum, row) => sum + Number(row.duration || 0),
+      0
+    );
+  
+    if (totalMinutes >= availableDuration) {
+      showSnackbar({
+        message: "No more time left in this session",
+        severity: "info",
+      });
+      return;
+    }
+  
+    setPlanRows((prev) => [...prev, { duration: "", notes: "" }]);
+  };  
 
   useEffect(() => {
     const fetchAccepted = async () => {
@@ -119,14 +126,33 @@ function MySessions() {
   const handleInputChange = (index, field, value) => {
     const updatedRows = [...planRows];
     updatedRows[index][field] = value;
+  
+    const totalMinutes = updatedRows.reduce(
+      (sum, row) => sum + Number(row.duration || 0),
+      0
+    );
+  
+    if (totalMinutes > availableDuration) {
+      showSnackbar({
+        message: "Total duration exceeds session time!",
+        severity: "warning",
+      });
+      return;
+    }
+  
     setPlanRows(updatedRows);
-  };
+  };  
 
   const handleSavePlan = () => {
     setWorkoutPlans((prev) => ({ ...prev, [currentSessionId]: planRows }));
     showSnackbar({ message: "Workout plan created!", severity: "success" });
     handleCloseDialog();
   };
+
+  const timeToMinutes = (timeStr) => {
+    const [hours, minutes] = timeStr.split(":").map(Number);
+    return hours * 60 + minutes;
+  };  
 
   return (
     <Box>
@@ -185,10 +211,9 @@ function MySessions() {
                 const date = session.startTime?.split(" ")[0] || "-";
                 const start = session.startTime?.split(" ")[1] || "-";
                 const end = session.endTime?.split(" ")[1] || "-";
-
-                const hasPlan = workoutPlans[session.id];
+                const hasPlan = workoutPlans[session.appointmentId];
                 return (
-                  <TableRow key={session.id}>
+                  <TableRow key={session.appointmentId}>
                     <TableCell>{session.memberName}</TableCell>
                     <TableCell>{session.projectName}</TableCell>
                     <TableCell>{date}</TableCell>
@@ -211,7 +236,9 @@ function MySessions() {
                         >
                           <IconButton
                             color={hasPlan ? "info" : "primary"}
-                            onClick={() => handleOpenDialog(session.appointmentId)}
+                            onClick={() =>
+                              handleOpenDialog(session.appointmentId)
+                            }
                             aria-label={hasPlan ? "View Plan" : "Create Plan"}
                           >
                             {hasPlan ? (
@@ -358,39 +385,40 @@ function MySessions() {
 
           {workoutPlans[currentSessionId] && (
             <Button
-            variant="outlined"
-            size="small"
-            onClick={() => {
-              const session = acceptedSessions.find(
-                (s) => s.appointmentId === currentSessionId
-              );
-          
-              if (!session) {
-                showSnackbar({
-                  message: "Session not found",
-                  severity: "error",
+              variant="outlined"
+              size="small"
+              onClick={() => {
+                const session = acceptedSessions.find(
+                  (s) => s.appointmentId === currentSessionId
+                );
+
+                if (!session) {
+                  showSnackbar({
+                    message: "Session not found",
+                    severity: "error",
+                  });
+                  return;
+                }
+
+                const time = `${
+                  session.startTime?.split(" ")[1] || "00:00"
+                } - ${session.endTime?.split(" ")[1] || "00:00"}`;
+
+                savePlan({
+                  program: session.projectName,
+                  sessionTime: time,
+                  rows: workoutPlans[currentSessionId],
+                  assignedTo: [session.memberName],
                 });
-                return;
-              }
-          
-              const time = `${session.startTime?.split(" ")[1] || "00:00"} - ${session.endTime?.split(" ")[1] || "00:00"}`;
-          
-              savePlan({
-                program: session.projectName,
-                sessionTime: time,
-                rows: workoutPlans[currentSessionId],
-                assignedTo: [session.memberName],
-              });
-          
-              showSnackbar({
-                message: "Workout plan saved!",
-                severity: "success",
-              });
-            }}
-          >
-            Save to Workout Plans
-          </Button>
-          
+
+                showSnackbar({
+                  message: "Workout plan saved!",
+                  severity: "success",
+                });
+              }}
+            >
+              Save to Workout Plans
+            </Button>
           )}
         </DialogTitle>
 
@@ -410,35 +438,19 @@ function MySessions() {
               sx={{ mb: 2 }}
             >
               <TextField
-                label="From Time"
-                type="time"
-                value={row.from}
+                label="Duration (min)"
+                type="number"
+                value={row.duration}
                 onChange={(e) =>
-                  handleInputChange(index, "from", e.target.value)
+                  handleInputChange(index, "duration", e.target.value)
                 }
+                placeholder="e.g. 10"
+                fullWidth
                 disabled={!!workoutPlans[currentSessionId]}
-                InputLabelProps={{ shrink: true }}
                 inputProps={{
-                  min: minTime,
-                  max: maxTime,
-                  step: 60,
+                  min: 1,
+                  step: 1,
                 }}
-                sx={{ width: "40%" }}
-              />
-
-              <TextField
-                label="To Time"
-                type="time"
-                value={row.to}
-                onChange={(e) => handleInputChange(index, "to", e.target.value)}
-                disabled={!!workoutPlans[currentSessionId]}
-                InputLabelProps={{ shrink: true }}
-                inputProps={{
-                  min: minTime,
-                  max: maxTime,
-                  step: 60,
-                }}
-                sx={{ width: "40%" }}
               />
 
               <TextField
