@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -15,10 +15,33 @@ import {
   MenuItem,
 } from "@mui/material";
 import useSessionStore from "/src/store/useSessionStore";
+import useTrainerApi from "/src/apis/trainer";
 
 const History = () => {
-  const historySessions = useSessionStore((state) => state.historySessions);
+  const [historySessions, setHistorySessions] = useState([]);
+const { getCompletedAppointments } = useTrainerApi();
   const [statusFilter, setStatusFilter] = useState("All");
+
+  useEffect(() => {
+    const fetchCompleted = async () => {
+      try {
+        const res = await getCompletedAppointments();
+        setHistorySessions(
+          res.data.map((s) => ({
+            name: s.memberName,
+            program: s.projectName,
+            startTime: s.startTime,
+            endTime: s.endTime,
+            status: "Completed",
+          }))
+        );
+      } catch (err) {
+        console.error("Failed to load completed sessions", err);
+      }
+    };
+  
+    fetchCompleted();
+  }, []);  
 
   return (
     <Box>
@@ -76,16 +99,16 @@ const History = () => {
                   (s) => statusFilter === "All" || s.status === statusFilter
                 )
                 .map((session, idx) => {
-                  const [date] = session.timeSlot.split(" ", 2);
-                  const time = session.timeSlot.slice(
-                    session.timeSlot.indexOf(" ") + 1
-                  );
+                  const date = session.startTime?.split(" ")[0] || "-";
+const start = session.startTime?.split(" ")[1] || "-";
+const end = session.endTime?.split(" ")[1] || "-";
+
                   return (
                     <TableRow key={idx}>
                       <TableCell>{session.name}</TableCell>
                       <TableCell>{session.program}</TableCell>
                       <TableCell>{date}</TableCell>
-                      <TableCell>{time}</TableCell>
+                      <TableCell>{start} - {end}</TableCell>
                       <TableCell>
                         <Chip
                           label={session.status}

@@ -161,7 +161,21 @@ const useTrainerApi = () => {
       },
     });
   };
-  
+  // TrainerHistory
+  const getCompletedAppointments = () => {
+    return httpRequest({
+      method: "get",
+      url: "/trainer/appointments/completed",
+    });
+  };  
+  // TrainerHome
+  const getDynamicTrainerStatistics = ({ startDate, endDate }) => {
+    return httpRequest({
+      method: "get",
+      url: "/trainer/appointments/statistics/dynamic",
+      params: { startDate, endDate },
+    });
+  };  
   
   return {
     getTrainerList,
@@ -182,7 +196,9 @@ const useTrainerApi = () => {
     completeAppointment,
     getAppointmentsGroupedByMember,
     getAlternativeTrainers,
-    rejectAppointment
+    rejectAppointment,
+    getCompletedAppointments,
+    getDynamicTrainerStatistics,
   };
 };
 export default useTrainerApi;
