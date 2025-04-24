@@ -184,6 +184,13 @@ const useTrainerApi = () => {
       data: { title, content },
     });
   };
+  const listPlans = () => {
+    return httpRequest({
+      method: "get",
+      url: "/trainer/workout-plans",
+    });
+  };
+  
   
 
   return {
@@ -208,7 +215,8 @@ const useTrainerApi = () => {
     rejectAppointment,
     getCompletedAppointments,
     getDynamicTrainerStatistics,
-    createPlan
+    createPlan,
+    listPlans,
   };
 };
 export default useTrainerApi;

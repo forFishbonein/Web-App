@@ -40,12 +40,12 @@ function MySessions() {
   const [maxTime, setMaxTime] = useState("");
   const [recordedSessions, setRecordedSessions] = useState([]);
   const savePlan = useWorkoutPlanStore((state) => state.savePlan);
-  // const recordSession = useSessionStore((state) => state.recordSession);
   const cancelSession = useSessionStore((state) => state.cancelSession);
   const { showSnackbar } = useSnackbar();
   const [confirmCancelOpen, setConfirmCancelOpen] = useState(false);
   const [sessionToCancel, setSessionToCancel] = useState(null);
-  const { getApprovedAppointments, completeAppointment } = useTrainerApi();
+  const { getApprovedAppointments, completeAppointment, createPlan, listPlans } =
+    useTrainerApi();
   const setAcceptedSessions = useSessionStore(
     (state) => state.setAcceptedSessions
   );
@@ -55,35 +55,35 @@ function MySessions() {
 
   const handleOpenDialog = (sessionId) => {
     setCurrentSessionId(sessionId);
-  
+
     const existingPlan = workoutPlans[sessionId];
     const session = acceptedSessions.find((s) => s.appointmentId === sessionId);
-  
+
     if (!session) {
       showSnackbar({ message: "Session not found", severity: "error" });
       return;
     }
-  
-    // ✅ Extract only the time part from startTime and endTime
+
+    // Extract only the time part from startTime and endTime
     const min = session.startTime?.split(" ")[1] || "00:00";
     const max = session.endTime?.split(" ")[1] || "00:00";
-  
+
     setMinTime(min);
     setMaxTime(max);
-  
-    // ✅ Now safely compute available time
+
+    //  Now safely compute available time
     const availableMinutes = timeToMinutes(max) - timeToMinutes(min);
     setAvailableDuration(availableMinutes);
-  
+
     if (existingPlan) {
       setPlanRows(existingPlan);
     } else {
       setPlanRows([{ duration: "", notes: "" }]);
     }
-  
+
     setOpenDialog(true);
   };
-  
+
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setCurrentSessionId(null);
@@ -95,7 +95,7 @@ function MySessions() {
       (sum, row) => sum + Number(row.duration || 0),
       0
     );
-  
+
     if (totalMinutes >= availableDuration) {
       showSnackbar({
         message: "No more time left in this session",
@@ -103,9 +103,9 @@ function MySessions() {
       });
       return;
     }
-  
+
     setPlanRows((prev) => [...prev, { duration: "", notes: "" }]);
-  };  
+  };
 
   useEffect(() => {
     const fetchAccepted = async () => {
@@ -126,12 +126,12 @@ function MySessions() {
   const handleInputChange = (index, field, value) => {
     const updatedRows = [...planRows];
     updatedRows[index][field] = value;
-  
+
     const totalMinutes = updatedRows.reduce(
       (sum, row) => sum + Number(row.duration || 0),
       0
     );
-  
+
     if (totalMinutes > availableDuration) {
       showSnackbar({
         message: "Total duration exceeds session time!",
@@ -139,9 +139,9 @@ function MySessions() {
       });
       return;
     }
-  
+
     setPlanRows(updatedRows);
-  };  
+  };
 
   const handleSavePlan = () => {
     setWorkoutPlans((prev) => ({ ...prev, [currentSessionId]: planRows }));
@@ -152,7 +152,7 @@ function MySessions() {
   const timeToMinutes = (timeStr) => {
     const [hours, minutes] = timeStr.split(":").map(Number);
     return hours * 60 + minutes;
-  };  
+  };
 
   return (
     <Box>
@@ -387,7 +387,7 @@ function MySessions() {
             <Button
               variant="outlined"
               size="small"
-              onClick={() => {
+              onClick={async () => {
                 const session = acceptedSessions.find(
                   (s) => s.appointmentId === currentSessionId
                 );
@@ -404,17 +404,28 @@ function MySessions() {
                   session.startTime?.split(" ")[1] || "00:00"
                 } - ${session.endTime?.split(" ")[1] || "00:00"}`;
 
-                savePlan({
-                  program: session.projectName,
-                  sessionTime: time,
-                  rows: workoutPlans[currentSessionId],
-                  assignedTo: [session.memberName],
-                });
+                const title = `${session.projectName} - ${session.memberName}`;
+                const content = planRows
+                  .map(
+                    (row, i) =>
+                      `Step ${i + 1}: ${row.duration} min - ${row.notes}`
+                  )
+                  .join("\n");
 
-                showSnackbar({
-                  message: "Workout plan saved!",
-                  severity: "success",
-                });
+                try {
+                  await createPlan({ title, content });
+
+                  showSnackbar({
+                    message: "Workout plan saved to server!",
+                    severity: "success",
+                  });
+                } catch (err) {
+                  console.error("Failed to save plan", err);
+                  showSnackbar({
+                    message: "Failed to save plan to server",
+                    severity: "error",
+                  });
+                }
               }}
             >
               Save to Workout Plans

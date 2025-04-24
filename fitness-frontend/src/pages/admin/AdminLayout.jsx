@@ -61,7 +61,7 @@ function AdminLayout() {
       <Divider />
       <List>
         {pages.map((page) => {
-          const isSelected = location.pathname === page.path;
+          const isSelected = location.pathname.startsWith(page.path);
           return (
             <ListItem key={page.name} disablePadding sx={{ display: "block" }}>
               <ListItemButton

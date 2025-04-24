@@ -3,11 +3,7 @@ import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import theme from "./theme";
 import "./index.css";
-import {
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import AuthenticationPage from "./pages/authenticationPage";
 import HomePage from "./pages/HomePage";
 import MemberLayout from "./pages/member/MemberLayout";
@@ -32,11 +28,20 @@ import MySessions from "./pages/trainer/MySessions";
 import WorkoutPlans from "./pages/trainer/WorkoutPlans";
 import MemberProgress from "./pages/trainer/MemberProgress";
 import History from "./pages/trainer/History";
-import Availability from "./pages/trainer/TrainerAvailability.jsx"
+import Availability from "./pages/trainer/TrainerAvailability.jsx";
 import TrainerProfile from "./pages/trainer/TrainerProfile.jsx";
+import PendingMemberApplications from "./pages/admin/PendingMemberApplications.jsx";
+import AllMembers from "./pages/admin/AllMembers.jsx";
+import TrainersManagementLayout from "./pages/admin/TrainersManagementLayout.jsx";
+import PendingTrainerApplications from "./pages/admin/PendingTrainerApplications.jsx";
+import AllTrainers from "./pages/admin/AllTrainers.jsx";
+import SessionsManagement from "./pages/admin/SessionsManagement.jsx";
+import AdminSettings from "./pages/admin/AdminSettings.jsx";
+import AdminHome from "./pages/admin/AdminHome.jsx";
+import MembersManagementLayout from "./pages/admin/MembersManagementLayout.jsx";
 import { SnackbarProvider } from "./utils/Hooks/SnackbarContext.jsx";
 import { useLoadingStore } from "./store/useLoadingStore";
-import { Backdrop, CircularProgress } from '@mui/material';
+import { Backdrop, CircularProgress } from "@mui/material";
 function App() {
   // before
   // const isAuthenticated = false;
@@ -54,42 +59,111 @@ function App() {
         <CssBaseline />
         <Routes>
           {/* The login page can be accessed before login, but not after login */}
-          <Route path="/" element={!userRole ? <HomePage /> : <Navigate to={getDefaultPath()} replace />} />
-          <Route path="/authenticate" element={!userRole ? <AuthenticationPage /> : <Navigate to={getDefaultPath()} replace />} />
-          <Route path="/forgot-password" element={(!userRole || isGoogle) ? <EmailComponent /> : <Navigate to={getDefaultPath()} replace />} />
+          <Route
+            path="/"
+            element={
+              !userRole ? (
+                <HomePage />
+              ) : (
+                <Navigate to={getDefaultPath()} replace />
+              )
+            }
+          />
+          <Route
+            path="/authenticate"
+            element={
+              !userRole ? (
+                <AuthenticationPage />
+              ) : (
+                <Navigate to={getDefaultPath()} replace />
+              )
+            }
+          />
+          <Route
+            path="/forgot-password"
+            element={
+              !userRole || isGoogle ? (
+                <EmailComponent />
+              ) : (
+                <Navigate to={getDefaultPath()} replace />
+              )
+            }
+          />
           <Route path="/reset-password" element={<ResetPassword />} />
           {/* Perform role access control after login */}
           {isAuthorized(userRole, ["member"]) && (
             <Route path="/member" element={<MemberLayout />}>
-              <Route index element={<Navigate to="/member/trainers" replace />} />
+              <Route
+                index
+                element={<Navigate to="/member/trainers" replace />}
+              />
               <Route path="trainers" element={<Trainers />} />
               <Route path="sessions" element={<Sessions />} />
               <Route path="locations" element={<Locations />} />
             </Route>
           )}
           {isAuthorized(userRole, ["trainer"]) && (
-            <Route path="/trainer" element={<TrainerLayout />} >
+            <Route path="/trainer" element={<TrainerLayout />}>
               <Route index element={<Navigate to="/trainer/home" replace />} />
-            <Route path="home" element={<TrainerHome />} />
-            <Route path="member-management" element={<MemberManagement />} />
-            <Route path="session-requests" element={<SessionRequests />} />
-            <Route path="upcoming-sessions" element={<MySessions />} />
-            <Route path="workout-plans" element={<WorkoutPlans />} />
-            <Route path="member-progress" element={<MemberProgress />} />
-            <Route path="history" element={<History />} />
-            <Route path="availability" element={<Availability />} />
-            <Route path="profile" element={<TrainerProfile />} />
+              <Route path="home" element={<TrainerHome />} />
+              <Route path="member-management" element={<MemberManagement />} />
+              <Route path="session-requests" element={<SessionRequests />} />
+              <Route path="upcoming-sessions" element={<MySessions />} />
+              <Route path="workout-plans" element={<WorkoutPlans />} />
+              <Route path="member-progress" element={<MemberProgress />} />
+              <Route path="history" element={<History />} />
+              <Route path="availability" element={<Availability />} />
+              <Route path="profile" element={<TrainerProfile />} />
             </Route>
           )}
           {isAuthorized(userRole, ["admin"]) && (
-            <Route path="/admin" element={<AdminLayout />} ></Route>
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<Navigate to="/admin/home" replace />} />
+              <Route path="home" element={<AdminHome />} />
+              <Route path="members" element={<MembersManagementLayout />}>
+                <Route
+                  index
+                  element={<Navigate to="pending-applications" replace />}
+                />
+                <Route
+                  path="pending-applications"
+                  element={<PendingMemberApplications />}
+                />
+                <Route path="all" element={<AllMembers />} />
+              </Route>
+              <Route path="trainers" element={<TrainersManagementLayout />}>
+                <Route
+                  index
+                  element={<Navigate to="pending-applications" replace />}
+                />
+                <Route
+                  path="pending-applications"
+                  element={<PendingTrainerApplications />}
+                />
+                <Route path="all" element={<AllTrainers />} />
+              </Route>
+              <Route path="sessions" element={<SessionsManagement />} />
+              <Route path="settings" element={<AdminSettings />} />
+            </Route>
           )}
 
-          <Route path="*" element={!userRole ? <Navigate to="/authenticate" replace /> : <Navigate to={getDefaultPath()} replace />} />
+          <Route
+            path="*"
+            element={
+              !userRole ? (
+                <Navigate to="/authenticate" replace />
+              ) : (
+                <Navigate to={getDefaultPath()} replace />
+              )
+            }
+          />
         </Routes>
       </SnackbarProvider>
       {/* The global load circle */}
-      <Backdrop open={loading} sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+      <Backdrop
+        open={loading}
+        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+      >
         <CircularProgress color="inherit" />
       </Backdrop>
     </ThemeProvider>

@@ -39,18 +39,18 @@ const AuthenticationPage = () => {
     // console.log("Form submitted with: ", data);
     // setEmail(data.email);
     // setVerificationVisible(true);
-    if (role === "admin") {
-      if (data.email === "admin@fitquest.com" && data.password === "FitQuestAdmin1!") {
-        console.log("Admin logged in successfully!");
-        navigate("/admin/home");
-      } else {
-        alert("Invalid Admin Credentials!");
-      }
-    } else {
+    // if (role === "admin") {
+    //   if (data.email === "admin@fitquest.com" && data.password === "FitQuestAdmin1!") {
+    //     console.log("Admin logged in successfully!");
+    //     // navigate("/admin/home");
+    //   } else {
+    //     alert("Invalid Admin Credentials!");
+    //   }
+    // } else {
       console.log("Form submitted with: ", data);
       setEmail(data.email);
       setVerificationVisible(true);
-    }
+    // }
   };
 
   const handleVerificationSuccess = () => {

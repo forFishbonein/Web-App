@@ -11,8 +11,48 @@ const useAdminApi = () => {
       },
     });
   };
+  // PendingMemberApplications and PendingTrainerApplications
+  const getPendingUsers = (params = {}) => {
+    return httpRequest({
+      method: "GET",
+      url: "/admin/pending-users",
+      params,
+    });
+  };
+
+  // PendingMemberApplications
+  const approveApplication = (email) => {
+    return httpRequest({
+      method: "POST",
+      url: "/admin/approve",
+      data: { email },
+    });
+  };
+
+  // PendingMemberApplications
+  const rejectApplication = (email) => {
+    return httpRequest({
+      method: "POST",
+      url: "/admin/reject",
+      data: { email },
+    });
+  };
+
+  // AllMembers
+  const getAllUsers = (params = {}) => {
+    return httpRequest({
+      method: "GET",
+      url: "/admin/users",
+      params,
+    });
+  };
+  
   return {
     getAdminInfo,
+    getPendingUsers,
+    approveApplication,
+    rejectApplication,
+    getAllUsers,
   };
 };
 export default useAdminApi;

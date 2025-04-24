@@ -98,13 +98,10 @@ const LoginForm = ({ roleLogin }) => {
           } else if (role === "admin") {
             getInfoFun = getAdminInfo;
           }
-          // let getInfoFun = getUserInfo; // test data
-          // const newToken = "123456"; // test data
           await setToken(newToken, role, getInfoFun);
+          // await setToken(newToken, "admin", getInfoFun);
           showSnackbar({ message: "Login Successful!", severity: "success" });
           console.log("Login Successful!", role);
-          //base the role to redirect to the right page
-          // navigate(`/${role}`); // don't need this logic
         } catch (error) {
           if (error) {
             //Error handling should be done, otherwise the try-catch will not be able to see the error directly after the try-catch, resulting in the failure to find the problem
