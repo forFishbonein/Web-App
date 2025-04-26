@@ -29,7 +29,6 @@ const pages = [
   { name: "Dashboard", path: "/admin/home", icon: <DashboardIcon /> },
   { name: "Members Management", path: "/admin/members", icon: <PeopleAltIcon /> },
   { name: "Trainers Management", path: "/admin/trainers", icon: <FitnessCenterIcon /> },
-  { name: "Session Monitoring", path: "/admin/sessions", icon: <EventNoteIcon /> },
   { name: "Center Management", path: "/admin/centers", icon: <EventNoteIcon /> },
   { name: "Specialisation Management", path: "/admin/specialisations", icon: <EventNoteIcon /> },
   { name: "Settings", path: "/admin/settings", icon: <SettingsIcon /> },

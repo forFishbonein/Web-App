@@ -35,7 +35,6 @@ import AllMembers from "./pages/admin/AllMembers.jsx";
 import TrainersManagementLayout from "./pages/admin/TrainersManagementLayout.jsx";
 import PendingTrainerApplications from "./pages/admin/PendingTrainerApplications.jsx";
 import AllTrainers from "./pages/admin/AllTrainers.jsx";
-import SessionsManagement from "./pages/admin/SessionsManagement.jsx";
 import AdminSettings from "./pages/admin/AdminSettings.jsx";
 import AdminHome from "./pages/admin/AdminHome.jsx";
 import MembersManagementLayout from "./pages/admin/MembersManagementLayout.jsx";
@@ -140,7 +139,6 @@ function App() {
                 />
                 <Route path="all" element={<AllTrainers />} />
               </Route>
-              <Route path="sessions" element={<SessionsManagement />} />
               <Route path="centers" element={<CenterManagement />} />
               <Route path="specialisations" element={<SpecialisationManagement />} />
               <Route path="settings" element={<AdminSettings />} />
