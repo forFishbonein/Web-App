@@ -86,11 +86,10 @@ const SpecialisationManagement = () => {
         {filtered.map((s) => (
           <Grid item xs={12} sm={6} md={4} key={s.specializationId}>
             <Paper sx={{ p: 2, borderRadius: 2 }}>
-              <Typography variant="h6">{s.name}</Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Box display="flex" gap={1} sx={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
+              <Typography variant="h6" color="text.primary">
                 {s.description || "-"}
               </Typography>
-              <Box mt={2} display="flex" gap={1}>
                 <IconButton onClick={() => setDeleteId(s)}>
                   <DeleteIcon color="error" />
                 </IconButton>

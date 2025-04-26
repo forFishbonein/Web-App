@@ -18,7 +18,7 @@ import DashboardIcon from "@mui/icons-material/Dashboard";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
 import EventNoteIcon from "@mui/icons-material/EventNote";
-import SettingsIcon from "@mui/icons-material/Settings";
+import BuildIcon from '@mui/icons-material/Build';
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 
@@ -30,7 +30,7 @@ const pages = [
   { name: "Members Management", path: "/admin/members", icon: <PeopleAltIcon /> },
   { name: "Trainers Management", path: "/admin/trainers", icon: <FitnessCenterIcon /> },
   { name: "Center Management", path: "/admin/centers", icon: <EventNoteIcon /> },
-  { name: "Specialisation Management", path: "/admin/specialisations", icon: <EventNoteIcon /> },
+  { name: "Specialisation Management", path: "/admin/specialisations", icon: <BuildIcon /> },
 ];
 
 function AdminLayout() {
