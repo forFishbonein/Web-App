@@ -4,13 +4,17 @@ import dayjs from "dayjs";
 import { DateRange } from "react-date-range";
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
+// 例如使用英文（美国）
+import enUS from 'date-fns/locale/en-US';
+// 或者中文
+// import zhCN from 'date-fns/locale/zh-CN';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend, ResponsiveContainer, ComposedChart } from "recharts";
 function HistoryChart({ getDynamicAppointmentStatistics }) {
   const [open, setOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectionRange, setSelectionRange] = useState({
-    startDate: dayjs().subtract(7, 'day'),
-    endDate: dayjs(),
+    startDate: dayjs().subtract(7, 'day').toDate(),
+    endDate: dayjs().toDate(),
     key: "selection",
   });
 
@@ -65,6 +69,7 @@ function HistoryChart({ getDynamicAppointmentStatistics }) {
         transformOrigin={{ vertical: "top", horizontal: "left" }}
       >
         <DateRange
+          locale={enUS}
           ranges={[selectionRange]}
           onChange={(ranges) => handleSelect(ranges)}
           moveRangeOnFirstSelection={false}
