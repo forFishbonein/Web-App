@@ -28,7 +28,7 @@ const AllMembers = () => {
 
   const fetchMembers = async () => {
     try {
-      const res = await getAllUsers({ role: "member" });
+      const res = await getAllUsers({ role: "member" , pageSize: "20"});
       setMembers(res.data.records || []);
     } catch (err) {
       console.error("Failed to fetch all members", err);

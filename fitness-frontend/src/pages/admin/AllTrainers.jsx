@@ -28,7 +28,7 @@ const AllTrainers = () => {
 
   const fetchtrainers = async () => {
     try {
-      const res = await getAllUsers({ role: "trainer" });
+      const res = await getAllUsers({ role: "trainer", pageSize: "20" });
       settrainers(res.data.records || []);
     } catch (err) {
       console.error("Failed to fetch all trainers", err);
