@@ -252,18 +252,45 @@ function MySessions() {
                           <Tooltip title="Save Plan" arrow>
                             <IconButton
                               color="secondary"
-                              onClick={() => {
-                                const time = `${minTime} - ${maxTime}`;
-                                savePlan({
-                                  program: session.projectName,
-                                  sessionTime: time,
-                                  rows: workoutPlans[session.appointmentId],
-                                  assignedTo: [session.memberName],
-                                });
-                                showSnackbar({
-                                  message: "Workout plan saved!",
-                                  severity: "success",
-                                });
+                              onClick={async () => {
+                                const session = acceptedSessions.find(
+                                  (s) => s.appointmentId === currentSessionId
+                                );
+                
+                                if (!session) {
+                                  showSnackbar({
+                                    message: "Session not found",
+                                    severity: "error",
+                                  });
+                                  return;
+                                }
+                
+                                const time = `${
+                                  session.startTime?.split(" ")[1] || "00:00"
+                                } - ${session.endTime?.split(" ")[1] || "00:00"}`;
+                
+                                const title = `${session.projectName} - ${session.memberName}`;
+                                const content = planRows
+                                  .map(
+                                    (row, i) =>
+                                      `Step ${i + 1}: ${row.duration} min - ${row.notes}`
+                                  )
+                                  .join("\n");
+                
+                                try {
+                                  await createPlan({ title, content });
+                
+                                  showSnackbar({
+                                    message: "Workout plan saved to server!",
+                                    severity: "success",
+                                  });
+                                } catch (err) {
+                                  console.error("Failed to save plan", err);
+                                  showSnackbar({
+                                    message: "Failed to save plan to server",
+                                    severity: "error",
+                                  });
+                                }
                               }}
                               aria-label="Save Plan"
                             >

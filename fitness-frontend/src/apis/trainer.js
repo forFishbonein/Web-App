@@ -190,9 +190,29 @@ const useTrainerApi = () => {
       url: "/trainer/workout-plans",
     });
   };
+  const deletePlan = (planId) => {
+    return httpRequest({
+      method: "delete",
+      url: `/trainer/workout-plans/${planId}`,
+    });
+  };
+  const bindPlanToAppointment = (appointmentId, planId) => {
+    return httpRequest({
+      method: "put",
+      url: `/trainer/appointments/${appointmentId}/workout-plan/${planId}`,
+    });
+  };  
+  const updatePlan = (planId, { title, content }) => {
+    return httpRequest({
+      method: "put",
+      url: `/trainer/workout-plans/${planId}`,
+      data: {
+        title,
+        content,
+      },
+    });
+  };  
   
-  
-
   return {
     getTrainerList,
     getTrainerInfo,
@@ -217,6 +237,9 @@ const useTrainerApi = () => {
     getDynamicTrainerStatistics,
     createPlan,
     listPlans,
+    deletePlan,
+    bindPlanToAppointment,
+    updatePlan
   };
 };
 export default useTrainerApi;

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -23,6 +23,7 @@ import {
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import useWorkoutPlanStore from "/src/store/useWorkoutPlanStore";
 import { useSnackbar } from "/src/utils/Hooks/SnackbarContext.jsx";
+import useTrainerApi from "../../apis/trainer";
 
 const connectedMembersWithSessions = ["Priya Mehta", "John Doe", "Alex Kim"];
 
@@ -38,14 +39,8 @@ const WorkoutPlans = () => {
   const { showSnackbar } = useSnackbar();
   const [confirmRemoveOpen, setConfirmRemoveOpen] = useState(false);
   const [sortBy, setSortBy] = useState("none");
-
-  const handleMenuOpen = (event, index) => {
-    if (index < savedPlans.length) {
-      setSelectedPlanIndex(index);
-      setAnchorEl(event.currentTarget);
-      console.log("selectedPlanIndex", selectedPlanIndex);
-    }
-  };
+  const { listPlans, deletePlan } = useTrainerApi();
+  const [plans, setPlans] = useState([]);
 
   const handleMenuClose = () => {
     setAnchorEl(null);
@@ -57,6 +52,58 @@ const WorkoutPlans = () => {
     setSelectedMembers(assigned);
     setAssignDialogOpen(true);
     handleMenuClose();
+  };
+
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        const response = await listPlans();
+        const rawPlans = response.data || [];
+  
+        const mappedPlans = rawPlans.map(plan => ({
+          planId: plan.planId,
+          program: plan.title, 
+          rows: parseContentToRows(plan.content),
+          assignedTo: [], 
+          createTime: plan.createTime,
+          updateTime: plan.updateTime,
+        }));
+  
+        setPlans(mappedPlans);
+      } catch (error) {
+        console.error("Failed to fetch workout plans:", error);
+        showSnackbar({
+          message: "Failed to load workout plans",
+          severity: "error",
+        });
+      }
+    };
+  
+    fetchPlans();
+  }, [showSnackbar]);
+  
+  const parseContentToRows = (content) => {
+    if (!content) return [];
+  
+    return content.split("\n").map(step => {
+      const match = step.match(/(\d+)\s*min\s*-\s*(.*)/i);
+      if (match) {
+        const duration = parseInt(match[1], 10); // directly capture minutes
+        return {
+          duration: duration || 0,
+          notes: match[2] || "",
+        };
+      } else {
+        return { duration: 0, notes: step.trim() };
+      }
+    });
+  };  
+
+  const handleMenuOpen = (event, index) => {
+    if (index < plans.length) {
+      setSelectedPlanIndex(index);
+      setAnchorEl(event.currentTarget);
+    }
   };
 
   const handleViewMembers = () => {
@@ -82,10 +129,39 @@ const WorkoutPlans = () => {
     });
   };
 
-  const handleRemovePlan = () => {
-    setConfirmRemoveOpen(true);
-    handleMenuClose();
-  };
+  const handleRemovePlan = async () => {
+    setConfirmRemoveOpen(false);
+    try {
+      const selectedPlan = plans[selectedPlanIndex];
+      if (!selectedPlan) return;
+  
+      await deletePlan(selectedPlan.planId); // delete using planId from backend
+      showSnackbar({
+        message: "Workout plan deleted successfully",
+        severity: "success",
+      });
+  
+      // After deleting, refresh the plans again
+      const response = await listPlans();
+      const rawPlans = response.data || [];
+      const mappedPlans = rawPlans.map(plan => ({
+        program: plan.title,
+        rows: parseContentToRows(plan.content),
+        assignedTo: [],
+        createTime: plan.createTime,
+        updateTime: plan.updateTime,
+        planId: plan.planId, // don't forget this!
+      }));
+      setPlans(mappedPlans);
+  
+    } catch (error) {
+      console.error("Failed to delete workout plan:", error);
+      showSnackbar({
+        message: "Failed to delete workout plan",
+        severity: "error",
+      });
+    }
+  };  
 
   const toggleMember = (member) => {
     setSelectedMembers((prev) =>
@@ -96,31 +172,27 @@ const WorkoutPlans = () => {
   };
 
   const getRowDuration = (row) => {
-    if (!row.from || !row.to) return 0;
-    const [fromHours, fromMinutes] = row.from.split(":").map(Number);
-    const [toHours, toMinutes] = row.to.split(":").map(Number);
-
-    const fromTotal = fromHours * 60 + fromMinutes;
-    const toTotal = toHours * 60 + toMinutes;
-    return Math.max(0, toTotal - fromTotal);
-  };
+    if (!row || typeof row.duration !== 'number') return 0;
+    return row.duration;
+  };  
 
   const calculateTotalDuration = (rows) => {
+    if (!Array.isArray(rows)) return 0;
     return rows.reduce((acc, row) => acc + getRowDuration(row), 0);
-  };
+  };  
 
-  const sortedPlans = [...savedPlans]
-  .filter((plan) =>
-    plan.program.toLowerCase().includes(searchTerm.toLowerCase())
-  )
-  .sort((a, b) => {
-    if (sortBy === "duration") {
-      return calculateTotalDuration(b.rows) - calculateTotalDuration(a.rows);
-    } else if (sortBy === "assigned") {
-      return (b.assignedTo?.length || 0) - (a.assignedTo?.length || 0);
-    }
-    return 0;
-  });
+  const sortedPlans = [...plans]
+    .filter((plan) =>
+      (plan.program || "").toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => {
+      if (sortBy === "duration") {
+        return calculateTotalDuration(b.rows) - calculateTotalDuration(a.rows);
+      } else if (sortBy === "assigned") {
+        return (b.assignedTo?.length || 0) - (a.assignedTo?.length || 0);
+      }
+      return 0;
+    });
 
   return (
     <Box>
@@ -162,54 +234,55 @@ const WorkoutPlans = () => {
           </TextField>
         </Stack>
       </Box>
-      {savedPlans.length === 0 ? (
+      {plans.length === 0 ? (
         <Typography color="text.secondary">
           No workout plans saved yet.
         </Typography>
       ) : (
         <Grid container spacing={3}>
           {sortedPlans.map((plan, index) => (
-              <Grid item xs={12} md={4} key={index}>
-                <Paper
-                  elevation={3}
-                  sx={{
-                    p: 2,
-                    borderRadius: 2,
-                    position: "relative",
-                    cursor: "pointer",
-                    "&:hover": { boxShadow: 6 },
-                  }}
+            <Grid item xs={12} md={4} key={index}>
+              <Paper
+                elevation={3}
+                sx={{
+                  p: 2,
+                  borderRadius: 2,
+                  position: "relative",
+                  cursor: "pointer",
+                  "&:hover": { boxShadow: 6 },
+                }}
+              >
+                <IconButton
+                  sx={{ position: "absolute", top: 8, right: 8 }}
+                  onClick={(e) => handleMenuOpen(e, index)}
                 >
-                  <IconButton
-                    sx={{ position: "absolute", top: 8, right: 8 }}
-                    onClick={(e) => handleMenuOpen(e, index)}
-                  >
-                    <MoreVertIcon />
-                  </IconButton>
+                  <MoreVertIcon />
+                </IconButton>
 
-                  <Typography variant="h6" sx={{ mb: 1 }}>
-                    {plan.program}
+                <Typography variant="h6" sx={{ mb: 1 }}>
+                  {plan.program}
+                </Typography>
+
+                <div
+                  style={{ display: "flex", justifyContent: "space-between" }}
+                >
+                  <Typography variant="caption" color="text.secondary">
+                    Session Duration: {calculateTotalDuration(plan.rows)} mins
                   </Typography>
 
-                  <div
-                    style={{ display: "flex", justifyContent: "space-between" }}
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ fontStyle: "italic" }}
                   >
-                    <Typography variant="caption" color="text.secondary">
-                      Session Duration: {calculateTotalDuration(plan.rows)} mins
-                    </Typography>
+                    Assigned to: {plan.assignedTo?.length || 0} member(s)
+                  </Typography>
+                </div>
 
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      sx={{ fontStyle: "italic" }}
-                    >
-                      Assigned to: {plan.assignedTo?.length || 0} member(s)
-                    </Typography>
-                  </div>
+                <Divider sx={{ my: 1 }} />
 
-                  <Divider sx={{ my: 1 }} />
-
-                  {plan.rows.slice(0, 2).map((row, idx) => (
+                {Array.isArray(plan.rows) &&
+                  plan.rows.slice(0, 2).map((row, idx) => (
                     <Stack
                       key={idx}
                       direction="row"
@@ -225,14 +298,15 @@ const WorkoutPlans = () => {
                       </Typography>
                     </Stack>
                   ))}
-                  {plan.rows.length > 2 && (
-                    <Typography variant="caption" color="text.secondary">
-                      +{plan.rows.length - 2} more...
-                    </Typography>
-                  )}
-                </Paper>
-              </Grid>
-            ))}
+
+                {Array.isArray(plan.rows) && plan.rows.length > 2 && (
+                  <Typography variant="caption" color="text.secondary">
+                    +{plan.rows.length - 2} more...
+                  </Typography>
+                )}
+              </Paper>
+            </Grid>
+          ))}
         </Grid>
       )}
 
