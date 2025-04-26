@@ -1,8 +1,9 @@
-import React from "react";
+import React, {useState, useEffect} from "react";
 import { Box, Typography, Grid, Paper } from "@mui/material";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
 import EventNoteIcon from "@mui/icons-material/EventNote";
+import useAdminApi from "../../apis/admin";
 
 const StatCard = ({ title, value, icon }) => (
   <Paper
@@ -28,41 +29,58 @@ const StatCard = ({ title, value, icon }) => (
 );
 
 const AdminHome = () => {
+  const { getPendingUsers } = useAdminApi();
+  
+  const [pendingMembers, setPendingMembers] = useState(0);
+  const [pendingTrainers, setPendingTrainers] = useState(0);
+
+  const [totalMembers, setTotalMembers] = useState(0);
+  const [totalTrainers, setTotalTrainers] = useState(0);
+
+  const fetchPendingCounts = async () => {
+    try {
+      // Pending
+      const res = await getPendingUsers();
+      const records = res.data?.records || [];
+
+      const pendingMembersCount = records.filter((user) => user.role === "member").length;
+      const pendingTrainersCount = records.filter((user) => user.role === "trainer").length;
+
+      setPendingMembers(pendingMembersCount);
+      setPendingTrainers(pendingTrainersCount);
+
+      // Total
+      const allRes = await getAllUsers();
+      const allUsers = allRes.data?.records || [];
+
+      const totalMembersCount = allUsers.filter((user) => user.role === "member").length;
+      const totalTrainersCount = allUsers.filter((user) => user.role === "trainer").length;
+
+      setTotalMembers(totalMembersCount);
+      setTotalTrainers(totalTrainersCount);
+    } catch (error) {
+      console.error("Failed to fetch pending users:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchPendingCounts();
+  }, []);
+
   return (
     <Box>
       <Typography variant="h4" fontWeight={600} gutterBottom>
         Welcome, Admin 👋
       </Typography>
       <Typography variant="subtitle1" gutterBottom color="textSecondary">
-        Here's an overview of your platform’s activity
+        Here's an overview of your platform's activity
       </Typography>
 
       <Grid container spacing={3}>
-        <Grid item xs={12} sm={6} md={4}>
-          <StatCard
-            title="Total Members"
-            value="124"
-            icon={<PeopleAltIcon fontSize="inherit" />}
-          />
-        </Grid>
-        <Grid item xs={12} sm={6} md={4}>
-          <StatCard
-            title="Total Trainers"
-            value="18"
-            icon={<FitnessCenterIcon fontSize="inherit" />}
-          />
-        </Grid>
-        <Grid item xs={12} sm={6} md={4}>
-          <StatCard
-            title="Sessions This Week"
-            value="47"
-            icon={<EventNoteIcon fontSize="inherit" />}
-          />
-        </Grid>
-        <Grid item xs={12} sm={6} md={4}>
+        <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Pending Members"
-            value="5"
+            value={pendingMembers}
             icon={
               <PeopleAltIcon
                 fontSize="inherit"
@@ -71,16 +89,31 @@ const AdminHome = () => {
             }
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={4}>
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard
+            title="Total Members"
+            value={totalMembers}
+            icon={<PeopleAltIcon fontSize="inherit" />}
+          />
+        </Grid>
+
+        <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Pending Trainers"
-            value="3"
+            value={pendingTrainers}
             icon={
               <FitnessCenterIcon
                 fontSize="inherit"
                 sx={{ color: "warning.main" }}
               />
             }
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard
+            title="Total Trainers"
+            value={totalTrainers}
+            icon={<FitnessCenterIcon fontSize="inherit" />}
           />
         </Grid>
       </Grid>
