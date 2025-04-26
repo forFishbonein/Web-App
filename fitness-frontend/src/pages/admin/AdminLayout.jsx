@@ -31,7 +31,6 @@ const pages = [
   { name: "Trainers Management", path: "/admin/trainers", icon: <FitnessCenterIcon /> },
   { name: "Center Management", path: "/admin/centers", icon: <EventNoteIcon /> },
   { name: "Specialisation Management", path: "/admin/specialisations", icon: <EventNoteIcon /> },
-  { name: "Settings", path: "/admin/settings", icon: <SettingsIcon /> },
 ];
 
 function AdminLayout() {
