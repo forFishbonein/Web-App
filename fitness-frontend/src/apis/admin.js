@@ -46,13 +46,82 @@ const useAdminApi = () => {
       params,
     });
   };
-  
+
+  // Center Management APIs
+  const getFitnessCentres = () => {
+    return httpRequest({
+      method: "GET",
+      url: "/admin/fitness-centres",
+    });
+  };
+
+  const addFitnessCentre = (data) => {
+    return httpRequest({
+      method: "POST",
+      url: "/admin/fitness-centres",
+      data,
+    });
+  };
+
+  const getFitnessCentreById = (id) => {
+    return httpRequest({
+      method: "GET",
+      url: `/admin/fitness-centres/${id}`,
+    });
+  };
+
+  const updateFitnessCentre = (id, data) => {
+    return httpRequest({
+      method: "PUT",
+      url: `/admin/fitness-centres/${id}`,
+      data,
+    });
+  };
+
+  const deleteFitnessCentre = (id) => {
+    return httpRequest({
+      method: "DELETE",
+      url: `/admin/fitness-centres/${id}`,
+    });
+  };
+
+  const getSpecializations = () => {
+    return httpRequest({
+      method: "GET",
+      url: "/admin/specializations",
+    });
+  };
+
+  // Specialisation Management APIs
+  const addSpecialization = (data) => {
+    return httpRequest({
+      method: "POST",
+      url: "/admin/specializations",
+      data,
+    });
+  };
+
+  const deleteSpecialization = (id) => {
+    return httpRequest({
+      method: "DELETE",
+      url: `/admin/specializations/${id}`,
+    });
+  };
+
   return {
     getAdminInfo,
     getPendingUsers,
     approveApplication,
     rejectApplication,
     getAllUsers,
+    getFitnessCentres,
+    addFitnessCentre,
+    getFitnessCentreById,
+    updateFitnessCentre,
+    deleteFitnessCentre,
+    getSpecializations,
+    addSpecialization,
+    deleteSpecialization,
   };
 };
 export default useAdminApi;

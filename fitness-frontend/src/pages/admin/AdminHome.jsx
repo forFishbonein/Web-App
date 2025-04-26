@@ -37,7 +37,7 @@ const AdminHome = () => {
         Here's an overview of your platform’s activity
       </Typography>
 
-      <Grid container spacing={3} mt={2}>
+      <Grid container spacing={3}>
         <Grid item xs={12} sm={6} md={4}>
           <StatCard
             title="Total Members"
@@ -57,6 +57,30 @@ const AdminHome = () => {
             title="Sessions This Week"
             value="47"
             icon={<EventNoteIcon fontSize="inherit" />}
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} md={4}>
+          <StatCard
+            title="Pending Members"
+            value="5"
+            icon={
+              <PeopleAltIcon
+                fontSize="inherit"
+                sx={{ color: "warning.main" }}
+              />
+            }
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} md={4}>
+          <StatCard
+            title="Pending Trainers"
+            value="3"
+            icon={
+              <FitnessCenterIcon
+                fontSize="inherit"
+                sx={{ color: "warning.main" }}
+              />
+            }
           />
         </Grid>
       </Grid>

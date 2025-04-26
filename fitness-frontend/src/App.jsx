@@ -39,14 +39,12 @@ import SessionsManagement from "./pages/admin/SessionsManagement.jsx";
 import AdminSettings from "./pages/admin/AdminSettings.jsx";
 import AdminHome from "./pages/admin/AdminHome.jsx";
 import MembersManagementLayout from "./pages/admin/MembersManagementLayout.jsx";
+import CenterManagement from "./pages/admin/CenterManagement.jsx";
+import SpecialisationManagement from "./pages/admin/SpecialisationManagement.jsx"
 import { SnackbarProvider } from "./utils/Hooks/SnackbarContext.jsx";
 import { useLoadingStore } from "./store/useLoadingStore";
 import { Backdrop, CircularProgress } from "@mui/material";
 function App() {
-  // before
-  // const isAuthenticated = false;
-
-  //now
   const userRole = useUserStore((state) => state.userInfo?.role);
   const isGoogle = useUserStore((state) => state.userInfo?.isGoogle);
   const getDefaultPath = useUserStore((state) => state.getDefaultPath);
@@ -143,10 +141,11 @@ function App() {
                 <Route path="all" element={<AllTrainers />} />
               </Route>
               <Route path="sessions" element={<SessionsManagement />} />
+              <Route path="centers" element={<CenterManagement />} />
+              <Route path="specialisations" element={<SpecialisationManagement />} />
               <Route path="settings" element={<AdminSettings />} />
             </Route>
           )}
-
           <Route
             path="*"
             element={
