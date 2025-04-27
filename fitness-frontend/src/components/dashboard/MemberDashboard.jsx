@@ -42,6 +42,13 @@ function MemberDashboard() {
       setBadgeContent(res.data.records.filter(e => e.isRead === false).length)
     };
     fetchData();
+
+    // Auto-refresh notifications every 30 seconds
+    const interval = setInterval(() => {
+      fetchData();
+    }, 30000);
+
+    return () => clearInterval(interval);
   }, []);
   return (
 

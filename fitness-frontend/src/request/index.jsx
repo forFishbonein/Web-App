@@ -9,6 +9,7 @@ import { errorNotifier } from "../utils/Hooks/SnackbarContext.jsx";
 const useAxios = () => {
   const token = useUserStore((state) => state.token); // get token
   const setLoading = useLoadingStore((state) => state.setLoading);
+  // const [needLoadingRing, setNeedLoadingRing] = useState(true);
   const service = axios.create({
     baseURL: config.baseApi,
     // timeout: 10000,
@@ -25,7 +26,10 @@ const useAxios = () => {
       if (token && !config.headers["Authorization"]) {
         config.headers['Authorization'] = `Bearer ${token}`;
       }
-      setLoading(true);
+      //只有在需要 loading 加载圈的接口才需要设置为 true
+      if (!config.meta?.noNeedLoadingRing) {
+        setLoading(true);
+      }
       return config;
     },
     function (error) {
