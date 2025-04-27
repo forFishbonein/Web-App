@@ -24,7 +24,7 @@ const Progress = ({ getUpcomingAppointments, getHistoricalAppointments }) => {
       // console.log("res", res);
       let upcomingLen = res[0].data.records?.length ?? 0;
       let successLen = res[1].data.records?.filter(e => e.appointmentStatus === "Completed")?.length ?? 0;;
-      let errorLen = (res[1].data.records?.length - successLen) ?? 0;
+      let errorLen = (res[1].data.records?.length ?? 0) - successLen;
       setCountData([upcomingLen, successLen, errorLen]);
       setUpcomingData(res[0].data.records);
     }).catch((e) => {
