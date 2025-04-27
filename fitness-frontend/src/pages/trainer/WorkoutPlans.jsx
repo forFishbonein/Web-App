@@ -19,13 +19,15 @@ import {
   List,
   ListItem,
   TextField,
+  Card,
+  CardContent
 } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import useWorkoutPlanStore from "/src/store/useWorkoutPlanStore";
 import { useSnackbar } from "/src/utils/Hooks/SnackbarContext.jsx";
 import useTrainerApi from "../../apis/trainer";
 
-const connectedMembersWithSessions = ["Priya Mehta", "John Doe", "Alex Kim"];
+// const connectedMembersWithSessions = ["Priya Mehta", "John Doe", "Alex Kim"];
 
 const WorkoutPlans = () => {
   const { savedPlans, assignPlanToMember, removePlan } = useWorkoutPlanStore();
@@ -39,7 +41,7 @@ const WorkoutPlans = () => {
   const { showSnackbar } = useSnackbar();
   const [confirmRemoveOpen, setConfirmRemoveOpen] = useState(false);
   const [sortBy, setSortBy] = useState("none");
-  const { listPlans, deletePlan } = useTrainerApi();
+  const { listPlans, deletePlan, getApprovedAppointments } = useTrainerApi();
   const [plans, setPlans] = useState([]);
 
   const handleMenuClose = () => {
@@ -48,43 +50,61 @@ const WorkoutPlans = () => {
   };
 
   const handleAssignClick = () => {
-    const assigned = savedPlans[selectedPlanIndex]?.assignedTo || [];
+    const assigned = plans[selectedPlanIndex]?.assignedTo || [];
     setSelectedMembers(assigned);
     setAssignDialogOpen(true);
     handleMenuClose();
   };
-
-  useEffect(() => {
-    const fetchPlans = async () => {
-      try {
-        const response = await listPlans();
-        const rawPlans = response.data || [];
-  
-        const mappedPlans = rawPlans.map(plan => ({
-          planId: plan.planId,
-          program: plan.title, 
-          rows: parseContentToRows(plan.content),
-          assignedTo: [], 
-          createTime: plan.createTime,
-          updateTime: plan.updateTime,
-        }));
-  
-        setPlans(mappedPlans);
-      } catch (error) {
-        console.error("Failed to fetch workout plans:", error);
-        showSnackbar({
-          message: "Failed to load workout plans",
-          severity: "error",
-        });
+  function groupByWorkoutPlan(data) {
+    return data.reduce((map, item) => {
+      const key = item.workoutPlanId;
+      if (!map[key]) {
+        map[key] = [];
       }
-    };
-  
+      // 把整条记录都 push 进去
+      map[key].push(item);
+      return map;
+    }, {});
+  }
+  const [allApprovedAppointments, setAllApprovedAppointments] = useState([]);
+  const getAllApprovedAppointments = async () => {
+    const res = await getApprovedAppointments();
+    setAllApprovedAppointments(res.data);
+    let planToAppointment = groupByWorkoutPlan(res.data);
+    return planToAppointment;
+  }
+  const fetchPlans = async () => {
+    try {
+      const planToAppointment = await getAllApprovedAppointments();
+      console.log("planToAppointment", planToAppointment);
+      const response = await listPlans();
+      const rawPlans = response.data || [];
+
+      const mappedPlans = rawPlans.map(plan => ({
+        planId: plan.planId,
+        program: plan.title,
+        rows: parseContentToRows(plan.content),
+        assignedTo: planToAppointment[plan.planId],
+        createTime: plan.createTime,
+        updateTime: plan.updateTime,
+      }));
+      console.log("mappedPlans", mappedPlans);
+      setPlans(mappedPlans);
+    } catch (error) {
+      console.error("Failed to fetch workout plans:", error);
+      showSnackbar({
+        message: "Failed to load workout plans",
+        severity: "error",
+      });
+    }
+  };
+  useEffect(() => {
     fetchPlans();
   }, [showSnackbar]);
-  
+
   const parseContentToRows = (content) => {
     if (!content) return [];
-  
+
     return content.split("\n").map(step => {
       const match = step.match(/(\d+)\s*min\s*-\s*(.*)/i);
       if (match) {
@@ -97,7 +117,7 @@ const WorkoutPlans = () => {
         return { duration: 0, notes: step.trim() };
       }
     });
-  };  
+  };
 
   const handleMenuOpen = (event, index) => {
     if (index < plans.length) {
@@ -107,18 +127,21 @@ const WorkoutPlans = () => {
   };
 
   const handleViewMembers = () => {
-    const assigned = savedPlans[selectedPlanIndex]?.assignedTo || [];
+    console.log("plans", plans)
+    const assigned = plans[selectedPlanIndex]?.assignedTo || [];
+    console.log("assigned", assigned)
     setViewMembers(assigned);
     setMembersDialogOpen(true);
     handleMenuClose();
   };
 
   const handleAssignSubmit = () => {
-    const selectedPlan = savedPlans[selectedPlanIndex];
+    const selectedPlan = plans[selectedPlanIndex];
+    // console.log("plans, selectedPlanIndex", plans, selectedPlan, selectedMembers);
     if (!selectedPlan) return;
-
+    //TODO 这里目前做不到取消，只能是新增（应该有一个能够直接覆盖当前 plan 关联的所有课程的接口，整体更新，要不然就是有一个取消的接口）
     selectedMembers.forEach((member) => {
-      assignPlanToMember(selectedPlan.program, member);
+      assignPlanToMember(selectedPlan.planId, member.appointmentId);
     });
 
     setAssignDialogOpen(false);
@@ -134,26 +157,25 @@ const WorkoutPlans = () => {
     try {
       const selectedPlan = plans[selectedPlanIndex];
       if (!selectedPlan) return;
-  
+
       await deletePlan(selectedPlan.planId); // delete using planId from backend
       showSnackbar({
         message: "Workout plan deleted successfully",
         severity: "success",
       });
-  
       // After deleting, refresh the plans again
-      const response = await listPlans();
-      const rawPlans = response.data || [];
-      const mappedPlans = rawPlans.map(plan => ({
-        program: plan.title,
-        rows: parseContentToRows(plan.content),
-        assignedTo: [],
-        createTime: plan.createTime,
-        updateTime: plan.updateTime,
-        planId: plan.planId, // don't forget this!
-      }));
-      setPlans(mappedPlans);
-  
+      // const response = await listPlans();
+      // const rawPlans = response.data || [];
+      // const mappedPlans = rawPlans.map(plan => ({
+      //   program: plan.title,
+      //   rows: parseContentToRows(plan.content),
+      //   assignedTo: [],
+      //   createTime: plan.createTime,
+      //   updateTime: plan.updateTime,
+      //   planId: plan.planId, // don't forget this!
+      // }));
+      // setPlans(mappedPlans);
+      fetchPlans();
     } catch (error) {
       console.error("Failed to delete workout plan:", error);
       showSnackbar({
@@ -161,12 +183,12 @@ const WorkoutPlans = () => {
         severity: "error",
       });
     }
-  };  
+  };
 
   const toggleMember = (member) => {
     setSelectedMembers((prev) =>
-      prev.includes(member)
-        ? prev.filter((m) => m !== member)
+      prev.map(e => e.appointmentId).includes(member.appointmentId)
+        ? prev.filter((m) => m.appointmentId !== member.appointmentId)
         : [...prev, member]
     );
   };
@@ -174,12 +196,12 @@ const WorkoutPlans = () => {
   const getRowDuration = (row) => {
     if (!row || typeof row.duration !== 'number') return 0;
     return row.duration;
-  };  
+  };
 
   const calculateTotalDuration = (rows) => {
     if (!Array.isArray(rows)) return 0;
     return rows.reduce((acc, row) => acc + getRowDuration(row), 0);
-  };  
+  };
 
   const sortedPlans = [...plans]
     .filter((plan) =>
@@ -230,7 +252,7 @@ const WorkoutPlans = () => {
           >
             <MenuItem value="none">None</MenuItem>
             <MenuItem value="duration">Duration</MenuItem>
-            <MenuItem value="assigned">Assigned Members</MenuItem>
+            <MenuItem value="assigned">Assigned Sessions</MenuItem>
           </TextField>
         </Stack>
       </Box>
@@ -275,7 +297,7 @@ const WorkoutPlans = () => {
                     color="text.secondary"
                     sx={{ fontStyle: "italic" }}
                   >
-                    Assigned to: {plan.assignedTo?.length || 0} member(s)
+                    Assigned to: {plan.assignedTo?.length || 0} session(s)
                   </Typography>
                 </div>
 
@@ -315,9 +337,9 @@ const WorkoutPlans = () => {
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
       >
-        <MenuItem onClick={handleAssignClick}>Assign to Member</MenuItem>
-        <MenuItem onClick={handleViewMembers}>View Assigned Members</MenuItem>
-        <MenuItem onClick={handleRemovePlan}>Remove Plan</MenuItem>
+        <MenuItem onClick={handleAssignClick}>Assign to Session</MenuItem>
+        <MenuItem onClick={handleViewMembers}>View Assigned Sessions</MenuItem>
+        <MenuItem onClick={() => { setConfirmRemoveOpen(true); }}>Remove Plan</MenuItem>
       </Menu>
 
       <Dialog
@@ -327,10 +349,32 @@ const WorkoutPlans = () => {
         <DialogTitle>Select Member(s)</DialogTitle>
         <DialogContent>
           <List dense>
-            {connectedMembersWithSessions.map((member) => (
-              <MenuItem key={member} onClick={() => toggleMember(member)}>
-                <Checkbox checked={selectedMembers.includes(member)} />
-                <ListItemText primary={member} />
+            {allApprovedAppointments.map((member) => (
+              <MenuItem key={member.appointmentId} onClick={() => toggleMember(member)}>
+                <Card
+                  key={member.appointmentId}
+                  variant="outlined"
+                  sx={{ mb: 2, borderColor: "grey.300" }}
+                >
+                  <CardContent sx={{ p: 2 }}>
+                    <div style={{ display: "flex" }}>
+                      <Checkbox checked={selectedMembers.map(e => e.appointmentId).includes(member.appointmentId)} />
+                      <div>
+                        <Typography variant="h6">{member.memberName}</Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {member.projectName.trim()}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                          {member.startTime} - {member.endTime}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                          {member.description}
+                        </Typography>
+                      </div>
+                    </div>
+
+                  </CardContent>
+                </Card>
               </MenuItem>
             ))}
           </List>
@@ -347,16 +391,31 @@ const WorkoutPlans = () => {
         open={membersDialogOpen}
         onClose={() => setMembersDialogOpen(false)}
       >
-        <DialogTitle>Assigned Members</DialogTitle>
+        <DialogTitle>Assigned Sessions</DialogTitle>
         <DialogContent>
           {viewMembers.length === 0 ? (
-            <Typography>No members assigned yet.</Typography>
+            <Typography>No sessions assigned yet.</Typography>
           ) : (
             <List dense>
               {viewMembers.map((member, idx) => (
-                <ListItem key={idx}>
-                  <ListItemText primary={member} />
-                </ListItem>
+                <Card
+                  key={idx}
+                  variant="outlined"
+                  sx={{ mb: 2, borderColor: "grey.300" }}
+                >
+                  <CardContent sx={{ p: 2 }}>
+                    <Typography variant="h6">{member.memberName}</Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {member.projectName.trim()}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                      {member.startTime} - {member.endTime}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                      {member.description}
+                    </Typography>
+                  </CardContent>
+                </Card>
               ))}
             </List>
           )}
@@ -382,14 +441,7 @@ const WorkoutPlans = () => {
           <Button
             variant="contained"
             color="error"
-            onClick={() => {
-              removePlan(savedPlans[selectedPlanIndex].program);
-              showSnackbar({
-                message: `Workout plan removed successfully`,
-                severity: "info",
-              });
-              setConfirmRemoveOpen(false);
-            }}
+            onClick={handleRemovePlan}
           >
             Yes, Remove
           </Button>

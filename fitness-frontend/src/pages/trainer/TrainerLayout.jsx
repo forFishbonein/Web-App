@@ -55,6 +55,7 @@ function TrainerLayout() {
           // marginTop: "70px",
           overflowX: "hidden",
           transition: "width 0.3s",
+          zIndex: "1000"
         },
       }}
     >

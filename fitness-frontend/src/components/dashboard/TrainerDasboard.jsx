@@ -66,7 +66,7 @@ function TrainerDashboard({ drawerOpen }) {
   }, []);
 
   return (
-    <div style={{ position: "fixed", top: "0", zIndex: "10000", width: "100%" }}>
+    <div style={{ position: "fixed", top: "0", zIndex: "1001", width: "100%" }}>
       <Header drawerOpen={drawerOpen}>
         {/* Notification Bell */}
         <Box sx={{
