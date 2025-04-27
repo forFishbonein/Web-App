@@ -93,7 +93,7 @@ const WorkoutPlans = () => {
     } catch (error) {
       console.error("Failed to fetch workout plans:", error);
       showSnackbar({
-        message: "Failed to load workout plans",
+        message: "Failed to load workout plans.",
         severity: "error",
       });
     }
