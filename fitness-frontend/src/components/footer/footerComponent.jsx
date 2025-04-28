@@ -22,27 +22,29 @@ const Footer = () => {
     <Box
       component="footer"
       sx={{
-        height: "25vh",
+        height: "25vh",                // 固定高度
         backgroundColor: "#023047",
         color: "white",
         display: "flex",
         flexDirection: "column",
-        justifyContent: "space-between",
+        justifyContent: "space-around",// 上中下自动留空白
+        px: 2,                         // 左右一点内边距
       }}
     >
-      <Container maxWidth="lg" sx={{ flexGrow: 1, display: "flex", alignItems: "flex-start", padding: "10px" }}>
+      {/* 三列主体内容 */}
+      <Container maxWidth="lg">
         <Grid
           container
           justifyContent="space-between"
           alignItems="flex-start"
-          spacing={{ xs: 2, sm: 4, md: 6 }}  // 全局列间距
+          spacing={{ xs: 2, sm: 4, md: 6 }}
         >
           {/* Quick Links */}
-          <Grid item xs={12} sm={4} sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
+          <Grid item xs={12} sm={4}>
             <Typography variant="h6" gutterBottom>
               Quick Links
             </Typography>
-            <Stack spacing={1.5}>
+            <Stack spacing={0.1}>
               {["About", "Contact", "Privacy Policy", "Terms of Use"].map((text) => (
                 <Link
                   key={text}
@@ -57,8 +59,8 @@ const Footer = () => {
             </Stack>
           </Grid>
 
-          {/* Social Media */}
-          <Grid item xs={12} sm={4} sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
+          {/* Follow Us */}
+          <Grid item xs={12} sm={4}>
             <Typography variant="h6" gutterBottom>
               Follow Us
             </Typography>
@@ -81,21 +83,30 @@ const Footer = () => {
             </Stack>
           </Grid>
 
-          {/* Contact Details */}
-          <Grid item xs={12} sm={4} sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
+          {/* Contact Us */}
+          <Grid item xs={12} sm={4}>
             <Typography variant="h6" gutterBottom>
               Contact Us
             </Typography>
             <Stack spacing={1.5}>
-              <Typography variant="body2" sx={{ display: "flex", alignItems: "center" }}>
+              <Typography
+                variant="body2"
+                sx={{ display: "flex", alignItems: "center" }}
+              >
                 <LocationOnIcon sx={{ mr: 1 }} fontSize="small" />
                 123 Fitness St, City, Country
               </Typography>
-              <Typography variant="body2" sx={{ display: "flex", alignItems: "center" }}>
+              <Typography
+                variant="body2"
+                sx={{ display: "flex", alignItems: "center" }}
+              >
                 <EmailIcon sx={{ mr: 1 }} fontSize="small" />
                 support@fitnessapp.com
               </Typography>
-              <Typography variant="body2" sx={{ display: "flex", alignItems: "center" }}>
+              <Typography
+                variant="body2"
+                sx={{ display: "flex", alignItems: "center" }}
+              >
                 <PhoneIcon sx={{ mr: 1 }} fontSize="small" />
                 +123 456 7890
               </Typography>
@@ -104,11 +115,17 @@ const Footer = () => {
         </Grid>
       </Container>
 
-      <Divider sx={{ borderColor: "rgba(255,255,255,0.25)" }} />
-
-      <Typography variant="body2" align="center" sx={{ py: 1, fontSize: "0.875rem" }}>
-        &copy; {new Date().getFullYear()} Fitness App. All rights reserved.
-      </Typography>
+      {/* 分割线 + 版权信息 */}
+      <Box>
+        <Divider sx={{ borderColor: "rgba(255,255,255,0.25)" }} />
+        <Typography
+          variant="body2"
+          align="center"
+          sx={{ mt: 1, fontSize: "0.875rem" }}
+        >
+          &copy; {new Date().getFullYear()} Fitness App. All rights reserved.
+        </Typography>
+      </Box>
     </Box>
   );
 };
