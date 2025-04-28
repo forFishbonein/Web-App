@@ -50,7 +50,13 @@ knife4j:
   locale: en
 
 tencent:
-
+  captcha:
+    secretId: AKIDBMaeYFj293kDXeXCgx3wb4KNCpGMFuLZ
+    secretKey: 4uZ3KNCqJZbUAfwzrY1JRL4Zrxtc7QZX
+    # 验证码产品中的ID
+    captchaAppId: 190688044
+    # 验证码产品中的AppSecretKey（服务器端密钥）
+    appSecretKey: QeG8lEob0R2iZlhNS1SlZwK0h
 
 
 google:
