@@ -21,8 +21,8 @@ import useAdminApi from "../../../apis/admin.js";
 import { useUserStore } from "../../../store/useUserStore.js"; // Zustand Store
 import { useSnackbar } from "../../../utils/Hooks/SnackbarContext.jsx";
 import useCaptcha from "../../../utils/Hooks/useCaptcha.js";
-import GoogleLoginButton from "./google/LoginButton.jsx"
-import FacebookLoginButton from "./facebook/LoginButton.jsx"
+import GoogleLoginButton from "./google/LoginButton.jsx";
+import FacebookLoginButton from "./facebook/LoginButton.jsx";
 const LoginForm = ({ roleLogin }) => {
   const { showSnackbar } = useSnackbar();
   const navigate = useNavigate();
@@ -83,36 +83,45 @@ const LoginForm = ({ roleLogin }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (validate()) {
-
       //captcha logic
-      onCaptchaShow(async (ticket, randstr) => {
-        try {
-          const res = await passwordLogin(formData.email, formData.password, ticket, randstr, roleLogin); //real logic
-          const newToken = res.data.token; //real logic
-          const role = res.data.role;
-          let getInfoFun = getUserInfo;
-          if (role === "member") {
-            getInfoFun = getUserInfo;
-          } else if (role === "trainer") {
-            getInfoFun = getTrainerInfo;
-          } else if (role === "admin") {
-            getInfoFun = getAdminInfo;
+      onCaptchaShow(
+        async (ticket, randstr) => {
+          try {
+            const res = await passwordLogin(
+              formData.email,
+              formData.password,
+              ticket,
+              randstr,
+              roleLogin
+            ); //real logic
+            const newToken = res.data.token; //real logic
+            const role = res.data.role;
+            let getInfoFun = getUserInfo;
+            if (role === "member") {
+              getInfoFun = getUserInfo;
+            } else if (role === "trainer") {
+              getInfoFun = getTrainerInfo;
+            } else if (role === "admin") {
+              getInfoFun = getAdminInfo;
+            }
+            await setToken(newToken, role, getInfoFun);
+            // await setToken(newToken, "admin", getInfoFun);
+            showSnackbar({ message: "Login Successful!", severity: "success" });
+            console.log("Login Successful!", role);
+          } catch (error) {
+            if (error) {
+              //Error handling should be done, otherwise the try-catch will not be able to see the error directly after the try-catch, resulting in the failure to find the problem
+              showSnackbar({
+                message: error.message || "Login failed. Please try again.",
+                severity: "error",
+              });
+            }
           }
-          await setToken(newToken, role, getInfoFun);
-          // await setToken(newToken, "admin", getInfoFun);
-          showSnackbar({ message: "Login Successful!", severity: "success" });
-          console.log("Login Successful!", role);
-        } catch (error) {
-          if (error) {
-            //Error handling should be done, otherwise the try-catch will not be able to see the error directly after the try-catch, resulting in the failure to find the problem
-            showSnackbar({ message: error.message || "Login failed. Please try again.", severity: "error" });
-          }
-        }
-      },
+        },
         (error) => {
           showSnackbar({ message: error, severity: "error" });
         }
-      )
+      );
     }
   };
   return (
@@ -162,11 +171,17 @@ const LoginForm = ({ roleLogin }) => {
             alignItems="center"
             mt={1}
           >
-            <Link
-              variant="body2"
-              to="/forgot-password"
-            >
-              <Button variant="contained" sx={{ color: "#ffffff", textDecorationColor: "#023047", textTransform: "none" }}>Forgot password?</Button>
+            <Link variant="body2" to="/forgot-password">
+              <Button
+                variant="contained"
+                sx={{
+                  color: "#ffffff",
+                  textDecorationColor: "#023047",
+                  textTransform: "none",
+                }}
+              >
+                Forgot password?
+              </Button>
             </Link>
           </Box>
           {message && (
@@ -184,20 +199,21 @@ const LoginForm = ({ roleLogin }) => {
           </Button>
         </form>
       </Box>
-      {/* Divider with OR */}
-      <Box display="flex" alignItems="center" my={1}>
-        <Divider sx={{ flex: 1 }} />
-        <Typography sx={{ mx: 1 }}>OR</Typography>
-        <Divider sx={{ flex: 1 }} />
-      </Box>
-      {/* Social Login Buttons */}
-      {
-        roleLogin == "member" &&
-        <Box display="flex" justifyContent="center" gap={2}>
-          <GoogleLoginButton type="login"></GoogleLoginButton>
-          <FacebookLoginButton></FacebookLoginButton>
-        </Box>
-      }
+      {roleLogin === "member" && (
+        <>
+          <Box display="flex" alignItems="center" my={1}>
+            <Divider sx={{ flex: 1 }} />
+            <Typography sx={{ mx: 1 }}>OR</Typography>
+            <Divider sx={{ flex: 1 }} />
+          </Box>
+
+          {/* Social Login Buttons */}
+          <Box display="flex" justifyContent="center" gap={2}>
+            <GoogleLoginButton type="login" />
+            <FacebookLoginButton />
+          </Box>
+        </>
+      )}
     </Container>
   );
 };

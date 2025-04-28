@@ -13,12 +13,15 @@ import {
   Divider,
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import { Google as GoogleIcon, Facebook as FacebookIcon } from "@mui/icons-material";
+import {
+  Google as GoogleIcon,
+  Facebook as FacebookIcon,
+} from "@mui/icons-material";
 import useCaptcha from "../../../utils/Hooks/useCaptcha.js";
 import { useSnackbar } from "../../../utils/Hooks/SnackbarContext.jsx";
 import useLoginApi from "../../../apis/login.js";
-import GoogleLoginButton from "../login/google/LoginButton.jsx"
-import FacebookLoginButton from "../login/facebook/LoginButton.jsx"
+import GoogleLoginButton from "../login/google/LoginButton.jsx";
+import FacebookLoginButton from "../login/facebook/LoginButton.jsx";
 const SignupForm = ({ onSubmit, role }) => {
   const [formData, setFormData] = useState({
     firstName: "",
@@ -39,7 +42,9 @@ const SignupForm = ({ onSubmit, role }) => {
     let tempErrors = {};
     tempErrors.firstName = formData.firstName ? "" : "First name is required";
     tempErrors.lastName = formData.lastName ? "" : "Last name is required";
-    tempErrors.dateOfBirth = formData.dateOfBirth ? "" : "Date of Birth is required";
+    tempErrors.dateOfBirth = formData.dateOfBirth
+      ? ""
+      : "Date of Birth is required";
     tempErrors.address = formData.address ? "" : "Address is required";
     tempErrors.email = formData.email
       ? /.+@.+\..+/.test(formData.email)
@@ -48,8 +53,8 @@ const SignupForm = ({ onSubmit, role }) => {
       : "Email is required";
     tempErrors.password =
       formData.password.length >= 6 &&
-        /[A-Z]/.test(formData.password) &&
-        /\d/.test(formData.password)
+      /[A-Z]/.test(formData.password) &&
+      /\d/.test(formData.password)
         ? ""
         : "Password must be at least 6 characters, include one uppercase letter and one number";
     tempErrors.confirmPassword =
@@ -84,24 +89,28 @@ const SignupForm = ({ onSubmit, role }) => {
               email: formData.email,
               name: formData.firstName + " " + formData.lastName, //TODO：拼接的对吗？
               password: formData.password,
-              role
+              role,
             });
             onSubmit(formData);
-            showSnackbar({ message: "Signup successful! Check your email for verification.", severity: "success" });
+            showSnackbar({
+              message: "Signup successful! Check your email for verification.",
+              severity: "success",
+            });
           } catch (error) {
             if (error) {
-              showSnackbar({ message: "Signup failed. Please try again.", severity: "error" });
+              showSnackbar({
+                message: "Signup failed. Please try again.",
+                severity: "error",
+              });
             }
           }
         },
         (error) => {
           showSnackbar({ message: error, severity: "error" });
         }
-      )
+      );
     }
   };
-
-
 
   return (
     <Container maxWidth="sm">
@@ -247,48 +256,20 @@ const SignupForm = ({ onSubmit, role }) => {
           </Button>
         </form>
       </Box>
-      {/* Divider with OR */}
-      <Box display="flex" alignItems="center" my={1}>
-        <Divider sx={{ flex: 1 }} />
-        <Typography sx={{ mx: 1 }}>OR</Typography>
-        <Divider sx={{ flex: 1 }} />
-      </Box>
-      {/* Social Login Buttons */}
-      {
-        role == "member" &&
-        <Box display="flex" justifyContent="center" gap={2}>
-          <GoogleLoginButton type="login"></GoogleLoginButton>
-          <FacebookLoginButton></FacebookLoginButton>
-        </Box>
-      }
+      {role === "member" && (
+        <>
+          <Box display="flex" alignItems="center" my={1}>
+            <Divider sx={{ flex: 1 }} />
+            <Typography sx={{ mx: 1 }}>OR</Typography>
+            <Divider sx={{ flex: 1 }} />
+          </Box>
 
-      {/* Social Login Buttons */}
-      {/* <Box display="flex" justifyContent="center" gap={2}>
-        <Button
-          variant="contained"
-          startIcon={<GoogleIcon />}
-          sx={{
-            backgroundColor: "#DB4437",
-            color: "white",
-            "&:hover": { backgroundColor: "#C1351D" },
-            flex: 1, // Makes buttons equal width
-          }}
-        >
-          Google
-        </Button>
-        <Button
-          variant="contained"
-          startIcon={<FacebookIcon />}
-          sx={{
-            backgroundColor: "#1877F2",
-            color: "white",
-            "&:hover": { backgroundColor: "#145DBF" },
-            flex: 1, // Makes buttons equal width
-          }}
-        >
-          Facebook
-        </Button>
-      </Box> */}
+          <Box display="flex" justifyContent="center" gap={2}>
+            <GoogleLoginButton type="login" />
+            <FacebookLoginButton />
+          </Box>
+        </>
+      )}
     </Container>
   );
 };

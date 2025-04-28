@@ -302,46 +302,6 @@ function MySessions() {
                     </TableCell>
                     <TableCell>
                       <Stack direction="row" spacing={1}>
-                        {/* <Button
-                          size="small"
-                          variant="outlined"
-                          color="error"
-                          startIcon={<DeleteIcon />}
-                          onClick={() => {
-                            setSessionToCancel(session);
-                            setConfirmCancelOpen(true);
-                          }}
-                        >
-                          Cancel
-                        </Button> */}
-                        <Tooltip title="Cancel Session" arrow>
-                          <IconButton
-                            color="error"
-                            onClick={() => {
-                              setSessionToCancel(session);
-                              setConfirmCancelOpen(true);
-                            }}
-                            aria-label="Cancel Session"
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </Tooltip>
-
-                        {/* <Button
-                          size="small"
-                          variant="contained"
-                          color="success"
-                          startIcon={<CheckCircleIcon />}
-                          onClick={() => {
-                            recordSession(session);
-                            showSnackbar({
-                              message: "Session recorded as completed",
-                              severity: "success",
-                            });
-                          }}
-                        >
-                          Record
-                        </Button> */}
                         <Tooltip title="Record as Completed" arrow>
                           <span>
                             <IconButton
