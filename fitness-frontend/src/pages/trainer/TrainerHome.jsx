@@ -28,39 +28,65 @@ import GroupIcon from "@mui/icons-material/Group";
 import EventNoteIcon from "@mui/icons-material/EventNote";
 import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
 import useTrainerApi from "../../apis/trainer";
+import dayjs from 'dayjs';
 
-const weeklyData = [
-  { day: "Mon", sessions: 2 },
-  { day: "Tue", sessions: 3 },
-  { day: "Wed", sessions: 1 },
-  { day: "Thu", sessions: 4 },
-  { day: "Fri", sessions: 0 },
-  { day: "Sat", sessions: 2 },
-  { day: "Sun", sessions: 1 },
-];
+// const weeklyData = [
+//   { day: "Mon", sessions: 2 },
+//   { day: "Tue", sessions: 3 },
+//   { day: "Wed", sessions: 1 },
+//   { day: "Thu", sessions: 4 },
+//   { day: "Fri", sessions: 0 },
+//   { day: "Sat", sessions: 2 },
+//   { day: "Sun", sessions: 1 },
+// ];
 
-const monthlyData = [
-  { day: "Week 1", sessions: 10 },
-  { day: "Week 2", sessions: 8 },
-  { day: "Week 3", sessions: 12 },
-  { day: "Week 4", sessions: 6 },
-];
+// const monthlyData = [
+//   { day: "Week 1", sessions: 10 },
+//   { day: "Week 2", sessions: 8 },
+//   { day: "Week 3", sessions: 12 },
+//   { day: "Week 4", sessions: 6 },
+// ];
 
-const yearlyData = [
-  { day: "Jan", sessions: 25 },
-  { day: "Feb", sessions: 28 },
-  { day: "Mar", sessions: 22 },
-  { day: "Apr", sessions: 30 },
-  { day: "May", sessions: 18 },
-  { day: "Jun", sessions: 21 },
-  { day: "Jul", sessions: 27 },
-  { day: "Aug", sessions: 20 },
-  { day: "Sep", sessions: 24 },
-  { day: "Oct", sessions: 26 },
-  { day: "Nov", sessions: 19 },
-  { day: "Dec", sessions: 23 },
-];
+// const yearlyData = [
+//   { day: "Jan", sessions: 25 },
+//   { day: "Feb", sessions: 28 },
+//   { day: "Mar", sessions: 22 },
+//   { day: "Apr", sessions: 30 },
+//   { day: "May", sessions: 18 },
+//   { day: "Jun", sessions: 21 },
+//   { day: "Jul", sessions: 27 },
+//   { day: "Aug", sessions: 20 },
+//   { day: "Sep", sessions: 24 },
+//   { day: "Oct", sessions: 26 },
+//   { day: "Nov", sessions: 19 },
+//   { day: "Dec", sessions: 23 },
+// ];
+const getStaticHoursData = (rawData) => {
+  // if (!rawData?.lenngth) return [[], [], 0];
+  // 1. weeklyData —— 最近 7 天，按 Mon–Sun 聚合
+  const last7 = rawData.slice(-7);
+  const weekOrder = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const weeklyData = weekOrder.map(weekday => {
+    const hours = last7
+      .filter(item => dayjs(item.date).format('ddd') === weekday)
+      .reduce((sum, item) => sum + (item.hours ?? 0), 0);
+    return { day: weekday, hours };
+  });
 
+  // 2. monthlyData —— 最近 28 天，分成 4 个“周”统计
+  const last28 = rawData.slice(-28);
+  const monthlyData = [];
+  for (let i = 0; i < 4; i++) {
+    const weekSlice = last28.slice(i * 7, (i + 1) * 7);
+    const hours = weekSlice.reduce((sum, item) => sum + (item.hours ?? 0), 0);
+    monthlyData.push({ day: `Week ${i + 1}`, hours });
+  }
+
+  // 3. totalHours —— 原始数据所有天数的小时总和
+  const totalHours = rawData.reduce((sum, item) => sum + (item.hours ?? 0), 0);
+  // console.log(weeklyData, monthlyData, totalHours)
+  return [weeklyData, monthlyData, totalHours]
+}
 function TrainerHome() {
   const [filter, setFilter] = useState("week");
   const {
@@ -68,12 +94,16 @@ function TrainerHome() {
     getConnectedMembers,
     getPendingAppointments,
     getApprovedAppointments,
+    getDynamicTrainerStatistics
   } = useTrainerApi();
   const [pendingMemberCount, setPendingMemberCount] = useState(0);
   const [connectedMemberCount, setConnectedMemberCount] = useState(0);
   const [pendingSessionCount, setPendingSessionCount] = useState(0);
   const [approvedSessions, setApprovedSessions] = useState([]);
   const [isLoadingStats, setIsLoadingStats] = useState(true);
+  const [weeklyData, setWeeklyData] = useState([]);
+  const [monthlyData, setMonthlyData] = useState([]);
+  const [totalHours, setTotalHours] = useState(0);
 
   const handleFilterChange = (event, newFilter) => {
     if (newFilter !== null) setFilter(newFilter);
@@ -83,13 +113,26 @@ function TrainerHome() {
     switch (filter) {
       case "month":
         return monthlyData;
-      case "year":
-        return yearlyData;
+      case "week":
+        return weeklyData;
       default:
         return weeklyData;
     }
   };
-
+  const getHoursData = () => {
+    // let startDate = dayjs().subtract(1, 'month'); // 往前推1个月
+    let startDate = dayjs().subtract(1, 'year'); // 往前推1年
+    let endDate = dayjs(); // 当前时间
+    let startDateStr = startDate.format('YYYY-MM-DD');
+    let endDateStr = endDate.format('YYYY-MM-DD');
+    getDynamicTrainerStatistics({ startDate: startDateStr, endDate: endDateStr }).then((res) => {
+      console.log("getHoursData", res.data.dailyStatistics);
+      let [weekData, monthData, total] = getStaticHoursData(res.data.dailyStatistics ?? []);
+      setWeeklyData(weekData);
+      setMonthlyData(monthData);
+      setTotalHours(total);
+    })
+  }
   useEffect(() => {
     const fetchStats = async () => {
       setIsLoadingStats(true);
@@ -117,6 +160,7 @@ function TrainerHome() {
     };
 
     fetchStats();
+    getHoursData();
   }, []);
 
   const statCards = [
@@ -137,7 +181,7 @@ function TrainerHome() {
     },
     {
       label: "Hours Trained",
-      value: "9h 30m",
+      value: totalHours,
       icon: <AccessTimeIcon sx={{ fontSize: 40, color: "primary.main" }} />,
     },
   ];
@@ -176,11 +220,12 @@ function TrainerHome() {
               mb={2}
             >
               <Box>
-                <Typography variant="h6">Sessions Overview</Typography>
+                {/* <Typography variant="h6">Sessions Overview</Typography> */}
+                <Typography variant="h6">Hours Overview</Typography>
                 <Typography variant="body1" color="text.secondary">
-                  Total Sessions:{" "}
+                  Total Hours:{" "}
                   <strong>
-                    {getData().reduce((acc, cur) => acc + cur.sessions, 0)}
+                    {getData().reduce((acc, cur) => acc + (cur.hours ?? 0), 0)}
                   </strong>
                 </Typography>
               </Box>
@@ -192,7 +237,7 @@ function TrainerHome() {
               >
                 <ToggleButton value="week">Week</ToggleButton>
                 <ToggleButton value="month">Month</ToggleButton>
-                <ToggleButton value="year">Year</ToggleButton>
+                {/* <ToggleButton value="year">Year</ToggleButton> */}
               </ToggleButtonGroup>
             </Box>
 
@@ -202,7 +247,7 @@ function TrainerHome() {
                 <YAxis allowDecimals={false} />
                 <Tooltip />
                 <Bar
-                  dataKey="sessions"
+                  dataKey="hours"
                   fill="#023047"
                   radius={[4, 4, 0, 0]}
                   barSize={30}

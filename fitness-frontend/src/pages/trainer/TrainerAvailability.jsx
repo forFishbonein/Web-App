@@ -25,6 +25,7 @@ const TrainerAvailability = () => {
   const { updateAvailability, getAvailability } = useTrainerApi();
 
   const handleSlotAdd = (slot) => {
+    console.log("slot", slot)
     setAvailability([...availability, slot]);
     showSnackbar({ message: "Time slot added", severity: "success" });
   };
@@ -50,7 +51,7 @@ const TrainerAvailability = () => {
       try {
         const response = await getAvailability();
         const data = response?.data;
-
+        console.log(data);
         if (Array.isArray(data)) {
           const parsed = data.map((slot) => ({
             id: `${slot.availabilityId}`,
@@ -85,9 +86,12 @@ const TrainerAvailability = () => {
       });
       return;
     }
-
+    console.log("availability", availability)
+    function isNumericId(id) {
+      return /^\d+$/.test(id);
+    }
     const formattedSlots = availability.map((slot) => ({
-      availabilityId: 0, // Assuming 0 for new slots
+      availabilityId: isNumericId(slot.id) ? Number(slot.id) : null, // Assuming 0 for new slots
       startTime: dayjs(slot.start).format("YYYY-MM-DD HH:mm:ss"),
       endTime: dayjs(slot.end).format("YYYY-MM-DD HH:mm:ss"),
     }));

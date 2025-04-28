@@ -31,37 +31,83 @@ import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { CalendarPicker } from "@mui/x-date-pickers/CalendarPicker";
 import { PickersDay } from "@mui/x-date-pickers/PickersDay";
 import useTrainerApi from "/src/apis/trainer";
+import dayjs from 'dayjs';
 
-const weeklyData = [
-  { label: "Week 1", hours: 3 },
-  { label: "Week 2", hours: 5 },
-  { label: "Week 3", hours: 4 },
-  { label: "Week 4", hours: 6 },
-];
+// const weeklyData = [
+//   { label: "Week 1", hours: 3 },
+//   { label: "Week 2", hours: 5 },
+//   { label: "Week 3", hours: 4 },
+//   { label: "Week 4", hours: 6 },
+// ];
 
-const monthlyData = [
-  { label: "Jan", hours: 18 },
-  { label: "Feb", hours: 22 },
-  { label: "Mar", hours: 19 },
-  { label: "Apr", hours: 21 },
-];
+// const monthlyData = [
+//   { label: "Jan", hours: 18 },
+//   { label: "Feb", hours: 22 },
+//   { label: "Mar", hours: 19 },
+//   { label: "Apr", hours: 21 },
+// ];
+const getStaticHoursData = (appointments) => {
+  // 只处理 Completed 的
+  const completed = appointments.filter(a => a.appointmentStatus === "Completed")
+    .map(a => ({
+      ...a,
+      hours: dayjs(a.endTime).diff(dayjs(a.startTime), 'hour')
+    }));
 
+  // 1) 最近7天的每日统计
+  const start7 = dayjs().subtract(6, 'day').startOf('day');
+  const recent7 = completed.filter(a => {
+    const d = dayjs(a.startTime);
+    return !d.isBefore(start7);  // 等价于 isSameOrAfter
+  });
+  const weekOrder = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const dailyData = weekOrder.map(dayLabel => ({
+    label: dayLabel,
+    hours: recent7
+      .filter(a => dayjs(a.startTime).format('ddd') === dayLabel)
+      .reduce((sum, a) => sum + a.hours, 0)
+  }));
+
+  // 2) 最近28天的每周统计
+  const start28 = dayjs().subtract(27, 'day').startOf('day');
+  const recent28 = completed.filter(a => {
+    const d = dayjs(a.startTime);
+    return !d.isBefore(start28);
+  });
+  const weeklyData = Array.from({ length: 4 }, (_, i) => {
+    const wStart = start28.add(i * 7, 'day');
+    const wEnd = wStart.add(7, 'day');
+    const sum = recent28
+      .filter(a => {
+        const d = dayjs(a.startTime);
+        return !d.isBefore(wStart) && d.isBefore(wEnd);
+      })
+      .reduce((s, a) => s + a.hours, 0);
+    return { label: `Week ${i + 1}`, hours: sum };
+  });
+  return [dailyData, weeklyData];
+}
 const MemberProgress = () => {
   const [selectedMember, setSelectedMember] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [chartView, setChartView] = useState("weekly");
   const { getAppointmentsGroupedByMember } = useTrainerApi();
-const [members, setMembers] = useState([]);
-const [isLoading, setIsLoading] = useState(true);
+  const [members, setMembers] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [weeklyData, setWeeklyData] = useState([]);
+  const [monthlyData, setMonthlyData] = useState([]);
 
 
-const filteredMembers = members.filter((member) =>
-  member.name.toLowerCase().includes(searchTerm.toLowerCase())
-);
+  const filteredMembers = members.filter((member) =>
+    member.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
 
-  const normalize = (date) =>
-    new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+  const normalize = (date) => {
+    date = new Date(date);
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+  }
+
 
   useEffect(() => {
     const fetchAppointments = async () => {
@@ -69,26 +115,28 @@ const filteredMembers = members.filter((member) =>
         setIsLoading(true);
         const res = await getAppointmentsGroupedByMember();
         const rawMembers = res.data;
-  
+
         const formattedMembers = rawMembers.map((member) => {
           const appointments = member.appointments || [];
-  
+
           const successful = appointments.filter(
             (a) => a.appointmentStatus === "Completed"
           ).length;
-  
+
           const cancelled = appointments.filter(
             (a) => a.appointmentStatus === "Cancelled"
           ).length;
-  
+
           const upcomingSessions = appointments
             .filter((a) => a.appointmentStatus === "Approved")
             .map((a, i) => ({
-              date: new Date(2025, 3, 23 + i), // placeholder date since API has no date
-              time: "5:30 PM", // placeholder time
+              date: a.startTime.split(" ")[0], // placeholder date since API has no date
+              time: a.startTime.split(" ")[1], // placeholder time
               program: a.projectName.trim(),
             }));
-  
+          let [days, weeks] = getStaticHoursData(appointments);
+          setWeeklyData(days);
+          setMonthlyData(weeks);
           return {
             id: member.memberId,
             name: member.memberName,
@@ -98,7 +146,7 @@ const filteredMembers = members.filter((member) =>
             upcomingSessions,
           };
         });
-  
+
         setMembers(formattedMembers);
       } catch (err) {
         console.error("Failed to load appointments", err);
@@ -106,10 +154,10 @@ const filteredMembers = members.filter((member) =>
         setIsLoading(false);
       }
     };
-  
+
     fetchAppointments();
   }, []);
-  
+
 
   return (
     <Box>
@@ -286,9 +334,11 @@ const filteredMembers = members.filter((member) =>
                           <LocalizationProvider dateAdapter={AdapterDateFns}>
                             <CalendarPicker
                               date={null}
-                              onChange={() => {}}
+                              onChange={() => { }}
                               defaultCalendarMonth={new Date(2025, 3)}
                               renderDay={(day, _value, DayComponentProps) => {
+                                // 1. 解构出 key，其余用来给 PickersDay
+                                const { key, ...pickersDayProps } = DayComponentProps;
                                 const matchedSession =
                                   selectedMember?.upcomingSessions?.find(
                                     (s) => normalize(s.date) === normalize(day)
@@ -300,7 +350,7 @@ const filteredMembers = members.filter((member) =>
 
                                 const dayComponent = (
                                   <PickersDay
-                                    {...DayComponentProps}
+                                    {...pickersDayProps}
                                     disableMargin
                                     sx={{
                                       ...(matchedSession && {
@@ -315,7 +365,7 @@ const filteredMembers = members.filter((member) =>
                                 );
 
                                 return matchedSession ? (
-                                  <Tooltip title={tooltipText} arrow>
+                                  <Tooltip key={key} title={tooltipText} arrow>
                                     <span>{dayComponent}</span>
                                   </Tooltip>
                                 ) : (

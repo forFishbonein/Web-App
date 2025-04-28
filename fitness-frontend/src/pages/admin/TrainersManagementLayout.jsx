@@ -2,7 +2,7 @@ import React from "react";
 import { Box, Tabs, Tab, Paper } from "@mui/material";
 import { useLocation, useNavigate, Outlet } from "react-router-dom";
 
-const tabPaths = ["/admin/Trainers/pending-applications", "/admin/Trainers/all"];
+const tabPaths = ["/admin/trainers/pending-applications", "/admin/trainers/all"];
 
 const TrainersManagementLayout = () => {
   const location = useLocation();
