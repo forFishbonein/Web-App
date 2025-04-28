@@ -31,8 +31,8 @@ const TrainerAvailability = () => {
   };
 
   const handleSlotRemove = (slotId) => {
-    setAvailability(availability.filter((s) => s.id !== slotId));
-    showSnackbar({ message: "Time slot removed", severity: "info" });
+    // setAvailability(availability.filter((s) => s.id !== slotId));
+    // showSnackbar({ message: "Time slot removed", severity: "info" });
   };
 
   const handleSave = () => {
