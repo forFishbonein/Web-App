@@ -25,23 +25,24 @@ const localizer = dateFnsLocalizer({
 
 const AvailabilityCalendar = ({
   events = [],
-  onSlotAdd = () => {},
-  onSlotRemove = () => {},
+  onSlotAdd = () => { },
+  onSlotRemove = () => { },
   editable = false,
-  showSnackbar = () => {},
+  showSnackbar = () => { },
 }) => {
   const [view, setView] = useState(Views.WEEK);
   const [date, setDate] = useState(new Date());
   const { updateAvailability } = useTrainerApi();
 
-  const calendarEvents = events.map((e) => ({
-    ...e,
-    title: "Available",
-  }));
+  const calendarEvents = events;
+  // .map((e) => ({
+  //   ...e,
+  //   title: "Available",
+  // }));
 
   const handleSelectSlot = ({ start, end }) => {
     if (!editable) return;
-  
+
     const now = new Date();
     if (start < now) {
       showSnackbar({
@@ -50,7 +51,7 @@ const AvailabilityCalendar = ({
       });
       return;
     }
-  
+
     const newSlot = {
       id: `${start.toISOString()}_${end.toISOString()}`,
       start,
@@ -58,7 +59,7 @@ const AvailabilityCalendar = ({
     };
     onSlotAdd(newSlot);
   };
-  
+
 
   const handleSelectEvent = (event) => {
     if (!editable) return;
@@ -111,6 +112,30 @@ const AvailabilityCalendar = ({
         onSelectEvent={handleSelectEvent}
         startAccessor="start"
         endAccessor="end"
+        // 2. 根据 event.title 返回不同的样式
+        eventPropGetter={event => {
+          let backgroundColor = "#1976d2";
+          let borderColor = "#1565c0";
+
+          if (event.title === "Booked") {
+            backgroundColor = "#f44336";
+            borderColor = "#d32f2f";
+          } else if (event.title === "Available") {
+            backgroundColor = "#4caf50";
+            borderColor = "#388e3c";
+          }
+
+          return {
+            style: {
+              backgroundColor,
+              border: `1px solid ${borderColor}`,
+              borderRadius: 8,
+              color: "#fff",
+              padding: "4px 8px",
+              fontSize: "0.8rem",
+            }
+          };
+        }}
         style={{ height: "100%" }}
         messages={{
           today: "Current",

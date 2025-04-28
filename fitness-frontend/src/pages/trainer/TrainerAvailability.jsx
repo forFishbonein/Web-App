@@ -57,7 +57,7 @@ const TrainerAvailability = () => {
             id: `${slot.availabilityId}`,
             start: dayjs(slot.startTime, "YYYY-MM-DD HH:mm").toDate(),
             end: dayjs(slot.endTime, "YYYY-MM-DD HH:mm").toDate(),
-            title: "Available",
+            title: slot.status === "Available" ? "Available" : slot.status === "Booked" ? "Booked" : "",
           }));
           setAvailability(parsed);
         } else {
