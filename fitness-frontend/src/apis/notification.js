@@ -6,6 +6,10 @@ const useNotificationApi = () => {
     return httpRequest({
       method: "get",
       url: `/user/notifications?page=${page}&pageSize=${pageSize}`,
+      meta: {
+        customTag: "getNotifications",
+        noNeedLoadingRing: true,
+      },
     });
   };
   const markNotificationAsRead = (notificationId) => {

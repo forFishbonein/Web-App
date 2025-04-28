@@ -18,6 +18,7 @@ import {
   TextField,
   Stack,
   Tooltip,
+  duration,
 } from "@mui/material";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
@@ -44,7 +45,7 @@ function MySessions() {
   const { showSnackbar } = useSnackbar();
   const [confirmCancelOpen, setConfirmCancelOpen] = useState(false);
   const [sessionToCancel, setSessionToCancel] = useState(null);
-  const { getApprovedAppointments, completeAppointment, createPlan, listPlans } =
+  const { getApprovedAppointments, completeAppointment, createPlan, listPlans, bindPlanToAppointment, updatePlan } =
     useTrainerApi();
   const setAcceptedSessions = useSessionStore(
     (state) => state.setAcceptedSessions
@@ -52,11 +53,13 @@ function MySessions() {
   const [isLoading, setIsLoading] = useState(true);
   const [completingSessionId, setCompletingSessionId] = useState(null);
   const [availableDuration, setAvailableDuration] = useState(0);
-
+  const [isCreate, setIsCreate] = useState(false);
+  const [doingPlanId, setDoingPlanId] = useState(null);
   const handleOpenDialog = (sessionId) => {
     setCurrentSessionId(sessionId);
 
     const existingPlan = workoutPlans[sessionId];
+    console.log("existingPlan", existingPlan)
     const session = acceptedSessions.find((s) => s.appointmentId === sessionId);
 
     if (!session) {
@@ -74,10 +77,13 @@ function MySessions() {
     //  Now safely compute available time
     const availableMinutes = timeToMinutes(max) - timeToMinutes(min);
     setAvailableDuration(availableMinutes);
-
     if (existingPlan) {
-      setPlanRows(existingPlan);
+      setIsCreate(false);
+      setDoingPlanId(existingPlan.workoutPlanId);
+      setPlanRows(existingPlan.workoutPlanContent);
     } else {
+      setIsCreate(true);
+      setDoingPlanId(null);
       setPlanRows([{ duration: "", notes: "" }]);
     }
 
@@ -86,7 +92,7 @@ function MySessions() {
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
-    setCurrentSessionId(null);
+    // setCurrentSessionId(null);
     setPlanRows([]);
   };
 
@@ -112,7 +118,56 @@ function MySessions() {
       setIsLoading(true);
       try {
         const res = await getApprovedAppointments();
+        // res.data = [
+        //   {
+        //     "appointmentId": 45,
+        //     "projectName": "  yoga",
+        //     "description": "1234",
+        //     "appointmentStatus": "Approved",
+        //     "bookingCreatedAt": "2025-04-26 18:35",
+        //     "sessionStartTime": "2025-04-28 19:34",
+        //     "sessionEndTime": "2025-04-28 20:34",
+        //     "trainerName": "wehai Wang",
+        //     "workoutPlanTitle": "yoga - wenhai hao",
+        //     "workoutPlanContent": "Step 1: 30 min - prepare\nStep 2: 30 min - doing"
+        //   },
+        //   {
+        //     "appointmentId": 48,
+        //     "projectName": "  yoga222",
+        //     "description": "12343123123",
+        //     "appointmentStatus": "Approved",
+        //     "bookingCreatedAt": "2025-04-26 18:35",
+        //     "sessionStartTime": "2025-04-28 19:34",
+        //     "sessionEndTime": "2025-04-28 20:34",
+        //     "trainerName": "wehai Wang",
+        //     "workoutPlanTitle": "yoga - wenhai hao",
+        //     "workoutPlanContent": "Step 1: 20 min - 12121\nStep 2: 35 min - doing"
+        //   }
+        // ];
         setAcceptedSessions(res.data);
+        //注：新增在查询的时候设置WorkoutPlans
+        setWorkoutPlans(res.data.reduce((total, current) => {
+          return current.workoutPlanContent ? {
+            ...total, [current.appointmentId]: {
+              workoutPlanId: current.workoutPlanId,
+              workoutPlanContent: current.workoutPlanContent?.split("\n").map(item => {
+                // console.log(item);
+                // 先按 “–” 拆成左右两部分
+                const [left, right] = item.split("-").map(s => s.trim());
+                // console.log(left, right);
+                // left 形如 "Step 1: 30 min"
+                // right 就是 notes，比如 "prepare"
+                // 从 left 里再抽数字
+                const numMatch = left.match(/(\d+)\s*min/i);
+                const duration = numMatch ? numMatch[1] : "";
+
+                const notes = right || "";
+                return { duration, notes };
+              })
+            }
+          } : { ...total }
+        }, {}))
+
       } catch (err) {
         console.error("Failed to fetch approved appointments", err);
         showSnackbar({ message: "Could not load sessions", severity: "error" });
@@ -121,6 +176,7 @@ function MySessions() {
       }
     };
     fetchAccepted();
+
   }, []);
 
   const handleInputChange = (index, field, value) => {
@@ -142,10 +198,129 @@ function MySessions() {
 
     setPlanRows(updatedRows);
   };
+  const createNewWorkoutPlan = async () => {
+    const session = acceptedSessions.find(
+      (s) => s.appointmentId === currentSessionId
+    );
 
-  const handleSavePlan = () => {
-    setWorkoutPlans((prev) => ({ ...prev, [currentSessionId]: planRows }));
-    showSnackbar({ message: "Workout plan created!", severity: "success" });
+    if (!session) {
+      showSnackbar({
+        message: "Session not found",
+        severity: "error",
+      });
+      return;
+    }
+
+    const time = `${session.startTime?.split(" ")[1] || "00:00"
+      } - ${session.endTime?.split(" ")[1] || "00:00"}`;
+
+    const title = `${session.projectName} - ${session.memberName}`;
+    const content = planRows
+      .map(
+        (row, i) =>
+          `Step ${i + 1}: ${row.duration} min - ${row.notes}`
+      )
+      .join("\n");
+
+    try {
+      let res = await createPlan({ title, content });
+      // showSnackbar({
+      //   message: "Workout plan saved to server!",
+      //   severity: "success",
+      // });
+      return res.data.planId;
+    } catch (err) {
+      console.error("Failed to save plan", err);
+      showSnackbar({
+        message: "Failed to save plan to server",
+        severity: "error",
+      });
+    }
+  }
+
+  const updateWorkoutPlan = async () => {
+    const session = acceptedSessions.find(
+      (s) => s.appointmentId === currentSessionId
+    );
+
+    if (!session) {
+      showSnackbar({
+        message: "Session not found",
+        severity: "error",
+      });
+      return;
+    }
+
+    const time = `${session.startTime?.split(" ")[1] || "00:00"
+      } - ${session.endTime?.split(" ")[1] || "00:00"}`;
+
+    const title = `${session.projectName} - ${session.memberName}`;
+    const content = planRows
+      .map(
+        (row, i) =>
+          `Step ${i + 1}: ${row.duration} min - ${row.notes}`
+      )
+      .join("\n");
+
+    try {
+      let res = await updatePlan(doingPlanId, { title, content });
+      // showSnackbar({
+      //   message: "Workout plan saved to server!",
+      //   severity: "success",
+      // });
+      return res.data.planId;
+    } catch (err) {
+      console.error("Failed to save plan", err);
+      showSnackbar({
+        message: "Failed to save plan to server",
+        severity: "error",
+      });
+    }
+  }
+  const bindAppointmentAndWorkPlan = async (appointmentId, planId) => {
+    try {
+      await bindPlanToAppointment(appointmentId, planId);
+      // showSnackbar({
+      //   message: "Workout plan have been created and saved to this session!",
+      //   severity: "success",
+      // });
+    } catch (err) {
+      console.error("Failed to save plan", err);
+      showSnackbar({
+        message: "Failed to save plan to server",
+        severity: "error",
+      });
+    }
+  }
+  //注：保存的时候分为直接保存和更新替换
+  const handleSavePlan = async () => {
+    if (isCreate) {
+      //1.首先创建一个 plan，得到 plan 的 Id，然后绑定给这个课程订单
+      let planId = await createNewWorkoutPlan();
+      await bindAppointmentAndWorkPlan(currentSessionId, planId);
+      setWorkoutPlans((prev) => ({
+        ...prev, [currentSessionId]: {
+          workoutPlanId: planId,
+          workoutPlanContent: planRows
+        }
+      }));
+      showSnackbar({
+        message: "Workout plan have been created and saved to this session!",
+        severity: "success",
+      });
+    } else {
+      let planId = await updateWorkoutPlan();
+      setWorkoutPlans((prev) => ({
+        ...prev, [currentSessionId]: {
+          workoutPlanId: planId,
+          workoutPlanContent: planRows
+        }
+      })); //这个对象扩展运算符可以新增也可以修改覆盖
+      showSnackbar({
+        message: "Workout plan have been updated to this session!",
+        severity: "success",
+      });
+    }
     handleCloseDialog();
   };
 
@@ -231,7 +406,7 @@ function MySessions() {
                     <TableCell>
                       <Stack direction="row" spacing={1}>
                         <Tooltip
-                          title={hasPlan ? "View Plan" : "Create Plan"}
+                          title={hasPlan ? "View or Update Plan" : "Create Plan"}
                           arrow
                         >
                           <IconButton
@@ -239,7 +414,7 @@ function MySessions() {
                             onClick={() =>
                               handleOpenDialog(session.appointmentId)
                             }
-                            aria-label={hasPlan ? "View Plan" : "Create Plan"}
+                            aria-label={hasPlan ? "View or Update Plan" : "Create Plan"}
                           >
                             {hasPlan ? (
                               <VisibilityIcon />
@@ -248,15 +423,16 @@ function MySessions() {
                             )}
                           </IconButton>
                         </Tooltip>
-                        {hasPlan && (
+                        {/* {hasPlan && (
                           <Tooltip title="Save Plan" arrow>
                             <IconButton
                               color="secondary"
                               onClick={async () => {
+                                console.log("acceptedSessions", acceptedSessions);
                                 const session = acceptedSessions.find(
                                   (s) => s.appointmentId === currentSessionId
                                 );
-                
+
                                 if (!session) {
                                   showSnackbar({
                                     message: "Session not found",
@@ -264,11 +440,10 @@ function MySessions() {
                                   });
                                   return;
                                 }
-                
-                                const time = `${
-                                  session.startTime?.split(" ")[1] || "00:00"
-                                } - ${session.endTime?.split(" ")[1] || "00:00"}`;
-                
+
+                                const time = `${session.startTime?.split(" ")[1] || "00:00"
+                                  } - ${session.endTime?.split(" ")[1] || "00:00"}`;
+
                                 const title = `${session.projectName} - ${session.memberName}`;
                                 const content = planRows
                                   .map(
@@ -276,10 +451,10 @@ function MySessions() {
                                       `Step ${i + 1}: ${row.duration} min - ${row.notes}`
                                   )
                                   .join("\n");
-                
+
                                 try {
                                   await createPlan({ title, content });
-                
+
                                   showSnackbar({
                                     message: "Workout plan saved to server!",
                                     severity: "success",
@@ -297,7 +472,7 @@ function MySessions() {
                               <SaveIcon />
                             </IconButton>
                           </Tooltip>
-                        )}
+                        )} */}
                       </Stack>
                     </TableCell>
                     <TableCell>
@@ -367,10 +542,10 @@ function MySessions() {
           }}
         >
           {workoutPlans[currentSessionId]
-            ? "View Workout Plan"
+            ? "Update Workout Plan"
             : "Create Workout Plan"}
 
-          {workoutPlans[currentSessionId] && (
+          {/* {workoutPlans[currentSessionId] && (
             <Button
               variant="outlined"
               size="small"
@@ -387,9 +562,8 @@ function MySessions() {
                   return;
                 }
 
-                const time = `${
-                  session.startTime?.split(" ")[1] || "00:00"
-                } - ${session.endTime?.split(" ")[1] || "00:00"}`;
+                const time = `${session.startTime?.split(" ")[1] || "00:00"
+                  } - ${session.endTime?.split(" ")[1] || "00:00"}`;
 
                 const title = `${session.projectName} - ${session.memberName}`;
                 const content = planRows
@@ -417,7 +591,7 @@ function MySessions() {
             >
               Save to Workout Plans
             </Button>
-          )}
+          )} */}
         </DialogTitle>
 
         <DialogContent>
@@ -444,7 +618,7 @@ function MySessions() {
                 }
                 placeholder="e.g. 10"
                 fullWidth
-                disabled={!!workoutPlans[currentSessionId]}
+                // disabled={!!workoutPlans[currentSessionId]}
                 inputProps={{
                   min: 1,
                   step: 1,
@@ -458,7 +632,7 @@ function MySessions() {
                   handleInputChange(index, "notes", e.target.value)
                 }
                 fullWidth
-                disabled={!!workoutPlans[currentSessionId]}
+              // disabled={!!workoutPlans[currentSessionId]}
               />
 
               {!workoutPlans[currentSessionId] && (
@@ -486,11 +660,11 @@ function MySessions() {
 
         <DialogActions>
           <Button onClick={handleCloseDialog}>Close</Button>
-          {!workoutPlans[currentSessionId] && (
-            <Button variant="contained" onClick={handleSavePlan}>
-              Save
-            </Button>
-          )}
+          {/* {!workoutPlans[currentSessionId] && ( */}
+          <Button variant="contained" onClick={handleSavePlan}>
+            {isCreate ? "Save" : "Update"}
+          </Button>
+          {/* )} */}
         </DialogActions>
       </Dialog>
       <Dialog

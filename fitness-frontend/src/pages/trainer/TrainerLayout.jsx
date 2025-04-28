@@ -10,7 +10,6 @@ import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import IconButton from "@mui/material/IconButton";
-
 // Icons
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
@@ -43,7 +42,6 @@ function TrainerLayout() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-
   const DrawerList = () => (
     <Drawer
       variant="permanent"
@@ -52,13 +50,17 @@ function TrainerLayout() {
         flexShrink: 0,
         "& .MuiDrawer-paper": {
           width: drawerOpen ? drawerWidth : miniDrawerWidth,
+          // height: "100vh",
           boxSizing: "border-box",
-          marginTop: "70px",
+          // marginTop: "70px",
           overflowX: "hidden",
           transition: "width 0.3s",
+          zIndex: "1000"
         },
       }}
     >
+      {/* 占位 AppBar 的高度 */}
+      <Box sx={{ height: '10vh', flexShrink: 0 }} />
       <Box sx={{ display: "flex", justifyContent: drawerOpen ? "flex-end" : "center", p: 1 }}>
         <IconButton onClick={() => setDrawerOpen(!drawerOpen)}>
           {drawerOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
@@ -108,10 +110,12 @@ function TrainerLayout() {
   );
 
   return (
-    <div>
+    <>
       {/* Top AppBar */}
-      <TrainerDashboard drawerOpen={drawerOpen} />
-
+      < TrainerDashboard drawerOpen={drawerOpen} />
+      {/* 占位：刚好和 AppBar 等高 */}
+      < div style={{ height: "10vh" /* px */, flexShrink: 0 }
+      } />
       {/* Sidebar Drawer */}
       <DrawerList />
 
@@ -121,14 +125,14 @@ function TrainerLayout() {
           marginLeft: drawerOpen ? `${drawerWidth}px` : `${miniDrawerWidth}px`,
           padding: "24px",
           transition: "margin-left 0.3s ease",
-          minHeight: "calc(100vh - 70px)",
+          // minHeight: "calc(100vh - 70px)",
           overflowY: "auto",
           maxHeight: "90vh",
         }}
       >
         <Outlet />
       </div>
-    </div>
+    </>
   );
 }
 

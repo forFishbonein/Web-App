@@ -66,16 +66,21 @@ function TrainerDashboard({ drawerOpen }) {
   }, []);
 
   return (
-    <Header drawerOpen={drawerOpen}>
-      {/* Notification Bell */}
-      <Box sx={{ flexGrow: 0, mr: 2 }}>
-        <IconButton size="large" color="inherit" onClick={handleClick}>
-          <Badge badgeContent={badgeContent} color="error">
-            <NotificationsIcon />
-          </Badge>
-        </IconButton>
-      </Box>
-
+    <div style={{ position: "fixed", top: "0", zIndex: "1001", width: "100%" }}>
+      <Header drawerOpen={drawerOpen}>
+        {/* Notification Bell */}
+        <Box sx={{
+          flexGrow: 1, display: "flex",
+          justifyContent: "flex-end",
+          mr: 2
+        }}>
+          <IconButton size="large" color="inherit" onClick={handleClick}>
+            <Badge badgeContent={badgeContent} color="error">
+              <NotificationsIcon />
+            </Badge>
+          </IconButton>
+        </Box>
+      </Header>
       {/* Notification Popover */}
       <Popover
         id={id}
@@ -114,7 +119,7 @@ function TrainerDashboard({ drawerOpen }) {
           deleteNotification={deleteNotification}
         />
       </Popover>
-    </Header>
+    </div>
   );
 }
 
