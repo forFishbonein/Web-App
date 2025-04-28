@@ -59,7 +59,7 @@ const Header = ({ firstName, lastName, children, drawerOpen }) => {
         name: userInfo.trainerProfile.name || "",
         dateOfBirth: userInfo.dateOfBirth || "",
         address: userInfo.address || "",
-        email: userInfo.trainerProfile.email || ""
+        email: userInfo.email || ""
       });
     }
   }, [userInfo]);
