@@ -25,13 +25,14 @@ const TrainerAvailability = () => {
   const { updateAvailability, getAvailability } = useTrainerApi();
 
   const handleSlotAdd = (slot) => {
+    console.log("slot", slot)
     setAvailability([...availability, slot]);
     showSnackbar({ message: "Time slot added", severity: "success" });
   };
 
   const handleSlotRemove = (slotId) => {
-    setAvailability(availability.filter((s) => s.id !== slotId));
-    showSnackbar({ message: "Time slot removed", severity: "info" });
+    // setAvailability(availability.filter((s) => s.id !== slotId));
+    // showSnackbar({ message: "Time slot removed", severity: "info" });
   };
 
   const handleSave = () => {
@@ -50,13 +51,13 @@ const TrainerAvailability = () => {
       try {
         const response = await getAvailability();
         const data = response?.data;
-
+        console.log(data);
         if (Array.isArray(data)) {
           const parsed = data.map((slot) => ({
             id: `${slot.availabilityId}`,
             start: dayjs(slot.startTime, "YYYY-MM-DD HH:mm").toDate(),
             end: dayjs(slot.endTime, "YYYY-MM-DD HH:mm").toDate(),
-            title: "Available",
+            title: slot.status === "Available" ? "Available" : slot.status === "Booked" ? "Booked" : "",
           }));
           setAvailability(parsed);
         } else {
@@ -85,9 +86,12 @@ const TrainerAvailability = () => {
       });
       return;
     }
-
+    console.log("availability", availability)
+    function isNumericId(id) {
+      return /^\d+$/.test(id);
+    }
     const formattedSlots = availability.map((slot) => ({
-      availabilityId: 0, // Assuming 0 for new slots
+      availabilityId: isNumericId(slot.id) ? Number(slot.id) : null, // Assuming 0 for new slots
       startTime: dayjs(slot.start).format("YYYY-MM-DD HH:mm:ss"),
       endTime: dayjs(slot.end).format("YYYY-MM-DD HH:mm:ss"),
     }));

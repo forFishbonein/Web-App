@@ -66,16 +66,23 @@ function AdminDashboard({ drawerOpen }) {
   }, []);
 
   return (
-    <Header drawerOpen={drawerOpen}>
-      {/* Notification Bell */}
-      <Box sx={{ flexGrow: 0, mr: 2 }}>
-        <IconButton size="large" color="inherit" onClick={handleClick}>
-          <Badge badgeContent={badgeContent} color="error">
-            <NotificationsIcon />
-          </Badge>
-        </IconButton>
-      </Box>
-
+    <div style={{ position: "fixed", top: "0", zIndex: "1001", width: "100%" }}>
+      <Header drawerOpen={drawerOpen}>
+        <Box sx={{ flexGrow: 1, display: "flex", marginLeft: 5 }}></Box>
+        {/* Notification Bell */}
+        <Box sx={{
+          flexGrow: 0, display: "flex",
+          justifyContent: "flex-end",
+          width: "120px",
+          mr: 2
+        }}>
+          <IconButton size="large" color="inherit" onClick={handleClick}>
+            <Badge badgeContent={badgeContent} color="error">
+              <NotificationsIcon />
+            </Badge>
+          </IconButton>
+        </Box>
+      </Header>
       {/* Notification Popover */}
       <Popover
         id={id}
@@ -115,7 +122,7 @@ function AdminDashboard({ drawerOpen }) {
           deleteNotification={deleteNotification}
         />
       </Popover>
-    </Header>
+    </div>
   );
 }
 

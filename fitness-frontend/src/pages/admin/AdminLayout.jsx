@@ -46,13 +46,17 @@ function AdminLayout() {
         flexShrink: 0,
         "& .MuiDrawer-paper": {
           width: drawerOpen ? drawerWidth : miniDrawerWidth,
+          // height: "100vh",
           boxSizing: "border-box",
-          marginTop: "70px",
+          // marginTop: "70px",
           overflowX: "hidden",
           transition: "width 0.3s",
+          zIndex: "1000"
         },
       }}
     >
+      {/* 占位 AppBar 的高度 */}
+      <Box sx={{ height: '10vh', flexShrink: 0 }} />
       <Box sx={{ display: "flex", justifyContent: drawerOpen ? "flex-end" : "center", p: 1 }}>
         <IconButton onClick={() => setDrawerOpen(!drawerOpen)}>
           {drawerOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
@@ -102,10 +106,12 @@ function AdminLayout() {
   );
 
   return (
-    <div>
-      {/* Top Admin AppBar */}
+    <>
+      {/* Top AppBar */}
       <AdminDashboard drawerOpen={drawerOpen} />
-
+      {/* 占位：刚好和 AppBar 等高 */}
+      < div style={{ height: "10vh" /* px */, flexShrink: 0 }
+      } />
       {/* Sidebar Drawer */}
       <DrawerList />
 
@@ -115,14 +121,14 @@ function AdminLayout() {
           marginLeft: drawerOpen ? `${drawerWidth}px` : `${miniDrawerWidth}px`,
           padding: "24px",
           transition: "margin-left 0.3s ease",
-          minHeight: "calc(100vh - 70px)",
+          // minHeight: "calc(100vh - 70px)",
           overflowY: "auto",
           maxHeight: "90vh",
         }}
       >
         <Outlet />
       </div>
-    </div>
+    </>
   );
 }
 

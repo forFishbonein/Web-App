@@ -68,10 +68,12 @@ function TrainerDashboard({ drawerOpen }) {
   return (
     <div style={{ position: "fixed", top: "0", zIndex: "1001", width: "100%" }}>
       <Header drawerOpen={drawerOpen}>
+        <Box sx={{ flexGrow: 1, display: "flex", marginLeft: 5 }}></Box>
         {/* Notification Bell */}
         <Box sx={{
-          flexGrow: 1, display: "flex",
+          flexGrow: 0, display: "flex",
           justifyContent: "flex-end",
+          width: "120px",
           mr: 2
         }}>
           <IconButton size="large" color="inherit" onClick={handleClick}>

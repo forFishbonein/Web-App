@@ -24,7 +24,7 @@ const HomePage = () => {
 
       <Box
         sx={{
-          height: { xs: "80vh", md: "66vh" },
+          height: "65vh",
           position: "relative",
           display: "flex",
           flexDirection: "column",
