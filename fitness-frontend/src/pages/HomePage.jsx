@@ -1,16 +1,20 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Box, Button, Typography } from "@mui/material";
+import { Box, Button, Typography, useTheme, useMediaQuery } from "@mui/material";
 import Header from "../components/header/homeHeaderComponent";
 import Footer from "../components/footer/footerComponent";
 import image from "../assets/strengthImage.jpg";
+
 const HomePage = () => {
   const navigate = useNavigate();
   const [selectedRole, setSelectedRole] = useState("");
 
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
+  const isMediumScreen = useMediaQuery(theme.breakpoints.between("sm", "md"));
+
   const handleTabClick = (role) => {
     setSelectedRole(role);
-    // navigate(`/authenticate?role=${role}`); // Pass role as query param
     navigate(`/authenticate?role=${role}${role === "admin" ? "&activeTab=1" : ""}`);
   };
 
@@ -20,7 +24,7 @@ const HomePage = () => {
 
       <Box
         sx={{
-          height: "64vh",
+          height: { xs: "80vh", md: "66vh" },
           position: "relative",
           display: "flex",
           flexDirection: "column",
@@ -28,10 +32,10 @@ const HomePage = () => {
           justifyContent: "center",
           textAlign: "center",
           color: "white",
-          padding: "20px",
+          padding: { xs: 2, sm: 4 },
         }}
       >
-        {/* Overlay to Improve Readability */}
+        {/* Background Overlay */}
         <Box
           sx={{
             position: "absolute",
@@ -42,22 +46,35 @@ const HomePage = () => {
             backgroundImage: `url(${image})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
-            opacity: 0.4, // Background image opacity
-            zIndex: -1, // Ensures it stays behind text
+            opacity: 0.4,
+            zIndex: -1,
           }}
         />
 
-        {/* Headline */}
-        <Typography variant="h2" fontWeight="bold" sx={{ mb: 2, color: "#023047" }}>
+        {/* Main Headline */}
+        <Typography
+          variant={isSmallScreen ? "h4" : isMediumScreen ? "h3" : "h2"}
+          fontWeight="bold"
+          sx={{ mb: 2, color: "#023047", px: 1 }}
+        >
           Your Fitness Journey Starts Here!
         </Typography>
 
         {/* Subheadline */}
-        <Typography variant="h5" sx={{ marginBottom: "20px", maxWidth: "60%", color: "#023047", fontSize: "1.8em" }}>
+        <Typography
+          variant="h6"
+          sx={{
+            marginBottom: 3,
+            maxWidth: { xs: "90%", sm: "80%", md: "60%" },
+            color: "#023047",
+            fontSize: { xs: "1.2rem", sm: "1.5rem", md: "1.8rem" },
+            px: 1,
+          }}
+        >
           Achieve Your Goals with Personalized Training & Progress Tracking!
         </Typography>
 
-        {/* CTA Button */}
+        {/* Call-to-Action Button */}
         <Button
           variant="contained"
           size="large"
@@ -65,8 +82,8 @@ const HomePage = () => {
             backgroundColor: "#023047",
             color: "#f4d35e",
             fontWeight: "bold",
-            padding: "10px 20px",
-            fontSize: "18px",
+            padding: { xs: "8px 16px", sm: "10px 20px" },
+            fontSize: { xs: "1rem", sm: "1.125rem" },
             borderRadius: "8px",
             "&:hover": { textDecoration: "underline" },
           }}
