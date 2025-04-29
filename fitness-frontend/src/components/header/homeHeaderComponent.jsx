@@ -10,14 +10,17 @@ const Header = ({ onTabClick }) => {
   const [tabValue, setTabValue] = React.useState(0);
   return (
     <AppBar position="static" sx={{ backgroundColor: "#023047", padding: "2px 20px", height: "10vh", display: "flex", flexDirection: "column", justifyContent: "center" }}>
-      <Toolbar sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <Toolbar sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", color: "#fff" }}>
         {/* Application Name */}
         <Typography variant="h4" sx={{ color: "white", fontWeight: "bold" }}>
           FitQuest
         </Typography>
 
         {/* Navigation Tabs */}
-        <Tabs value={tabValue} aria-label="navigation tabs" onChange={(event, newValue) => setTabValue(newValue)}>
+        <Tabs value={tabValue} aria-label="navigation tabs" onChange={(event, newValue) => setTabValue(newValue)}
+          textColor="inherit"            // 让文字都用父容器（AppBar）的 color
+        // indicatorColor="secondary"     // 下划线用 secondary 色
+        >
           {tabs.map((tab, index) => (
             <Tab
               key={index}
@@ -32,7 +35,7 @@ const Header = ({ onTabClick }) => {
           ))}
         </Tabs>
       </Toolbar>
-    </AppBar>
+    </AppBar >
   );
 };
 
