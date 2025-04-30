@@ -6,7 +6,7 @@ services:
     networks: [app-net]
 
   backend:
-    build: ./backend          # 上面的 Dockerfile
+    build: ./Backend          # 上面的 Dockerfile
     ports: ["8080:8080"]
     environment:
       # SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/fitness?serverTimezone=UTC
