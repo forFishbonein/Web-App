@@ -102,7 +102,7 @@ const SpecialisationManagement = () => {
       {/* Add Dialog */}
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>Add Specialisation</DialogTitle>
-        <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
+        <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, pt: "1% !important" }}>
           <TextField
             label="Add Specialisation"
             value={form.description}
