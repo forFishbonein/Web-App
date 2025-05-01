@@ -27,14 +27,6 @@ function LoginButton({ type }) {
       client_id: "642557482063-q866pb3tlp0blvso126q2i2si40qn6oh.apps.googleusercontent.com",
       callback: handleCredentialResponse,
     });
-    // google.accounts.id.renderButton(
-    //   document.getElementById("google-signin-button"),
-    //   {
-    //     theme: "filled_blue",
-    //     size: "large",
-    //     width: 400,
-    //   }
-    // );
   }, []);
 
   const handleCredentialResponse = async (response) => {
@@ -66,12 +58,6 @@ function LoginButton({ type }) {
     }
   };
   return (<>
-
-
-    {/* Social Login Buttons */}
-    {/* <Box display="flex" justifyContent="center" gap={2}>
-      <div id="google-signin-button"></div>
-    </Box> */}
     <Button
       variant="contained"
       startIcon={<GoogleIcon />}

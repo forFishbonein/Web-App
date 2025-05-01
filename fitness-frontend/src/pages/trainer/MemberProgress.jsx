@@ -14,6 +14,12 @@ import {
   ToggleButtonGroup,
   ToggleButton,
   Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  MenuItem,
 } from "@mui/material";
 import {
   BarChart,
@@ -31,54 +37,43 @@ import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { CalendarPicker } from "@mui/x-date-pickers/CalendarPicker";
 import { PickersDay } from "@mui/x-date-pickers/PickersDay";
 import useTrainerApi from "/src/apis/trainer";
-import dayjs from 'dayjs';
+import { useSnackbar } from "../../utils/Hooks/SnackbarContext.jsx";
+import dayjs from "dayjs";
 
-// const weeklyData = [
-//   { label: "Week 1", hours: 3 },
-//   { label: "Week 2", hours: 5 },
-//   { label: "Week 3", hours: 4 },
-//   { label: "Week 4", hours: 6 },
-// ];
-
-// const monthlyData = [
-//   { label: "Jan", hours: 18 },
-//   { label: "Feb", hours: 22 },
-//   { label: "Mar", hours: 19 },
-//   { label: "Apr", hours: 21 },
-// ];
 const getStaticHoursData = (appointments) => {
-  // 只处理 Completed 的
-  const completed = appointments.filter(a => a.appointmentStatus === "Completed")
-    .map(a => ({
+  //Completed
+  const completed = appointments
+    .filter((a) => a.appointmentStatus === "Completed")
+    .map((a) => ({
       ...a,
-      hours: dayjs(a.endTime).diff(dayjs(a.startTime), 'hour')
+      hours: dayjs(a.endTime).diff(dayjs(a.startTime), "hour"),
     }));
 
-  // 1) 最近7天的每日统计
-  const start7 = dayjs().subtract(6, 'day').startOf('day');
-  const recent7 = completed.filter(a => {
+  // 1) Daily Statistics for the Last 7 Days
+  const start7 = dayjs().subtract(6, "day").startOf("day");
+  const recent7 = completed.filter((a) => {
     const d = dayjs(a.startTime);
-    return !d.isBefore(start7);  // 等价于 isSameOrAfter
+    return !d.isBefore(start7);
   });
   const weekOrder = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-  const dailyData = weekOrder.map(dayLabel => ({
+  const dailyData = weekOrder.map((dayLabel) => ({
     label: dayLabel,
     hours: recent7
-      .filter(a => dayjs(a.startTime).format('ddd') === dayLabel)
-      .reduce((sum, a) => sum + a.hours, 0)
+      .filter((a) => dayjs(a.startTime).format("ddd") === dayLabel)
+      .reduce((sum, a) => sum + a.hours, 0),
   }));
 
-  // 2) 最近28天的每周统计
-  const start28 = dayjs().subtract(27, 'day').startOf('day');
-  const recent28 = completed.filter(a => {
+  // 2)Weekly Statistics for the Last 28 Days
+  const start28 = dayjs().subtract(27, "day").startOf("day");
+  const recent28 = completed.filter((a) => {
     const d = dayjs(a.startTime);
     return !d.isBefore(start28);
   });
   const weeklyData = Array.from({ length: 4 }, (_, i) => {
-    const wStart = start28.add(i * 7, 'day');
-    const wEnd = wStart.add(7, 'day');
+    const wStart = start28.add(i * 7, "day");
+    const wEnd = wStart.add(7, "day");
     const sum = recent28
-      .filter(a => {
+      .filter((a) => {
         const d = dayjs(a.startTime);
         return !d.isBefore(wStart) && d.isBefore(wEnd);
       })
@@ -86,28 +81,68 @@ const getStaticHoursData = (appointments) => {
     return { label: `Week ${i + 1}`, hours: sum };
   });
   return [dailyData, weeklyData];
-}
+};
 const MemberProgress = () => {
   const [selectedMember, setSelectedMember] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [chartView, setChartView] = useState("weekly");
-  const { getAppointmentsGroupedByMember } = useTrainerApi();
+  const { getAppointmentsGroupedByMember, getAvailability, forceBook } =
+    useTrainerApi();
   const [members, setMembers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [weeklyData, setWeeklyData] = useState([]);
   const [monthlyData, setMonthlyData] = useState([]);
-
+  const [availableTimes, setAvailableTimes] = useState([]);
+  const [trainingPrograms, setTrainingPrograms] = useState([]);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [formValues, setFormValues] = useState({
+    availabilityId: "",
+    program: "",
+    remarks: "",
+  });
+    
+  const { showSnackbar } = useSnackbar();
 
   const filteredMembers = members.filter((member) =>
     member.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-
   const normalize = (date) => {
     date = new Date(date);
-    return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
-  }
+    return new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate()
+    ).getTime();
+  };
 
+  useEffect(() => {
+    const fetchDialogData = async () => {
+      if (!openDialog || !selectedMember) return;
+
+      try {
+        const [timeRes, programsRes] = await Promise.all([
+          getAvailability(),
+          getAppointmentsGroupedByMember(),
+        ]);
+
+        // Get all available times directly
+        setAvailableTimes(timeRes.data);
+
+        // Extract programs for the selected member
+        const memberPrograms = programsRes.data
+          .find((m) => m.memberId === selectedMember.id)
+          ?.appointments?.map((a) => a.projectName.trim())
+          ?.filter((v, i, arr) => arr.indexOf(v) === i); // Unique
+
+        setTrainingPrograms(memberPrograms || []);
+      } catch (err) {
+        console.error("Error loading session data", err);
+      }
+    };
+
+    fetchDialogData();
+  }, [openDialog, selectedMember]);
 
   useEffect(() => {
     const fetchAppointments = async () => {
@@ -157,7 +192,6 @@ const MemberProgress = () => {
 
     fetchAppointments();
   }, []);
-
 
   return (
     <Box>
@@ -230,9 +264,22 @@ const MemberProgress = () => {
           <Paper elevation={3} sx={{ p: 2, height: "75vh", overflowY: "auto" }}>
             {selectedMember ? (
               <>
-                <Typography variant="h6" fontWeight={600} mb={2}>
-                  Progress Overview - {selectedMember.name}
-                </Typography>
+                <Box
+                  display="flex"
+                  justifyContent="space-between"
+                  alignItems="center"
+                  mb={2}
+                >
+                  <Typography variant="h6" fontWeight={600}>
+                    Progress Overview - {selectedMember.name}
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    onClick={() => setOpenDialog(true)}
+                  >
+                    Book a Session
+                  </Button>
+                </Box>
 
                 <Grid container spacing={2}>
                   {/* Stat Cards */}
@@ -293,13 +340,19 @@ const MemberProgress = () => {
                               color="primary"
                             >
                               <ToggleButton value="weekly">Weekly</ToggleButton>
-                              <ToggleButton value="monthly">Monthly</ToggleButton>
+                              <ToggleButton value="monthly">
+                                Monthly
+                              </ToggleButton>
                             </ToggleButtonGroup>
                           </Box>
 
                           <ResponsiveContainer width="100%" height={250}>
                             <BarChart
-                              data={chartView === "weekly" ? weeklyData : monthlyData}
+                              data={
+                                chartView === "weekly"
+                                  ? weeklyData
+                                  : monthlyData
+                              }
                             >
                               <CartesianGrid strokeDasharray="3 3" />
                               <XAxis dataKey="label" />
@@ -334,18 +387,21 @@ const MemberProgress = () => {
                           <LocalizationProvider dateAdapter={AdapterDateFns}>
                             <CalendarPicker
                               date={null}
-                              onChange={() => { }}
+                              onChange={() => {}}
                               defaultCalendarMonth={new Date(2025, 3)}
                               renderDay={(day, _value, DayComponentProps) => {
                                 // 1. 解构出 key，其余用来给 PickersDay
-                                const { key, ...pickersDayProps } = DayComponentProps;
+                                const { key, ...pickersDayProps } =
+                                  DayComponentProps;
                                 const matchedSession =
                                   selectedMember?.upcomingSessions?.find(
                                     (s) => normalize(s.date) === normalize(day)
                                   );
 
                                 const tooltipText = matchedSession
-                                  ? `${day.toDateString()} • ${matchedSession.time} • ${matchedSession.program}`
+                                  ? `${day.toDateString()} • ${
+                                      matchedSession.time
+                                    } • ${matchedSession.program}`
                                   : "";
 
                                 const dayComponent = (
@@ -379,6 +435,134 @@ const MemberProgress = () => {
                     </Grid>
                   </Grid>
                 </Grid>
+                <Dialog
+                  open={openDialog}
+                  onClose={() => setOpenDialog(false)}
+                  fullWidth
+                >
+                  <DialogTitle>Book a Session</DialogTitle>
+                  <DialogContent sx={{ pt: 1 }}>
+                    <TextField
+                      label="Member Name"
+                      fullWidth
+                      margin="dense"
+                      value={selectedMember?.name}
+                      disabled
+                    />
+                    <TextField
+                      select
+                      label="Training Program"
+                      fullWidth
+                      margin="dense"
+                      value={formValues.program}
+                      onChange={(e) =>
+                        setFormValues({
+                          ...formValues,
+                          program: e.target.value,
+                        })
+                      }
+                    >
+                      {trainingPrograms.length > 0 ? (
+                        trainingPrograms.map((prog, idx) => (
+                          <MenuItem key={idx} value={prog}>
+                            {prog}
+                          </MenuItem>
+                        ))
+                      ) : (
+                        <MenuItem disabled>No programs available</MenuItem>
+                      )}
+                    </TextField>
+
+                    <TextField
+                      select
+                      label="Available Training Time"
+                      fullWidth
+                      margin="dense"
+                      value={formValues.availabilityId || ""}
+                      onChange={(e) =>
+                        setFormValues({
+                          ...formValues,
+                          availabilityId: e.target.value,
+                        })
+                      }
+                    >
+                      {availableTimes.length > 0 ? (
+                        availableTimes.map((time, idx) => (
+                          <MenuItem key={idx} value={time.availabilityId}>
+                            {`${dayjs(time.startTime).format(
+                              "HH:mm"
+                            )} to ${dayjs(time.endTime).format("HH:mm")}`}
+                          </MenuItem>
+                        ))
+                      ) : (
+                        <MenuItem disabled>No times available</MenuItem>
+                      )}
+                    </TextField>
+
+                    <TextField
+                      label="Remark/Requirement"
+                      fullWidth
+                      margin="dense"
+                      multiline
+                      rows={3}
+                      value={formValues.remarks}
+                      onChange={(e) =>
+                        setFormValues({
+                          ...formValues,
+                          remarks: e.target.value,
+                        })
+                      }
+                    />
+                  </DialogContent>
+                  <DialogActions>
+                    <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
+                    <Button
+                      variant="contained"
+                      onClick={async () => {
+                        if (
+                          !selectedMember?.id ||
+                          !formValues.availabilityId ||
+                          !formValues.program
+                        ) {
+                          showSnackbar({
+                            message: "Please fill all required fields.",
+                            severity: "error",
+                          });
+                          return;
+                        }
+
+                        const payload = {
+                          availabilityId: formValues.availabilityId,
+                          description: formValues.remarks,
+                          memberId: selectedMember.id,
+                          projectName: formValues.program,
+                        };
+
+                        try {
+                          await forceBook(payload);
+                          showSnackbar({
+                            message: "Session booked successfully!",
+                            severity: "success",
+                          });
+                          setOpenDialog(false);
+                          setFormValues({
+                            availabilityId: "",
+                            program: "",
+                            remarks: "",
+                          });
+                        } catch (err) {
+                          console.error("Booking failed:", err);
+                          showSnackbar({
+                            message: "Failed to book session. Please try again.",
+                            severity: "error",
+                          });
+                        }
+                      }}
+                    >
+                      Submit
+                    </Button>
+                  </DialogActions>
+                </Dialog>
               </>
             ) : (
               <Typography color="text.secondary">

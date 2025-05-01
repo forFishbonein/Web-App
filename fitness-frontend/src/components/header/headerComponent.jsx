@@ -56,7 +56,7 @@ const Header = ({ firstName, lastName, children, drawerOpen }) => {
   useEffect(() => {
     if (userInfo) {
       setFormData({
-        name: userInfo.trainerProfile.name || "",
+        name: userInfo.name || "",
         dateOfBirth: userInfo.dateOfBirth || "",
         address: userInfo.address || "",
         email: userInfo.email || ""

@@ -10,10 +10,8 @@ import Popover from '@mui/material/Popover';
 import Typography from '@mui/material/Typography';
 import MemberNotification from "../notification/MemberNotification";
 import useNotificationApi from "../../apis/notification"
-// Define navigation menu items
 const pages = [
   { name: "Trainers", path: "/member/trainers" },
-  // { name: "Applications", path: "/member/applications" },
   { name: "Sessions", path: "/member/sessions" },
   { name: "Locations", path: "/member/locations" },
 ];
@@ -102,35 +100,22 @@ function MemberDashboard() {
         onClose={handleClose}
         anchorOrigin={{
           vertical: 'bottom',
-          // horizontal: 'center',
         }}
-        // Adding will cause components to move unexpectedly
-        // transformOrigin={{
-        //   vertical: 'top',
-        //   horizontal: 'right',
-        // }}
         keepMounted={false}
         PaperProps={{
           sx: {
-            // 让 Paper 有足够的上边距，给箭头腾出空间
             mt: 1.5,
-            // 允许三角形箭头溢出
             overflow: "visible",
-            // 使用伪元素 ::before 来画箭头
             "::before": {
               content: '""',
               display: "block",
               position: "absolute",
-              // 三角形尺寸
               width: 0,
               height: 0,
-              // 三角形边框
               borderLeft: "8px solid transparent",
               borderRight: "8px solid transparent",
-              borderBottom: "8px solid #fff", // 箭头颜色
-              // 让箭头出现在 Paper 顶部
+              borderBottom: "8px solid #fff",
               top: 0,
-              // 箭头水平居中（可根据实际情况微调）
               left: "46%",
               transform: "translateX(-50%) translateY(-100%)",
             },

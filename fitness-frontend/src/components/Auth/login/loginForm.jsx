@@ -52,28 +52,6 @@ const LoginForm = ({ roleLogin }) => {
     setFormData({ ...formData, [name]: value });
   };
 
-  // before
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   if (validate()) {
-  //     try {
-  //       const response = await axios.post("http://localhost:8060/auth/login", {
-  //         email: formData.email,
-  //         password: formData.password,
-  //       });
-  //       if (response.status === 200) {
-  //         setMessage("Login Successful!");
-  //         navigate("/home"); // Redirect to home
-  //       }
-  //     } catch (error) {
-  //       setMessage(
-  //         error.response?.data?.message || "Login failed. Please try again."
-  //       );
-  //     }
-  //   }
-  // };
-
-  // now
   const { passwordLogin } = useLoginApi();
   const { getUserInfo } = useUserApi();
   const { getTrainerInfo } = useTrainerApi();
@@ -93,8 +71,8 @@ const LoginForm = ({ roleLogin }) => {
               ticket,
               randstr,
               roleLogin
-            ); //real logic
-            const newToken = res.data.token; //real logic
+            ); 
+            const newToken = res.data.token;
             const role = res.data.role;
             let getInfoFun = getUserInfo;
             if (role === "member") {
@@ -105,7 +83,6 @@ const LoginForm = ({ roleLogin }) => {
               getInfoFun = getAdminInfo;
             }
             await setToken(newToken, role, getInfoFun);
-            // await setToken(newToken, "admin", getInfoFun);
             showSnackbar({ message: "Login Successful!", severity: "success" });
             console.log("Login Successful!", role);
           } catch (error) {

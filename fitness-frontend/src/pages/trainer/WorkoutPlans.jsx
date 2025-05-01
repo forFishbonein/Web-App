@@ -41,7 +41,7 @@ const WorkoutPlans = () => {
   const { showSnackbar } = useSnackbar();
   const [confirmRemoveOpen, setConfirmRemoveOpen] = useState(false);
   const [sortBy, setSortBy] = useState("none");
-  const { listPlans, deletePlan, getApprovedAppointments } = useTrainerApi();
+  const { listPlans, deletePlan, getApprovedAppointments, bindPlanToAppointment  } = useTrainerApi();
   const [plans, setPlans] = useState([]);
 
   const handleMenuClose = () => {
@@ -135,22 +135,36 @@ const WorkoutPlans = () => {
     handleMenuClose();
   };
 
-  const handleAssignSubmit = () => {
+  const handleAssignSubmit = async () => {
     const selectedPlan = plans[selectedPlanIndex];
-    // console.log("plans, selectedPlanIndex", plans, selectedPlan, selectedMembers);
     if (!selectedPlan) return;
-    //TODO 这里目前做不到取消，只能是新增（应该有一个能够直接覆盖当前 plan 关联的所有课程的接口，整体更新，要不然就是有一个取消的接口）
-    selectedMembers.forEach((member) => {
-      assignPlanToMember(selectedPlan.planId, member.appointmentId);
-    });
-
-    setAssignDialogOpen(false);
-    setSelectedMembers([]);
-    showSnackbar({
-      message: `Workout plan assigned to ${selectedMembers.length} member(s)`,
-      severity: "success",
-    });
-  };
+  
+    try {
+      // Call backend for each selected member
+      await Promise.all(
+        selectedMembers.map((member) =>
+          bindPlanToAppointment(member.appointmentId, selectedPlan.planId)
+        )
+      );
+  
+      showSnackbar({
+        message: `Workout plan assigned to ${selectedMembers.length} session(s) successfully.`,
+        severity: "success",
+      });
+  
+      setAssignDialogOpen(false);
+      setSelectedMembers([]);
+  
+      // Refresh data
+      fetchPlans();
+    } catch (error) {
+      console.error("Failed to assign workout plan:", error);
+      showSnackbar({
+        message: "Failed to assign workout plan.",
+        severity: "error",
+      });
+    }
+  };  
 
   const handleRemovePlan = async () => {
     setConfirmRemoveOpen(false);

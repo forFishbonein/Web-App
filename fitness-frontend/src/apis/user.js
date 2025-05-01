@@ -5,7 +5,7 @@ const useUserApi = () => {
   const getUserInfo = (token) => {
     return httpRequest({
       method: "get",
-      url: `/member/user-profile`, //example
+      url: `/member/user-profile`,
       headers: {
         Authorization: token ? `Bearer ${token}` : "",
       },

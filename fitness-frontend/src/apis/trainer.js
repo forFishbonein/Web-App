@@ -211,7 +211,15 @@ const useTrainerApi = () => {
         content,
       },
     });
-  };  
+  }; 
+  const forceBook = (data) => {
+    return httpRequest({
+      method: "post",
+      url: "/trainer/appointment/force-book",
+      data,
+    });
+  };
+  
   
   return {
     getTrainerList,
@@ -239,7 +247,8 @@ const useTrainerApi = () => {
     listPlans,
     deletePlan,
     bindPlanToAppointment,
-    updatePlan
+    updatePlan,
+    forceBook,
   };
 };
 export default useTrainerApi;

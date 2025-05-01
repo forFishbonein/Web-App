@@ -28,32 +28,22 @@ function MemberNotification({ getNotificationList, markNotificationAsRead, setBa
       }));
       setBadgeContent(badgeContent - 1)
     })
-    //test logic
-    // setNotificationList(notificationList.map(e => {
-    //   if (e.notificationId === notificationId) {
-    //     return {
-    //       ...e,
-    //       isRead: true
-    //     }
-    //   }
-    //   return e;
-    // }));
   }
   const [anchorEl, setAnchorEl] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
 
-  // 打开确认删除 Popover
+  // Popover
   const handleOpenPopover = (event, notificationId) => {
     setAnchorEl(event.currentTarget);
     setDeletingId(notificationId);
   };
 
-  // 关闭 Popover
+  // Popover
   const handleClosePopover = () => {
     setAnchorEl(null);
     setDeletingId(null);
   };
-  // 确认删除
+
   const handleConfirmDelete = () => {
     deleteNotification(deletingId).then((res) => {
       setNotificationList(notificationList.filter(e => e.notificationId !== deletingId));
@@ -68,40 +58,7 @@ function MemberNotification({ getNotificationList, markNotificationAsRead, setBa
     getNotificationList(1, 10000).then((res) => {
       setBadgeContent(res.data.records.filter(e => e.isRead === false).length)
     });
-    //test data
-    // setNotificationList([
-    //   {
-    //     "notificationId": 1,
-    //     "userId": 101,
-    //     "title": "申请结果通知",
-    //     "message": "您的教练申请已被接受",
-    //     "type": "INFO",
-    //     "isRead": false,
-    //     "createdAt": "2025-02-27T14:00:00",
-    //     "updatedAt": "2025-02-27T15:00:00"
-    //   },
-    //   {
-    //     "notificationId": 2,
-    //     "userId": 102,
-    //     "title": "系统警告",
-    //     "message": "您的账户存在异常登录行为",
-    //     "type": "ALERT",
-    //     "isRead": true,
-    //     "createdAt": "2025-02-26T10:30:00",
-    //     "updatedAt": "2025-02-26T12:00:00"
-    //   },
-    //   {
-    //     "notificationId": 3,
-    //     "userId": 103,
-    //     "title": "系统更新",
-    //     "message": "新功能已上线，快来体验！",
-    //     "type": "SYSTEM",
-    //     "isRead": false,
-    //     "createdAt": "2025-02-25T09:00:00",
-    //     "updatedAt": "2025-02-25T09:30:00"
-    //   }
-    // ]
-    // )
+   
   }, [currentPage])
   return (
     <>

@@ -5,41 +5,6 @@ function GymLocator() {
   const { getFitnessCentreLocations } = useMemberApi();
   const CONFIGURATION = {
     locations: [],
-    // locations: [
-    //   {
-    //     title: "SO14 3LS",
-    //     address1: "英国南安普敦邮政编码: SO14 3LS",
-    //     coords: { lat: 50.90044526176812, lng: -1.401829022090142 },
-    //     placeId: "1",
-    //     // ✅ 额外字段（可选）
-    //     phone: "+44 1234 567890",  // 联系电话
-    //     website: "https://example.com", // 官网链接
-    //     rating: 4.5, // 评分（例如 Google Maps 风格的评分）
-    //     category: "Gym", // 分类（如“健身房”、“游泳馆”等）
-    //     hours: "Mon-Fri: 9:00 AM - 10:00 PM", // 营业时间
-    //     tags: ["Fitness", "Yoga", "Weightlifting"], // 相关标签
-    //     image: "https://example.com/gym-photo.jpg", // 图片链接
-    //     description: "A modern gym with advanced equipment.", // 详细描述
-    //   },
-    //   {
-    //     title: "SO15 3BJ",
-    //     address1: "Freemantle, Southampton SO15 3BJ英国",
-    //     coords: { lat: 50.91221526371706, lng: -1.4238895644180372 },
-    //     placeId: "2",
-    //   },
-    //   {
-    //     title: "SO14 2AR",
-    //     address1: "英国南安普敦邮政编码: SO14 2AR",
-    //     coords: { lat: 50.896945502405266, lng: -1.4050336932540985 },
-    //     placeId: "3",
-    //   },
-    //   {
-    //     title: "SO14 0YG",
-    //     address1: "英国南安普敦邮政编码: SO14 0YG",
-    //     coords: { lat: 50.912481969160666, lng: -1.3971051509262056 },
-    //     placeId: "4",
-    //   },
-    // ],
     mapOptions: {
       center: { lat: 50.0, lng: -1.0 },
       fullscreenControl: true,

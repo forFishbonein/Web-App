@@ -16,60 +16,6 @@ import PersonIcon from "@mui/icons-material/Person";
 import { useSnackbar } from "/src/utils/Hooks/SnackbarContext.jsx";
 import useTrainerApi from "../../apis/trainer";
 
-// const initialRequests = [
-//   {
-//     id: 1,
-//     name: "Priya Mehta",
-//     remark: "Looking for strength training sessions.",
-//     time: "5 mins ago",
-//   },
-//   {
-//     id: 2,
-//     name: "John Doe",
-//     remark: "Interested in evening sessions after 6 PM.",
-//     time: "30 mins ago",
-//   },
-//   {
-//     id: 5,
-//     name: "Emily Tran",
-//     remark: "Wants early morning yoga sessions.",
-//     time: "1 hour ago",
-//   },
-//   {
-//     id: 6,
-//     name: "Chris Paul",
-//     remark: "Looking to improve endurance.",
-//     time: "2 hours ago",
-//   },
-// ];
-
-// const initialConnections = [
-//   {
-//     id: 3,
-//     name: "Sarah Malik",
-//     location: "The Gym Group, London",
-//     time: "2 days ago",
-//   },
-//   {
-//     id: 4,
-//     name: "David Kim",
-//     location: "Snap Fitness, Brighton",
-//     time: "1 week ago",
-//   },
-//   {
-//     id: 7,
-//     name: "Lina Smith",
-//     location: "Anytime Fitness, Leeds",
-//     time: "4 days ago",
-//   },
-//   {
-//     id: 8,
-//     name: "Tom Jackson",
-//     location: "PureGym, Sheffield",
-//     time: "3 days ago",
-//   },
-// ];
-
 function MemberConnections() {
   const [requests, setRequests] = useState([]);
   const [connections, setConnections] = useState([]);
@@ -96,7 +42,9 @@ function MemberConnections() {
   const filteredConnections = connections.filter((member) =>
     (member.memberName || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
-  const connTotalPages = Math.ceil(filteredConnections.length / connectionsPerPage);
+  const connTotalPages = Math.ceil(
+    filteredConnections.length / connectionsPerPage
+  );
   const paginatedConnections = filteredConnections.slice(
     (connPage - 1) * connectionsPerPage,
     connPage * connectionsPerPage
@@ -105,25 +53,39 @@ function MemberConnections() {
   const handleAccept = async (member) => {
     try {
       await acceptConnectRequest(member.requestId);
-      setRequests((prev) => prev.filter((req) => req.requestId !== member.requestId));
+      setRequests((prev) =>
+        prev.filter((req) => req.requestId !== member.requestId)
+      );
       setConnections((prev) => [...prev, member]);
-      showSnackbar({ message: `${member.memberName } connected successfully!`, severity: "success" });
+      showSnackbar({
+        message: `${member.memberName} connected successfully!`,
+        severity: "success",
+      });
     } catch (err) {
       console.error("Error accepting request", err?.response || err);
-      showSnackbar({ message: `Failed to accept ${member.memberName }'s request.`, severity: "error" });
+      showSnackbar({
+        message: `Failed to accept ${member.memberName}'s request.`,
+        severity: "error",
+      });
     }
-  };    
+  };
 
   const handleReject = async (requestId) => {
     try {
       await rejectConnectRequest(requestId);
       setRequests((prev) => prev.filter((req) => req.requestId !== requestId));
-      showSnackbar({ message: `Connection request rejected.`, severity: "info" });
+      showSnackbar({
+        message: `Connection request rejected.`,
+        severity: "info",
+      });
     } catch (err) {
       console.error("Error rejecting request", err?.response || err);
-      showSnackbar({ message: `Failed to reject connection request.`, severity: "error" });
+      showSnackbar({
+        message: `Failed to reject connection request.`,
+        severity: "error",
+      });
     }
-  };  
+  };
 
   useEffect(() => {
     const fetchPendingRequests = async () => {
@@ -134,20 +96,23 @@ function MemberConnections() {
         showSnackbar({ message: "Failed to load requests", severity: "error" });
       }
     };
-  
+
     const fetchConnectedMembers = async () => {
       try {
         const res = await getConnectedMembers();
         setConnections(res.data);
       } catch (err) {
-        showSnackbar({ message: "Failed to load connected members", severity: "error" });
+        showSnackbar({
+          message: "Failed to load connected members",
+          severity: "error",
+        });
       }
     };
-  
+
     fetchPendingRequests();
     fetchConnectedMembers();
     setIsLoading(false);
-  }, []);  
+  }, []);
 
   const Card = ({ member, isRequest, onAccept, onReject }) => (
     <Paper
@@ -175,11 +140,16 @@ function MemberConnections() {
               {member.memberName}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {isRequest ? `📝 ${member.requestMessage}` : `📍 ${member.location}`}
+              {isRequest
+                ? `📝 ${member.requestMessage}`
+                : member.location
+                ? `📍 ${member.location}`
+                : "📍 -"}
             </Typography>
-            {/* <Typography variant="caption" color="text.secondary">
-              🕒 {member.time}
-            </Typography> */}
+
+            <Typography variant="caption" color="text.secondary">
+              🕒 {member.time || "-"}
+            </Typography>
           </Box>
         </Stack>
 
@@ -268,10 +238,17 @@ function MemberConnections() {
 
       {/* Connected Members */}
       <Box>
-        <Box sx={{ marginBottom: 2,display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+        <Box
+          sx={{
+            marginBottom: 2,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-end",
+          }}
+        >
           <Typography
             variant="h5"
-            sx={{color: "primary.main", fontWeight: 600 }}
+            sx={{ color: "primary.main", fontWeight: 600 }}
           >
             Connected Members
             <Box

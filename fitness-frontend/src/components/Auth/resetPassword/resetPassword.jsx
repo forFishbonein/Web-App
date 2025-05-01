@@ -11,16 +11,11 @@ import {
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useNavigate, useSearchParams } from "react-router-dom";
-// import axios from "axios";
-// import { useAuth } from "../../utils/AuthContext";
-// import { useUser } from "../../utils/UserContext";
 import "./resetPassword.css";
 import { useUserStore } from "../../../store/useUserStore";
 import useLoginApi from "../../../apis/login";
 const ResetPassword = () => {
-  // const { isAuthenticated, setIsAuthenticated } = useAuth();
   const navigate = useNavigate();
-  // const { clearUser } = useUser();
   const { setUserInfo, setToken } = useUserStore();
   // If there is a userRole, it means that you are logged in
   const userRole = useUserStore((state) => state.userInfo?.role);
@@ -79,36 +74,10 @@ const ResetPassword = () => {
     setShowPassword((prev) => ({ ...prev, [field]: !prev[field] }));
   };
 
-  // const handleLogout = () => {
-  //   localStorage.removeItem("authToken");
-  //   clearUser();
-  //   setIsAuthenticated(false);
-  //   navigate("/authenticate", { state: { activeTab: 1 } });
-  // };
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (validate()) {
       try {
-        // let response;
-        // if (isAuthenticated) {
-        //   // Logged-in user changing password
-        //   const userInfo = await axios.get("/users/me", { requiresAuth: true });
-        //   response = await axios.post(
-        //     "/users/reset-password",
-        //     {
-        //       email: userInfo.data.email,
-        //       currentPassword: formData.currentPassword,
-        //       newPassword: formData.newPassword,
-        //     },
-        //     { requiresAuth: true }
-        //   );
-        // } else {
-        //   // Unauthenticated user resetting password via reset link
-        //   response = await axios.post("/user/reset-password", {
-        //     token,
-        //     password: formData.newPassword,
-        //   });
-        // }
         if (userRole && !isGoogle) {
           await changePassword(formData.newPassword, formData.currentPassword);
           setTimeout(() => {
