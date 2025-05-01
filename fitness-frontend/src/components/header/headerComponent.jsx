@@ -72,7 +72,7 @@ const Header = ({ firstName, lastName, children, drawerOpen }) => {
 
   const handleCancle = () => {
     setFormData({
-      name: userInfo.name || "",
+      name: userInfo.role === "member" || "admin" ? userInfo.name : userInfo.trainerProfile.name,
       dateOfBirth: userInfo.dateOfBirth || "",
       address: userInfo.address || "",
       email: userInfo.email || ""

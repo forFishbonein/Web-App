@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "./SignupForm.css";
+import "./signupForm.css";
 import {
   TextField,
   Button,

@@ -1,0 +1,64 @@
+  server:
+    port: 8080
+
+  # Connect to remote MySQL
+  spring:
+    datasource:
+      type: com.alibaba.druid.pool.DruidDataSource
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      url: jdbc:mysql://8.208.16.103:3306/gym_database?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true
+      username: gym_database
+      password: fCAYsPFdGw2aWrS3
+
+    redis:
+      host: redis                         # **Must modify** –– Service name, which is the container name
+      port: 6379
+      password: root@123456               # Must match the `redis --requirepass` in compose
+    #    host:localhost
+    #    port:6379
+
+    # Temporary solution
+    mvc:
+      pathmatch:
+        matching-strategy: ant_path_matcher
+
+    mail:
+      host: smtp.gmail.com
+      port: 587
+      username: wxinran543@gmail.com      # Replace with your Gmail address
+      password: dlgyysvqolbcljep          # Replace with your Gmail app-specific password
+      properties:
+        mail:
+          smtp:
+            auth: true
+            starttls:
+              enable: true
+            debug: true
+
+  jwt:
+    secret: "YourJWTSecretKey"
+    expiration: 86400000
+
+  mybatis-plus:
+    mapper-locations: classpath*:mapper/*.xml
+    type-aliases-package: gym-common.com.gym.entity
+    configuration:
+      log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+
+  knife4j:
+    locale: en
+
+  tencent:
+    captcha:
+      enabled: false               # Enable Tencent Captcha, change to false to disable
+      secretId: AKIDBMaeYFj293kDXeXCgx3wb4KNCpGMFuLZ
+      secretKey: 4uZ3KNCqJZbUAfwzrY1JRL4Zrxtc7QZX
+      # ID of the captcha product
+      captchaAppId: 190688044
+      # AppSecretKey of the captcha product (server-side key)
+      appSecretKey: QeG8lEob0R2iZlhNS1SlZwK0h
+
+
+  google:
+    clientId: "642557482063-q866pb3tlp0blvso126q2i2si40qn6oh.apps.googleusercontent.com"
