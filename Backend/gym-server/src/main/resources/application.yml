@@ -6,9 +6,9 @@
     datasource:
       type: com.alibaba.druid.pool.DruidDataSource
       driver-class-name: com.mysql.cj.jdbc.Driver
-      url: jdbc:mysql://8.130.52.237:3306/gym_database?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true
+      url: jdbc:mysql://8.208.16.103:3306/gym_database?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true
       username: gym_database
-      password: GziXwBri4DRrHYsk
+      password: fCAYsPFdGw2aWrS3
 
     redis:
       host: redis                         # **Must modify** –– Service name, which is the container name
