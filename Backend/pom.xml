@@ -166,7 +166,6 @@
             </dependency>
 
 
-            <!-- 在 <dependencyManagement> 或 <dependencies> 里再加 -->
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
                 <artifactId>junit-jupiter</artifactId>

@@ -33,7 +33,7 @@ public class AdminProfile implements Serializable {
     private LocalDateTime updateTime;
 
     /**
-     * 枚举对应数据库的 ENUM('Super','Standard')
+     * Enum corresponding to the database ENUM('Super','Standard')
      */
     public enum AdminLevel {
         Super, Standard

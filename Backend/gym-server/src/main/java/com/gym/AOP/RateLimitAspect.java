@@ -27,19 +27,19 @@ public class RateLimitAspect {
     private HttpServletRequest request;
 
     /**
-     * 配置切点：
-     * 拦截所有被 @RateLimit 注解标记的方法
+     * Configure the pointcut:
+     * Intercept all methods annotated with @RateLimit
      */
     @Pointcut("@annotation(com.gym.AOP.RateLimit)")
     public void rateLimitPointcut() {}
 
     /**
-     * 环绕通知，执行具体的限流逻辑
+     * Around advice to execute the specific rate-limiting logic
      */
     @Around("rateLimitPointcut() && @annotation(rateLimit)")
     public Object around(ProceedingJoinPoint joinPoint, RateLimit rateLimit) throws Throwable {
 
-        // 1. 构造限流Key：可用 客户端IP + methodSignature
+        // 1. Construct the rate limit key: use client IP + method signature
         String clientIp = IpUtil.getClientIp(request);
         String methodName = joinPoint.getSignature().toShortString();
         String redisKey = "RATE_LIMIT:" + methodName + ":" + clientIp;
@@ -48,37 +48,22 @@ public class RateLimitAspect {
         int maxRequests = rateLimit.maxRequests();
         String message = rateLimit.message();
 
-        // 2. 使用 Redis incr 进行计数
+        // 2. Use Redis incr to count
         Long currentCount = redisTemplate.opsForValue().increment(redisKey, 1);
         if (currentCount != null) {
-            // 如果是第一次计数，设置过期时间
+            // If it's the first count, set the expiration time
             if (currentCount == 1) {
                 redisTemplate.expire(redisKey, timeWindowSeconds, TimeUnit.SECONDS);
             }
 
-            // 如果超出限制，抛出异常
+            // If the limit is exceeded, throw an exception
             if (currentCount > maxRequests) {
                 log.warn("Rate limit triggered, key={}, count={}, limit={}", redisKey, currentCount, maxRequests);
                 throw new CustomException(ErrorCode.TOO_MANY_REQUESTS, message);
             }
         }
 
-        // 3. 继续执行被拦截的方法
+        // 3. Continue executing the intercepted method
         return joinPoint.proceed();
     }
 }
-
-//    private String getClientIp(HttpServletRequest request) {
-//        String ip = request.getHeader("X-Forwarded-For");
-//        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-//            ip = request.getHeader("Proxy-Client-IP");
-//        }
-//        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-//            ip = request.getHeader("WL-Proxy-Client-IP");
-//        }
-//        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-//            ip = request.getRemoteAddr();
-//        }
-//        // 如果有多个IP，取第一个
-//        return ip.split(",")[0].trim();
-//    }

@@ -35,7 +35,6 @@ public class SignupRequest {
     @NotNull(message = "Role cannot be null")
     private User.Role role;
 
-    // 新增：腾讯验证码相关字段（由前端验证码组件返回）
     @NotBlank(message = "Captcha ticket cannot be blank")
     private String captchaTicket;
 

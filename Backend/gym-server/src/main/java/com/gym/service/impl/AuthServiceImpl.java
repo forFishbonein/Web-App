@@ -51,41 +51,40 @@ public class AuthServiceImpl implements AuthService {
     private String googleClientId;
 
     /**
-     * 使用谷歌 ID Token 登录
-     * @param googleIdToken 前端传来的谷歌ID Token
+     * Login using Google ID Token
+     * @param googleIdToken the Google ID Token provided from the frontend
      * @return LoginResponse
      */
     @Override
     public LoginResponse loginWithGoogle(String googleIdToken) {
-        // 1. 验证并解析 Google ID Token
+        // 1. Verify and parse the Google ID Token
         GoogleIdToken.Payload payload = verifyGoogleIdToken(googleIdToken);
-        // 如果验证失败，verifyGoogleIdToken 会抛异常或返回 null，视你实现而定
+        // If verification fails, verifyGoogleIdToken will throw or return null depending on implementation
         if (payload == null) {
             throw new CustomException(ErrorCode.BAD_REQUEST, "Invalid Google ID Token.");
         }
 
-        // 2. 从 payload 中获取关键信息： email、sub(谷歌唯一标识)、name 等
+        // 2. Extract key information from payload: email, sub (Google unique identifier), name, etc.
         String email = payload.getEmail();
         String googleUserId = payload.getSubject(); // sub
         String name = (String) payload.get("name");
 
         log.info("Google user info: email={}, sub={}, name={}", email, googleUserId, name);
 
-        // 3. 在数据库中查找是否有对应用户
+        // 3. Check if corresponding user exists in the database
         User user = userService.getByEmail(email);
         if (user == null) {
-            // 如果用户不存在，则先自动注册一个新账号
+            // If user does not exist, automatically register a new account
             user = registerNewGoogleUser(email, name);
             LoginResponse resp = new LoginResponse();
             return resp;
-
         } else {
-            // 如果用户已存在，你可以选择更新用户信息，比如更新 name 等
+            // If user exists, optionally update user information such as name
             // user.setName(name);
             // userService.updateById(user);
         }
 
-        // 4. 检查用户状态（如 Pending、Suspended）
+        // 4. Check user status (e.g., Pending, Suspended)
         if (user.getAccountStatus() == User.AccountStatus.Pending) {
             throw new CustomException(ErrorCode.BAD_REQUEST, "Your account is pending admin review.");
         }
@@ -93,7 +92,7 @@ public class AuthServiceImpl implements AuthService {
             throw new CustomException(ErrorCode.BAD_REQUEST, "Your account is suspended.");
         }
 
-        // 5. 生成系统自己的 JWT
+        // 5. Generate our own JWT
         String token = jwtUtils.generateToken(user);
         LoginResponse resp = new LoginResponse();
         resp.setToken(token);
@@ -104,11 +103,11 @@ public class AuthServiceImpl implements AuthService {
     }
 
     /**
-     * 使用 Google 提供的库验证 ID Token
+     * Verify the ID Token using Google's library
      */
     private GoogleIdToken.Payload verifyGoogleIdToken(String idTokenString) {
         try {
-            // 构造一个 verifier
+            // Construct a verifier
             GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new JacksonFactory())
                     .setAudience(Collections.singletonList(googleClientId))
                     .build();
@@ -127,25 +126,24 @@ public class AuthServiceImpl implements AuthService {
     }
 
     /**
-     * 针对全新的 Google 用户，自动生成一个账号并写入数据库
+     * Automatically create a new account for a completely new Google user and persist to the database
      */
     private User registerNewGoogleUser(String email, String name) {
         User newUser = new User();
         newUser.setEmail(email);
         newUser.setName(name);
-        // 如果你允许后续用账号密码登录，可以设置一个随机密码，或留空
-        // 这里只做个示例
-//        newUser.setPasswordHash(passwordEncoder.encode(UUID.randomUUID().toString()));
+        // If you allow subsequent login with username/password, you can set a random password or leave it blank
+        // Here is just an example
+        // newUser.setPasswordHash(passwordEncoder.encode(UUID.randomUUID().toString()));
         newUser.setRole(User.Role.member);
         newUser.setAccountStatus(User.AccountStatus.Pending);
-        // 也可以直接设为 Approved 看你业务需要
+        // You could also set to Approved immediately depending on your business needs
 
-        userService.createUser(newUser);  // 你已有的创建逻辑
+        userService.createUser(newUser);  // existing creation logic
 
-        // 如果需要异步创建其他信息，也可以在这里发布事件或做后续操作
+        // If you need to create additional data asynchronously, you can publish an event here
         return newUser;
     }
-
 
     @Override
     public LoginResponse login(LoginRequest loginReq) {
@@ -159,7 +157,7 @@ public class AuthServiceImpl implements AuthService {
         if (user.getAccountStatus() == User.AccountStatus.Suspended) {
             throw new CustomException(ErrorCode.BAD_REQUEST, "Your account is suspended.");
         }
-        // 生成JWT
+        // Generate JWT
         String token = jwtUtils.generateToken(user);
         LoginResponse resp = new LoginResponse();
         resp.setToken(token);
@@ -170,7 +168,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void forgotPassword(ForgotPasswordRequest request) {
-        // 只查出必要的字段
+        // Query only necessary fields
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.select(
                         User::getUserID,
@@ -180,33 +178,30 @@ public class AuthServiceImpl implements AuthService {
                 .eq(User::getEmail, request.getEmail());
         User user = userService.getOne(queryWrapper);
 
-//
-//        User user = userService.getByEmail(request.getEmail());
-        // 为安全考虑，如果用户不存在，则直接返回成功提示
+        // For security reasons, if user does not exist, simply return without error
         if (user == null) {
             return;
         }
         if (user.getAccountStatus() == User.AccountStatus.Suspended || user.getAccountStatus() == User.AccountStatus.Pending) {
             throw new CustomException(ErrorCode.BAD_REQUEST, "Your account is not eligible for password reset.");
         }
-        // 生成重置密码的 JWT Token
+        // Generate JWT token for password reset
         String resetToken = jwtUtils.generateResetToken(user);
-        // 构造重置链接（前端路由地址自行配置）
+        // Construct reset link (frontend route configured as needed)
         String resetLink = "http://localhost:5173/reset-password?token=" + resetToken;
-        // 异步发送重置密码邮件
+        // Send reset password email asynchronously
         mailService.sendResetLink(request.getEmail(), resetLink);
     }
 
     @Override
     public void resetPassword(ResetPasswordRequest request) {
-        // 这个地方就这么写吧，因为考虑到缓存！！！
-        // 通过JWT验证 token，获得邮箱
+        // Verify the token via JWT to obtain the email
         String email = jwtUtils.verifyResetToken(request.getToken());
         User user = userService.getByEmail(email);
         if (user == null) {
             throw new CustomException(ErrorCode.BAD_REQUEST, "Email is not registered.");
         }
-        // 更新密码并同步缓存
+        // Update password and synchronize cache
         user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
         userService.updateById(user);
         redisCacheService.updateUser(user);
@@ -215,20 +210,20 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void changePassword(ChangePasswordRequest request) {
-        // 获取当前登录用户的ID
+        // Retrieve the current logged-in user's ID
         Long currentUserId = SecurityUtils.getCurrentUserId();
-        // 根据用户ID查询用户信息
+        // Query user information by user ID
         User user = userService.getById(currentUserId);
         if (user == null) {
             throw new CustomException(ErrorCode.BAD_REQUEST, "User not found.");
         }
-        // 校验用户输入的旧密码是否正确
+        // Verify that the old password provided by the user is correct
         if (!passwordEncoder.matches(request.getOldPassword(), user.getPasswordHash())) {
             throw new CustomException(ErrorCode.BAD_REQUEST, "Old password is incorrect.");
         }
-        // 更新新密码（先加密再存储）
+        // Update the password (encrypt before storing)
         user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
-        // 更新数据库
+        // Update the database
         boolean updateSuccess = userService.updateById(user);
         if (!updateSuccess) {
             throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR, "Failed to update password. Please try again.");

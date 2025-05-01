@@ -14,8 +14,6 @@ public class DailyStatisticVO {
      * The date for the statistic
      */
     private LocalDate date;
-    /**
-     * 完成的课时数，改成 Double
-     */
+
     private Double hours;
 }

@@ -11,27 +11,27 @@ import org.springframework.stereotype.Component;
 import java.util.Date;
 
 /**
- * 基于 io.jsonwebtoken 0.9.1 的示例
+ * Example based on io.jsonwebtoken 0.9.1
  */
 @Component
 @Data
 public class JwtUtils {
 
-    // 从 application.properties / application.yml 中读取配置
+    // Read configuration from application.properties / application.yml
     @Value("${jwt.secret:defaultSecretKey}")
     private String secretKey;
 
-    @Value("${jwt.expiration:86400000}") // 默认1天(毫秒)
+    @Value("${jwt.expiration:86400000}") // Default 1 day (milliseconds)
     private long expiration;
 
     /**
-     * 生成 JWT Token
+     * Generate JWT Token
      */
     public String generateToken(User user) {
         Date now = new Date();
         Date exp = new Date(now.getTime() + expiration);
 
-        // 在 Subject 存 userId，另外也可放进 Claims
+        // Store userId in Subject, can also be added to Claims
         return Jwts.builder()
                 .setSubject(String.valueOf(user.getUserID()))
                 .claim("role", user.getRole().name())
@@ -43,7 +43,7 @@ public class JwtUtils {
     }
 
     /**
-     * 检查 Token 是否有效（签名是否正确 & 是否过期）
+     * Check if the Token is valid (signature is correct & not expired)
      */
     public boolean validateToken(String token) {
         try {
@@ -52,13 +52,13 @@ public class JwtUtils {
                     .parseClaimsJws(token);
             return true;
         } catch (JwtException e) {
-            // 包括 SignatureException, ExpiredJwtException 等
+            // Includes SignatureException, ExpiredJwtException, etc.
             return false;
         }
     }
 
     /**
-     * 从 token 中获取所有声明 (Claims)
+     * Get all claims from the token
      */
     public Claims getClaims(String token) {
         return Jwts.parser()
@@ -68,12 +68,12 @@ public class JwtUtils {
     }
 
     /**
-     * 生成重置密码的 JWT Token，建议有效期为 5 分钟
+     * Generate a reset password JWT Token, recommended validity is 5 minutes
      */
     public String generateResetToken(User user) {
-        // 示例：在生成 JWT 时，设置 subject 为用户邮箱，claim 加入用途标识等
+        // Example: When generating JWT, set subject to user email, add purpose identifier to claims, etc.
         Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + 5 * 60 * 1000); // 5分钟后过期
+        Date expiryDate = new Date(now.getTime() + 5 * 60 * 1000); // Expires in 5 minutes
 
         return Jwts.builder()
                 .setSubject(user.getEmail())
@@ -85,7 +85,7 @@ public class JwtUtils {
     }
 
     /**
-     * 验证重置密码的 JWT Token，返回邮箱或 null（或抛异常）
+     * Validate the reset password JWT Token, return email or null (or throw an exception)
      */
     public String verifyResetToken(String token) {
         try {
@@ -93,11 +93,11 @@ public class JwtUtils {
                     .setSigningKey(secretKey)
                     .parseClaimsJws(token)
                     .getBody();
-            // 检查 token 类型是否为 reset
+            // Check if the token type is reset
             if (!"reset".equals(claims.get("type"))) {
                 throw new CustomException(ErrorCode.BAD_REQUEST, "Invalid token type.");
             }
-            return claims.getSubject(); // 返回邮箱
+            return claims.getSubject(); // Return email
         } catch (Exception e) {
             throw new CustomException(ErrorCode.BAD_REQUEST, "Invalid or expired reset token.");
         }

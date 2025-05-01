@@ -13,15 +13,13 @@ import java.time.LocalDateTime;
 public class PendingAppointmentVO {
     private Long   appointmentId;
     private Long   memberId;
-    private String memberName;     // 新增
+    private String memberName;
     private String projectName;
     private String description;
     private LocalDateTime createdAt;
-    private LocalDateTime startTime;  // 课程开始
-    private LocalDateTime endTime;    // 课程结束
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
 
-    // 新增：绑定的 WorkoutPlan 信息（如果有）
-    // 新增：绑定的 WorkoutPlan 信息
     private Long   workoutPlanId;
     private String workoutPlanTitle;
     private String workoutPlanContent;

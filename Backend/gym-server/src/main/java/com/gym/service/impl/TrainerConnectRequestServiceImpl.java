@@ -38,7 +38,7 @@ public class TrainerConnectRequestServiceImpl extends ServiceImpl<TrainerConnect
     @Autowired
     private UserService userService;   // new dependency
 
-    // 判断当前 member 是否已和指定 trainer 建立连接
+    // Determine if the current member is already connected with the specified trainer
     @Override
     public boolean isConnected(Long memberId, Long trainerId) {
         LambdaQueryWrapper<TrainerConnectRequest> queryWrapper = new LambdaQueryWrapper<>();
@@ -48,7 +48,7 @@ public class TrainerConnectRequestServiceImpl extends ServiceImpl<TrainerConnect
         return this.count(queryWrapper) > 0;
     }
 
-    // 统计指定 member 当前待审核（Pending）状态的连接申请数量
+    // Count the number of pending connection requests for the specified member
     @Override
     public int countPendingRequests(Long memberId) {
         LambdaQueryWrapper<TrainerConnectRequest> queryWrapper = new LambdaQueryWrapper<>();
@@ -57,7 +57,7 @@ public class TrainerConnectRequestServiceImpl extends ServiceImpl<TrainerConnect
         return this.count(queryWrapper);
     }
 
-    // member提交连接申请
+    // Member submits a connection request
     @Override
     public void submitConnectRequest(TrainerConnectRequestDTO dto, Long memberId) {
         TrainerConnectRequest request = TrainerConnectRequest.builder()
@@ -67,11 +67,10 @@ public class TrainerConnectRequestServiceImpl extends ServiceImpl<TrainerConnect
                 .requestMessage(dto.getRequestMessage())
                 .build();
         this.save(request);
-        // 生成并发送通知给教练
+        // Create and send a notification to the trainer
         Notification notification = Notification.builder()
                 .userId(dto.getTrainerId())
                 .title("New connection request")
-                // 你有一个新的连接申请
                 .message("You have a new connection request.")
                 .type(Notification.NotificationType.INFO)
                 .isRead(false)
@@ -79,23 +78,22 @@ public class TrainerConnectRequestServiceImpl extends ServiceImpl<TrainerConnect
         notificationService.sendNotification(notification);
     }
 
-
-    // Trainer 接受连接申请
+    // Trainer accepts the connection request
     @Override
     public void acceptConnectRequest(TrainerConnectDecisionDTO dto, Long trainerId) {
         TrainerConnectRequest request = this.getById(dto.getRequestId());
         if (request == null) {
             throw new CustomException(ErrorCode.NOT_FOUND, "Connect request not found.");
         }
-        // 确保该申请属于当前教练
+        // Ensure the request belongs to the current trainer
         if (!request.getTrainerId().equals(trainerId)) {
             throw new CustomException(ErrorCode.FORBIDDEN, "You are not authorized to process this request.");
         }
-        // 申请必须处于待审核状态
+        // The request must be in Pending status
         if (request.getStatus() != TrainerConnectRequest.RequestStatus.Pending) {
             throw new CustomException(ErrorCode.BAD_REQUEST, "This connect request has already been processed.");
         }
-        // 更新状态和反馈信息
+        // Update status and response message
         request.setStatus(TrainerConnectRequest.RequestStatus.Accepted);
         request.setResponseMessage(dto.getResponseMessage());
         boolean updateResult = this.updateById(request);
@@ -104,11 +102,10 @@ public class TrainerConnectRequestServiceImpl extends ServiceImpl<TrainerConnect
         }
         log.info("Trainer [{}] accepted connect request [{}]", trainerId, dto.getRequestId());
 
-        // 生成并发送通知给申请的 member
+        // Create and send a notification to the requesting member
         Notification notification = Notification.builder()
                 .userId(request.getMemberId())
                 .title("Application result notification")
-                // 你的其中一个教练连接申请已被接受
                 .message("One of your trainer connection requests has been accepted.")
                 .type(Notification.NotificationType.INFO)
                 .isRead(false)
@@ -116,22 +113,22 @@ public class TrainerConnectRequestServiceImpl extends ServiceImpl<TrainerConnect
         notificationService.sendNotification(notification);
     }
 
-    // Trainer 拒绝连接申请
+    // Trainer rejects the connection request
     @Override
     public void rejectConnectRequest(TrainerConnectDecisionDTO dto, Long trainerId) {
         TrainerConnectRequest request = this.getById(dto.getRequestId());
         if (request == null) {
             throw new CustomException(ErrorCode.NOT_FOUND, "Connect request not found.");
         }
-        // 确保该申请属于当前教练
+        // Ensure the request belongs to the current trainer
         if (!request.getTrainerId().equals(trainerId)) {
             throw new CustomException(ErrorCode.FORBIDDEN, "You are not authorized to process this request.");
         }
-        // 申请必须处于待审核状态
+        // The request must be in Pending status
         if (request.getStatus() != TrainerConnectRequest.RequestStatus.Pending) {
             throw new CustomException(ErrorCode.BAD_REQUEST, "This connect request has already been processed.");
         }
-        // 更新状态和反馈信息
+        // Update status and response message
         request.setStatus(TrainerConnectRequest.RequestStatus.Rejected);
         request.setResponseMessage(dto.getResponseMessage());
         boolean updateResult = this.updateById(request);
@@ -140,7 +137,7 @@ public class TrainerConnectRequestServiceImpl extends ServiceImpl<TrainerConnect
         }
         log.info("Trainer [{}] rejected connect request [{}]", trainerId, dto.getRequestId());
 
-        // 生成并发送通知给申请的 member
+        // Create and send a notification to the requesting member
         Notification notification = Notification.builder()
                 .userId(request.getMemberId())
                 .title("Application result notification")
@@ -154,7 +151,7 @@ public class TrainerConnectRequestServiceImpl extends ServiceImpl<TrainerConnect
     @Override
     public List<PendingConnectRequestVO> getPendingConnectRequestsForTrainer(Long trainerId) {
 
-        // (1) fetch raw pending requests
+        // (1) Fetch raw pending connection requests
         LambdaQueryWrapper<TrainerConnectRequest> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(TrainerConnectRequest::getTrainerId, trainerId)
                 .eq(TrainerConnectRequest::getStatus, TrainerConnectRequest.RequestStatus.Pending)
@@ -165,7 +162,7 @@ public class TrainerConnectRequestServiceImpl extends ServiceImpl<TrainerConnect
             return new ArrayList<>();
         }
 
-        // (2) batch load member names
+        // (2) Batch load member names
         Set<Long> memberIds = requests.stream()
                 .map(TrainerConnectRequest::getMemberId)
                 .collect(Collectors.toSet());
@@ -173,7 +170,7 @@ public class TrainerConnectRequestServiceImpl extends ServiceImpl<TrainerConnect
         Map<Long, String> nameMap = userService.listByIds(memberIds).stream()
                 .collect(Collectors.toMap(User::getUserID, User::getName));
 
-        // (3) map to VO
+        // (3) Map entities to VO objects
         return requests.stream()
                 .map(r -> PendingConnectRequestVO.builder()
                         .requestId(r.getRequestId())
@@ -187,7 +184,7 @@ public class TrainerConnectRequestServiceImpl extends ServiceImpl<TrainerConnect
 
     @Override
     public List<ConnectedMemberVO> listConnectedMembers(Long trainerId) {
-        // 1. 查出所有已 Accepted 的连接记录（包括 createdAt）
+        // 1. Retrieve all Accepted connection records (including creation time)
         LambdaQueryWrapper<TrainerConnectRequest> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(TrainerConnectRequest::getTrainerId, trainerId)
                 .eq(TrainerConnectRequest::getStatus, TrainerConnectRequest.RequestStatus.Accepted)
@@ -197,23 +194,23 @@ public class TrainerConnectRequestServiceImpl extends ServiceImpl<TrainerConnect
             return new ArrayList<>();
         }
 
-        // 2. 去重并收集 memberId
+        // 2. Deduplicate and collect member IDs
         LinkedHashSet<Long> memberIds = accepted.stream()
                 .map(TrainerConnectRequest::getMemberId)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
 
-        // 3. 批量拉取会员 User 实体
+        // 3. Batch fetch User entities for members
         List<User> users = userService.listByIds(memberIds);
         Map<Long, User> userMap = users.stream()
                 .collect(Collectors.toMap(User::getUserID, u -> u));
 
-        // 4. 构造 VO 列表
+        // 4. Construct the VO list
         List<ConnectedMemberVO> result = new ArrayList<>();
         for (Long memberId : memberIds) {
             User u = userMap.get(memberId);
             String name  = (u != null ? u.getName() : "Unknown");
             String email = (u != null ? u.getEmail() : null);
-            // 找到对应的 connect 记录拿到 time
+            // Find the creation time from the corresponding connection record
             LocalDateTime t = accepted.stream()
                     .filter(r -> r.getMemberId().equals(memberId))
                     .findFirst()

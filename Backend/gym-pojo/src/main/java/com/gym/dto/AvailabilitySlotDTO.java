@@ -13,11 +13,9 @@ import java.time.LocalDateTime;
 @ToString
 public class AvailabilitySlotDTO {
     private Long availabilityId;
-    // @NotNull(message = "Start time cannot be null")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime startTime;
 
-    // @NotNull(message = "End time cannot be null")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime endTime;
 

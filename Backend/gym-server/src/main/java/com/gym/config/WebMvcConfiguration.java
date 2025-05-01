@@ -43,7 +43,7 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
     }
 
     /**
-     * 保留静态资源映射，否则 Swagger UI、knife4j 等可能找不到
+     * Retain static resource mappings, otherwise Swagger UI, knife4j, etc., may not be found
      */
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
@@ -52,20 +52,18 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
                 .addResourceLocations("classpath:/META-INF/resources/");
         registry.addResourceHandler("/webjars/**")
                 .addResourceLocations("classpath:/META-INF/resources/webjars/");
-        // 如果你有其他静态资源也可以在这里加入
+        // You can add other static resources here if needed
     }
 
     /**
-     * 自定义 Jackson 消息转换器（把 Long 序列化为 String）
+     * Customize the Jackson message converter (serialize Long to String)
      */
     @Override
     public void extendMessageConverters(List<org.springframework.http.converter.HttpMessageConverter<?>> converters) {
-        log.info("扩展消息转换器...");
+        log.info("Extending message converters...");
         MappingJackson2HttpMessageConverter messageConverter =
                 new MappingJackson2HttpMessageConverter();
         messageConverter.setObjectMapper(new JacksonObjectMapper());
         converters.add(0, messageConverter);
     }
-
 }
-

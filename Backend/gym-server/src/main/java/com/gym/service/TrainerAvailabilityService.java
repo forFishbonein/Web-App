@@ -8,28 +8,31 @@ import java.util.List;
 
 public interface TrainerAvailabilityService extends IService<TrainerAvailability> {
     /**
-     * 更新指定教练的可用时间。该方法将删除该教练所有现有的可用时间（或未来的可用时间），
-     * 然后批量插入前端传入的新时间段。
+     * Updates the availability of a specific trainer. This method will delete all existing
+     * availability (or future availability) of the trainer and then batch insert the new
+     * time slots provided by the frontend.
      *
-     * @param trainerId         教练的用户ID
-     * @param availabilitySlots 前端传入的可用时间段列表
+     * @param trainerId         The user ID of the trainer
+     * @param availabilitySlots The list of availability time slots provided by the frontend
      */
     void updateAvailability(Long trainerId, List<AvailabilitySlotDTO> availabilitySlots);
 
     /**
-     * 查询指定教练从当前时间开始的所有时间段（包括 Available, Booked, Unavailable）
+     * Retrieves all time slots (including Available, Booked, and Unavailable) of a specific
+     * trainer starting from the current time.
      *
-     * @param trainerId 教练的用户ID
-     * @return 可用时间段列表
+     * @param trainerId The user ID of the trainer
+     * @return A list of time slots
      */
     List<TrainerAvailability> getFutureAvailability(Long trainerId);
 
 
     /**
-     * 查询指定教练从当前时间开始的所有可用时间段（状态为 Available）
+     * Retrieves all available time slots (status: Available) of a specific trainer starting
+     * from the current time.
      *
-     * @param trainerId 教练的用户ID
-     * @return 可用时间段列表
+     * @param trainerId The user ID of the trainer
+     * @return A list of available time slots
      */
     List<AvailabilitySlotDTO> getAvailableSlots(Long trainerId);
 }

@@ -17,10 +17,10 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 针对用户数据的 Redis 缓存服务
- * 主要实现了：
- * 1. 利用布隆过滤器防止缓存穿透
- * 2. 利用分布式锁和随机 TTL 防止缓存雪崩
+ * Redis cache service for user data.
+ * Implements:
+ * 1. Using a Bloom filter to prevent cache penetration
+ * 2. Using distributed locks and random TTL to prevent cache avalanche
  */
 @Service
 @Slf4j
@@ -29,7 +29,7 @@ public class RedisCacheServiceImpl implements RedisCacheService {
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
-    // 直接注入 UserDao（或 UserMapper），而非 UserService
+    // Directly inject UserDao (or UserMapper) instead of UserService
     @Autowired
     private UserDao userDao;
 
@@ -37,10 +37,10 @@ public class RedisCacheServiceImpl implements RedisCacheService {
     private BloomFilterUtil bloomFilterUtil;
 
     /**
-     * 获取用户信息，同时防止缓存穿透和缓存雪崩
+     * Retrieve user information, while preventing cache penetration and cache avalanche
      */
     public User getUser(Long userId) {
-        // 针对用户数据使用布隆过滤器检查是否存在
+        // Use Bloom filter to check existence of user data
         if (!bloomFilterUtil.mightContainUser(userId)) {
             return null;
         }
@@ -53,14 +53,14 @@ public class RedisCacheServiceImpl implements RedisCacheService {
             UserCacheDTO dto = (UserCacheDTO) cacheObj;
             return dto.toEntity();
         }
-        // 缓存未命中，采用分布式锁避免大量请求并发查询数据库
+        // Cache miss: use a distributed lock to avoid many concurrent DB queries
         String lockKey = "LOCK:USER:" + userId;
         String lockValue = UUID.randomUUID().toString();
-        // 这里就是使用了setNx
+        // This uses setIfAbsent (SETNX)
         boolean locked = tryLock(lockKey, lockValue, 10);
         if (locked) {
             try {
-                // 双重检查
+                // Double-check the cache after acquiring the lock
                 cacheObj = redisTemplate.opsForValue().get(key);
                 if (cacheObj != null) {
                     if (cacheObj instanceof NullValue) {
@@ -69,18 +69,13 @@ public class RedisCacheServiceImpl implements RedisCacheService {
                     UserCacheDTO dto = (UserCacheDTO) cacheObj;
                     return dto.toEntity();
                 }
-                // 查询数据库
+                // Query the database
                 User user = userDao.selectById(userId);
                 if (user != null) {
-                    // 设置随机过期时间，防止缓存大量同时失效
-//                    int baseTtl = 600; // 基础10分钟
-//                    int randomExtra = new Random().nextInt(60); // 0-59秒随机额外时间
-//                    int ttl = baseTtl + randomExtra;
-//                    redisTemplate.opsForValue().set(key, UserCacheDTO.fromEntity(user), ttl, TimeUnit.SECONDS);
                     updateUser(user);
                     return user;
                 } else {
-                    // 数据库中不存在，缓存空值防止缓存穿透（空值缓存有效期较短）
+                    // Not found in DB: cache a NullValue with short TTL to prevent cache penetration
                     redisTemplate.opsForValue().set(key, new NullValue(), 300, TimeUnit.SECONDS);
                     return null;
                 }
@@ -88,7 +83,7 @@ public class RedisCacheServiceImpl implements RedisCacheService {
                 unlock(lockKey, lockValue);
             }
         } else {
-            // 获取不到锁，则稍后重试
+            // Could not acquire lock: retry after a short delay
             try {
                 Thread.sleep(50);
             } catch (InterruptedException e) {
@@ -98,23 +93,22 @@ public class RedisCacheServiceImpl implements RedisCacheService {
         }
     }
 
-    // 更新缓存
+    // Update the cache entry
     public void updateUser(User user) {
-        int baseTtl = 600; // 基础10分钟
-        int randomExtra = new Random().nextInt(60); // 0-59秒随机额外时间
+        int baseTtl = 600; // Base 10 minutes
+        int randomExtra = new Random().nextInt(60); // 0–59 seconds random extra
         int ttl = baseTtl + randomExtra;
         String key = "USER:" + user.getUserID();
         redisTemplate.opsForValue().set(key, UserCacheDTO.fromEntity(user), ttl, TimeUnit.SECONDS);
     }
 
-    // 删除缓存
-    // 比如数据更新了
+    // Delete the cache entry, e.g., after data update
     public void deleteUser(Long userId) {
         String key = "USER:" + userId;
         redisTemplate.delete(key);
     }
 
-    // 基于 Redis 的简单分布式锁实现
+    // Simple Redis-based distributed lock implementation
     private boolean tryLock(String lockKey, String lockValue, int expireSeconds) {
         Boolean success = redisTemplate.opsForValue().setIfAbsent(lockKey, lockValue, expireSeconds, TimeUnit.SECONDS);
         return success != null && success;
@@ -127,6 +121,6 @@ public class RedisCacheServiceImpl implements RedisCacheService {
         }
     }
 
-    // 用于缓存空值的标记类
+    // Marker class for caching null values
     public static class NullValue implements Serializable {}
 }

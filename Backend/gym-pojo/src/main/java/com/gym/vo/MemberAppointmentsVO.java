@@ -5,9 +5,6 @@ import lombok.*;
 
 import java.util.List;
 
-/**
- * 教练端：一个学员对应的一组预约
- */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -16,5 +13,5 @@ import java.util.List;
 public class MemberAppointmentsVO {
     private Long memberId;
     private String memberName;
-    private List<AppointmentWithTimeVO> appointments;  // 使用新 VO
+    private List<AppointmentWithTimeVO> appointments;
 }

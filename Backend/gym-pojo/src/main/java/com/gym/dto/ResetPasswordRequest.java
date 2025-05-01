@@ -14,9 +14,9 @@ import javax.validation.constraints.Size;
 public class ResetPasswordRequest {
 
     @NotBlank(message = "token cannot be blank")
-    private String token;  // JWT token
+    private String token;
 
     @NotBlank(message = "newPassword cannot be blank")
     @Size(min = 6, max = 20, message = "Password length must be between 6 and 20 characters")
-    private String newPassword; // 新密码
+    private String newPassword;
 }

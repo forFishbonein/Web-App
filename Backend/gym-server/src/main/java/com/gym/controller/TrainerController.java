@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -67,7 +66,7 @@ public class TrainerController {
             throw new CustomException(ErrorCode.UNAUTHORIZED, "User is not authenticated or session is invalid.");
         }
 
-        // 修改 TrainerProfile 表中的记录，用DTO中的数据更新
+        // Update the TrainerProfile record in the database using data from the DTO
         LambdaUpdateWrapper<TrainerProfile> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(TrainerProfile::getUserId, currentUserId)
                 .set(TrainerProfile::getCertifications, trainerProfileDTO.getCertifications())
@@ -83,25 +82,25 @@ public class TrainerController {
         return RestResult.success("Updated", "Trainer profile updated successfully.");
     }
 
-    // 教练查看自己的详细信息表+教练user表中信息
+    // Trainer views their detailed profile info and user table info
     @GetMapping("/profile")
     public RestResult<?> getTrainerProfile() {
         Long currentUserId = SecurityUtils.getCurrentUserId();
         if (currentUserId == null) {
             throw new CustomException(ErrorCode.UNAUTHORIZED, "User is not authenticated or session is invalid.");
         }
-        // 查两个表，一个是user表，一个是trainerProfile表
+        // Query both tables: user table and trainerProfile table
         TrainerAllProfile trainerAllProfile = trainerProfileService.getTrainerAllProfile(currentUserId);
 
         return RestResult.success(trainerAllProfile, "Trainer profile retrieved successfully.");
     }
 
     /**
-     * 接受 member 的 connect 申请
-     * 仅负责校验当前教练身份和调用业务层方法，具体逻辑在 Service 层处理
+     * Accept a member's connect request.
+     * Only handles trainer authentication and delegates business logic to the service layer.
      *
-     * @param decisionDTO 包含申请ID和可选反馈信息
-     * @return 操作结果
+     * @param decisionDTO contains request ID and optional feedback
+     * @return operation result
      */
     @PutMapping("/connect-request/accept")
     public RestResult<?> acceptConnectRequest(@Valid @RequestBody TrainerConnectDecisionDTO decisionDTO) {
@@ -115,11 +114,11 @@ public class TrainerController {
     }
 
     /**
-     * 拒绝 member 的 connect 申请
-     * 仅负责校验当前教练身份和调用业务层方法，具体逻辑在 Service 层处理
+     * Reject a member's connect request.
+     * Only handles trainer authentication and delegates business logic to the service layer.
      *
-     * @param decisionDTO 包含申请ID和可选反馈信息
-     * @return 操作结果
+     * @param decisionDTO contains request ID and optional feedback
+     * @return operation result
      */
     @PutMapping("/connect-request/reject")
     public RestResult<?> rejectConnectRequest(@Valid @RequestBody TrainerConnectDecisionDTO decisionDTO) {
@@ -133,8 +132,8 @@ public class TrainerController {
     }
 
     /**
-     * 设置或更新教练的可用时间
-     * 前端可以一次性传递多个可用时间段，例如在日历上勾选多个小时段后统一提交
+     * Set or update the trainer's availability.
+     * The frontend can submit multiple availability slots at once, e.g., after selecting multiple time blocks on a calendar.
      */
     @PostMapping("/availability")
     public RestResult<?> updateAvailability(@Valid @RequestBody TrainerAvailabilityDTO availabilityDTO) {
@@ -142,14 +141,13 @@ public class TrainerController {
         if (currentTrainerId == null) {
             throw new CustomException(ErrorCode.UNAUTHORIZED, "User is not authenticated or session is invalid.");
         }
-        // 这里假设用户ID转换为 Integer 类型（根据 TrainerAvailability 实体中的 trainerId 类型）
+        // Assume user ID is converted to Integer type based on TrainerAvailability entity's trainerId type
         trainerAvailabilityService.updateAvailability(currentTrainerId, availabilityDTO.getAvailabilitySlots());
         return RestResult.success(null, "Availability updated successfully.");
     }
 
-
     /**
-     * 教练查询待审核预约请求接口（Pending 且未过期），返回课程开始/结束时间
+     * Retrieve pending appointment requests (Pending and not expired), returning start/end times
      */
     @GetMapping("/appointments/pending")
     public RestResult<?> getPendingAppointments() {
@@ -163,11 +161,10 @@ public class TrainerController {
         return RestResult.success(pending, "Pending appointments retrieved successfully.");
     }
 
-
     /**
-     * 这个是教练修改和初始化自己的可用时间接口
-     * 查出教练的所有时间段，包括booked和unavailable（暂时没有unavailable）
-     * 前端无需传递额外参数，直接通过 SecurityUtils 获取当前教练ID
+     * This endpoint allows trainers to modify and initialize their availability.
+     * It fetches all time slots for the trainer, including booked and unavailable (currently no unavailable).
+     * No additional parameters are required from the frontend; the trainer ID is obtained via SecurityUtils.
      */
     @GetMapping("/availability")
     public RestResult<?> getAvailability() {
@@ -179,10 +176,9 @@ public class TrainerController {
         return RestResult.success(availabilities, "Availability retrieved successfully.");
     }
 
-
     /**
-     * 教练同意学员预约申请接口
-     * 前端传入 AppointmentDecisionDTO，其中包含预约ID和可选反馈信息
+     * Accept a member's appointment request.
+     * The frontend submits an AppointmentDecisionDTO containing the appointment ID and optional feedback.
      */
     @PutMapping("/appointment/accept")
     public RestResult<?> acceptAppointment(@Valid @RequestBody AppointmentDecisionDTO decisionDTO) {
@@ -196,8 +192,8 @@ public class TrainerController {
     }
 
     /**
-     * 教练拒绝学员预约申请接口
-     * 前端传入 AppointmentDecisionDTO，其中包含预约ID和可选反馈信息
+     * Reject a member's appointment request.
+     * The frontend submits an AppointmentDecisionRejectDTO containing the appointment ID and optional feedback.
      */
     @PutMapping("/appointment/reject")
     public RestResult<?> rejectAppointment(@Valid @RequestBody AppointmentDecisionRejectDTO decisionDTO) {
@@ -210,9 +206,8 @@ public class TrainerController {
         return RestResult.success(null, "Appointment rejected successfully.");
     }
 
-
     /**
-     * 教练查询所有已批准（Approved）的预约，包含学员姓名与课程时段
+     * Retrieve all approved appointments, including member names and session times
      */
     @GetMapping("/appointments/approved")
     public RestResult<?> getApprovedAppointments() {
@@ -227,7 +222,7 @@ public class TrainerController {
     }
 
     /**
-     * 教练将指定预约标记为 Completed
+     * Mark a specified appointment as Completed
      */
     @PutMapping("/appointment/complete")
     public RestResult<?> completeAppointment(@Valid @RequestBody AppointmentCompleteDTO completeDTO) {
@@ -241,8 +236,7 @@ public class TrainerController {
     }
 
     /**
-     * 获取可用于推荐的其他教练（基础信息）
-     * GET /trainer/alternative-trainers
+     * GET /trainer/alternative-trainers: Get other trainers available for recommendation (basic info)
      */
     @GetMapping("/alternative-trainers")
     public RestResult<?> getAlternativeTrainers() {
@@ -259,8 +253,7 @@ public class TrainerController {
     }
 
     /**
-     * 教练查询所有待审核的连接申请
-     * GET /trainer/connect-requests/pending
+     * GET /trainer/connect-requests/pending: Retrieve all pending connect requests
      */
     @GetMapping("/connect-requests/pending")
     public RestResult<?> getPendingConnectRequests() {
@@ -278,8 +271,7 @@ public class TrainerController {
     }
 
     /**
-     * 获取教练全部预约，并按学员分组
-     * GET /trainer/appointments/by-member
+     * GET /trainer/appointments/by-member: Get all appointments grouped by member
      */
     @GetMapping("/appointments/by-member")
     public RestResult<?> getAllAppointmentsGroupedByMember() {
@@ -296,8 +288,7 @@ public class TrainerController {
     }
 
     /**
-     * 教练查询已连接 (Accepted) 的全部会员
-     * GET /trainer/connected-members
+     * GET /trainer/connected-members: Retrieve all connected members (Accepted)
      */
     @GetMapping("/connected-members")
     public RestResult<?> getConnectedMembers() {
@@ -314,8 +305,7 @@ public class TrainerController {
     }
 
     /**
-     * 教练查询所有已完成的预约（历史查询），包含学员姓名
-     * GET /trainer/appointments/completed
+     * GET /trainer/appointments/completed: Retrieve all completed appointments (history), including member names
      */
     @GetMapping("/appointments/completed")
     public RestResult<?> getCompletedAppointments() {
@@ -331,9 +321,8 @@ public class TrainerController {
     }
 
     /**
-     * 教练端：指定日期区间内每天完成的课时（≤30天）
-     * GET /trainer/appointments/statistics/dynamic
-     * ?startDate=2025-04-01&endDate=2025-04-07
+     * GET /trainer/appointments/statistics/dynamic: Daily completed session hours for a specified date range (≤30 days)
+     * Example: /trainer/appointments/statistics/dynamic?startDate=2025-04-01&endDate=2025-04-07
      */
     @GetMapping("/appointments/statistics/dynamic")
     public RestResult<?> getDynamicTrainerStatistics(
@@ -356,8 +345,7 @@ public class TrainerController {
                 "Trainer appointment statistics retrieved successfully.");
     }
 
-
-    // 7‑1  CRUD workout plans
+    // CRUD workout plans
     @PostMapping("/workout-plans")
     public RestResult<?> createPlan(@Valid @RequestBody WorkoutPlanDTO dto) {
         Long trainerId = SecurityUtils.getCurrentUserId();
@@ -390,7 +378,7 @@ public class TrainerController {
                 "Plans retrieved");
     }
 
-    // 7‑2  Bind a plan to an appointment
+    // Bind a plan to an appointment
     @PutMapping("/appointments/{appointmentId}/workout-plan/{planId}")
     public RestResult<?> bindPlan(@PathVariable Long appointmentId,
                                   @PathVariable Long planId) {

@@ -22,10 +22,7 @@ import java.util.List;
 
 
 @Configuration
-@EnableMethodSecurity   // 启用方法级别的权限注解 @PreAuthorize
-// 一个http请求会经过一系列的过滤器，这些过滤器被称为过滤器链（Filter Chain）。
-// 一共两个过滤器
-// 先执行自定义的 JwtAuthenticationFilter 过滤器，再执行 UsernamePasswordAuthenticationFilter 过滤器
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtFilter;
@@ -34,12 +31,11 @@ public class SecurityConfig {
         this.jwtFilter = jwtFilter;
     }
 
-    /* ---- CORS for the security chain ---- */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration cfg = new CorsConfiguration();
-        // Java 8 下用 Arrays.asList 而非 List.of
         cfg.setAllowedOrigins(Arrays.asList(
+               "http://localhost",
                 "http://localhost:5173",
                 "http://localhost:3000"
         ));
@@ -55,7 +51,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .cors().and()                       // ← picks up the bean above
+                .cors().and()
                 .csrf().disable()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)

@@ -25,8 +25,8 @@ public class FitnessCentre implements Serializable {
     private String address;
 
     /**
-     * latitude / longitude 可使用 Double 或 BigDecimal
-     * 此处选用 BigDecimal 以避免浮点精度问题
+     * Latitude/longitude can use Double or BigDecimal.
+     * BigDecimal is chosen here to avoid floating-point precision issues.
      */
     @TableField("latitude")
     private BigDecimal latitude;
@@ -37,7 +37,6 @@ public class FitnessCentre implements Serializable {
     @TableField("contact_info")
     private String contactInfo;
 
-    // 这个字段可能不需要
     @TableField("description")
     private String description;
 

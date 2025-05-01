@@ -6,112 +6,156 @@ import com.gym.dto.AppointmentBookingDTO;
 import com.gym.dto.AppointmentDecisionDTO;
 import com.gym.dto.AppointmentDecisionRejectDTO;
 import com.gym.entity.AppointmentBooking;
-import com.gym.vo.*;
+import com.gym.vo.AppointmentBookingDetailVO;
+import com.gym.vo.AppointmentBookingHistoryDetailVO;
+import com.gym.vo.CompletedAppointmentVO;
+import com.gym.vo.DynamicAppointmentStatisticsVO;
+import com.gym.vo.MemberAppointmentsVO;
+import com.gym.vo.PendingAppointmentVO;
 
 import java.time.LocalDate;
 import java.util.List;
 
-
 public interface AppointmentBookingService extends IService<AppointmentBooking> {
     /**
-     * 学员预约课程（session）业务：
-     * 校验学员与教练的连接关系、校验所选可用时间有效，
-     * 更新该时间段状态为 Booked、创建预约记录（状态为 Pending），并通知教练审核。
+     * Business logic for a member booking a session:
+     * Validates the connection between member and trainer, checks the selected availability slot,
+     * updates that slot to Booked, creates a booking record with status Pending, and notifies the trainer for review.
      *
-     * @param dto      预约请求数据
-     * @param memberId 当前学员的ID
+     * @param dto       Booking request data
+     * @param memberId  ID of the current member
      */
     void bookSession(AppointmentBookingDTO dto, Long memberId);
 
     /**
-     * 教练同意预约申请，更新预约状态为 Approved，同时更新对应可用时间状态为 Booked，并通知学员
+     * Trainer approves a booking request: updates booking status to Approved,
+     * updates the corresponding availability slot to Booked, and notifies the member.
      *
-     * @param dto       包含预约ID和可选反馈信息
-     * @param trainerId 当前教练ID
+     * @param dto         Contains booking ID and optional feedback
+     * @param trainerId   ID of the current trainer
      */
     void acceptAppointment(AppointmentDecisionDTO dto, Long trainerId);
 
     /**
-     * 教练拒绝预约申请，更新预约状态为 Rejected，并通知学员
+     * Trainer rejects a booking request: updates booking status to Rejected and notifies the member.
      *
-     * @param dto       包含预约ID和可选反馈信息
-     * @param trainerId 当前教练ID
+     * @param dto         Contains booking ID and optional feedback
+     * @param trainerId   ID of the current trainer
      */
     void rejectAppointment(AppointmentDecisionRejectDTO dto, Long trainerId);
 
     /**
-     * 教练查询待审核预约（Pending且未过期），包含课程时段
+     * Retrieves pending and unexpired booking requests for a trainer, including session times.
+     *
+     * @param trainerId   ID of the trainer
+     * @return List of pending appointments with time details
      */
     List<PendingAppointmentVO> getPendingAppointmentsForTrainerWithTimes(Long trainerId);
 
     /**
-     * 分页查询当前会员未来预约的详细信息，
-     * 默认返回状态为 Pending 和 Approved，如果传入 status 参数，则按照该状态过滤。
+     * Paginate through upcoming bookings for the current member.
+     * By default returns bookings with status Pending and Approved; if status is provided, filters by that status.
      *
-     * @param memberId 当前会员ID
-     * @param page 分页对象
-     * @param status 可选状态过滤条件
-     * @return 分页结果
+     * @param memberId  ID of the current member
+     * @param page      Pagination object
+     * @param status    Optional status filter
+     * @return Paginated result
      */
-    Page<AppointmentBookingDetailVO> getUpcomingAppointmentsForMember(Long memberId, Page<AppointmentBookingDetailVO> page, String status);
+    Page<AppointmentBookingDetailVO> getUpcomingAppointmentsForMember(
+            Long memberId,
+            Page<AppointmentBookingDetailVO> page,
+            String status);
 
     /**
-     * 分页查询当前会员历史预约记录，
-     * 默认返回状态不为 Pending 和 Approved，如果传入 status 参数，则按照该状态过滤。
+     * Paginate through historical bookings for the current member.
+     * By default returns bookings with statuses other than Pending and Approved; if status is provided, filters by that status.
      *
-     * @param memberId 当前会员ID
-     * @param page 分页对象
-     * @param status 可选状态过滤条件
-     * @return 分页结果
+     * @param memberId  ID of the current member
+     * @param page      Pagination object
+     * @param status    Optional status filter
+     * @return Paginated result
      */
-    Page<AppointmentBookingHistoryDetailVO> getHistoricalAppointmentsForMember(Long memberId, Page<AppointmentBookingHistoryDetailVO> page, String status);
+    Page<AppointmentBookingHistoryDetailVO> getHistoricalAppointmentsForMember(
+            Long memberId,
+            Page<AppointmentBookingHistoryDetailVO> page,
+            String status);
+
     /**
-     * 取消预约请求
-     * 对于状态为 Pending 的预约，可以直接取消；如果状态为 Approved，则不允许直接取消。
+     * Cancel a booking request.
+     * Allows cancellation for Pending bookings; disallows direct cancellation if status is Approved.
      *
-     * @param appointmentId 预约记录ID
-     * @param memberId 当前会员的ID
+     * @param appointmentId  ID of the booking record
+     * @param memberId       ID of the current member
      */
     void cancelAppointment(Long appointmentId, Long memberId);
 
-
     /**
-     * 查询当前会员在指定日期范围内的预约统计数据，
-     * 返回每日完成的课程时数（单位：小时）。
+     * Retrieves booking statistics for the current member within a specified date range,
+     * returning the number of session hours completed per day (in hours).
      *
-     * @param memberId 当前会员ID
-     * @param startDate 统计开始日期（格式 yyyy-MM-dd）
-     * @param endDate   统计结束日期（格式 yyyy-MM-dd）
-     * @return 动态统计数据 VO
+     * @param memberId   ID of the current member
+     * @param startDate  Start date for statistics (format yyyy-MM-dd)
+     * @param endDate    End date for statistics (format yyyy-MM-dd)
+     * @return Dynamic statistics data VO
      */
-    DynamicAppointmentStatisticsVO getDynamicAppointmentStatisticsForMember
-    (Long memberId, LocalDate startDate, LocalDate endDate);
-
-
+    DynamicAppointmentStatisticsVO getDynamicAppointmentStatisticsForMember(
+            Long memberId,
+            LocalDate startDate,
+            LocalDate endDate);
 
     /**
-     * 教练查询所有已批准（Approved）的预约，包含学员姓名与课程时段
+     * Retrieves all approved bookings for a trainer, including member names and session times.
+     *
+     * @param trainerId  ID of the trainer
+     * @return List of approved appointments with time details
      */
     List<PendingAppointmentVO> getApprovedAppointmentsForTrainerWithTimes(Long trainerId);
 
     /**
-     * 教练将指定预约标记为 Completed
+     * Marks a specified booking as Completed.
+     *
+     * @param appointmentId  ID of the booking record
+     * @param trainerId      ID of the trainer
      */
     void completeAppointment(Long appointmentId, Long trainerId);
 
     /**
-     * 教练查询自己的全部预约，并按学员分组，包含每条预约的开始/结束时间
+     * Retrieves all bookings for a trainer, grouped by member,
+     * including start and end times for each session.
+     *
+     * @param trainerId   ID of the trainer
+     * @return List of member appointments grouped by member
      */
     List<MemberAppointmentsVO> getAllAppointmentsGroupedByMember(Long trainerId);
 
     /**
-     * 教练查询所有已完成（Completed）的预约
+     * Retrieves all completed bookings for a trainer.
+     *
+     * @param trainerId   ID of the trainer
+     * @return List of completed appointments
      */
     List<CompletedAppointmentVO> getCompletedAppointmentsForTrainer(Long trainerId);
 
+    /**
+     * Retrieves daily completed session hours for a trainer within a specified date range (≤30 days).
+     *
+     * @param trainerId   ID of the trainer
+     * @param startDate   Start date for statistics (format yyyy-MM-dd)
+     * @param endDate     End date for statistics (format yyyy-MM-dd)
+     * @return Dynamic statistics data VO
+     */
     DynamicAppointmentStatisticsVO getDynamicAppointmentStatisticsForTrainer(
-            Long trainerId, LocalDate startDate, LocalDate endDate);
+            Long trainerId,
+            LocalDate startDate,
+            LocalDate endDate);
 
+    /**
+     * Binds a workout plan to a specific booking.
+     *
+     * @param trainerId     ID of the trainer
+     * @param appointmentId ID of the booking
+     * @param planId        ID of the workout plan
+     */
     void bindWorkoutPlan(Long trainerId, Long appointmentId, Long planId);
 }
 

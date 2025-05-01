@@ -20,7 +20,6 @@ public class LoginRequest {
     @Size(min = 6, max = 20, message = "Password length must be between 6 and 20 characters")
     private String password;
 
-    // 新增：腾讯验证码相关字段（由前端验证码组件返回）
     @NotBlank(message = "Captcha ticket cannot be blank")
     private String captchaTicket;
 

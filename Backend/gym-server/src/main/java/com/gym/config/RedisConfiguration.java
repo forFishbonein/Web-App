@@ -19,12 +19,12 @@ public class RedisConfiguration {
 
     @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
-        log.info("初始化Redis模板...");
+        log.info("Initializing Redis template...");
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
-        // 设置 key 的序列化器为 String
+        // Set the key serializer to String
         redisTemplate.setKeySerializer(new StringRedisSerializer());
 
-        // 使用自定义的 JacksonObjectMapper，并激活默认类型处理
+        // Use a custom JacksonObjectMapper and activate default type handling
         JacksonObjectMapper objectMapper = new JacksonObjectMapper();
         objectMapper.activateDefaultTyping(
                 LaissezFaireSubTypeValidator.instance,
@@ -33,7 +33,7 @@ public class RedisConfiguration {
         );
 
         GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer(objectMapper);
-        // 设置 value 的序列化器为 JSON
+        // Set the value serializer to JSON
         redisTemplate.setValueSerializer(serializer);
         redisTemplate.setConnectionFactory(redisConnectionFactory);
         redisTemplate.afterPropertiesSet();

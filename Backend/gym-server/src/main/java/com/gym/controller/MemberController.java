@@ -41,28 +41,28 @@ public class MemberController {
     @Autowired
     private AppointmentBookingService appointmentBookingService;
 
-    // 分页查询教练列表
-    // 这个应该是在membercontroller，得是member权限才能看到
+    // Paginate query of trainer list
+    // This is in MemberController and requires 'member' role to view
     @GetMapping("/listTrainers")
     public RestResult<?> listTrainers(TrainerProfileQuery query) {
         Page<TrainerProfileVO> resultPage = trainerProfileService.listTrainers(query);
         return RestResult.success(resultPage, "Trainer list retrieved successfully.");
     }
 
-    // member 查看自己的简单信息
+    // Member views their own basic information
     @GetMapping("/user-profile")
     public RestResult<?> getUserProfile() {
         Long currentUserId = SecurityUtils.getCurrentUserId();
         if (currentUserId == null) {
             throw new CustomException(ErrorCode.UNAUTHORIZED, "User is not authenticated or session is invalid.");
         }
-        // 根据当前用户ID查询 User 表中的记录
+        // Query the User table record based on current user ID
         User user = userService.getById(currentUserId);
         if (user == null) {
             throw new CustomException(ErrorCode.NOT_FOUND, "User not found.");
         }
 
-        // vo 类，将 User 对象转换为 UserProfileResponse 对象
+        // VO class: convert User object to UserProfileResponse object
         UserProfileResponse response = UserProfileResponse.builder()
                 .name(user.getName())
                 .dateOfBirth(user.getDateOfBirth())
@@ -75,41 +75,40 @@ public class MemberController {
         return RestResult.success(response, "User profile retrieved successfully.");
     }
 
-    // 新增提交 connect 申请接口
+    // Endpoint to submit a new connect request
     @PostMapping("/connect-trainer")
     public RestResult<?> connectTrainer(@RequestBody @Valid TrainerConnectRequestDTO requestDTO) {
-        // 获取当前用户 ID
+        // Get current user ID
         Long currentUserId = SecurityUtils.getCurrentUserId();
         if (currentUserId == null) {
             throw new CustomException(ErrorCode.UNAUTHORIZED, "User is not authenticated or session is invalid.");
         }
-        // 判断当前 member 待审核申请是否超过 5 个
+        // Check if current member has more than 5 pending requests
         int pendingCount = trainerConnectRequestService.countPendingRequests(currentUserId);
         if (pendingCount >= 5) {
             throw new CustomException(ErrorCode.TRAINER_REQUEST_LIMIT, "You have reached the maximum number of pending requests.");
         }
-        // 提交申请，状态为 Pending
+        // Submit request with status Pending
         trainerConnectRequestService.submitConnectRequest(requestDTO, currentUserId);
         return RestResult.success(null, "Connect request submitted successfully.");
     }
 
     /**
-     * 用户查询指定教练的未来可用时间段接口
-     * 前端需要传入教练的ID，该接口仅返回状态为 Available 且开始时间在当前时间之后的时间段
+     * Endpoint for user to query future availability slots of a specified trainer
+     * The frontend needs to pass the trainer's ID; this endpoint only returns slots with status Available and start time after now
      */
-
     @GetMapping("/trainer/{trainerId}/availability")
     public RestResult<?> getTrainerAvailability(@PathVariable("trainerId") Long trainerId) {
-        // 校验当前用户（学员）是否登录
+        // Validate that the current user (member) is logged in
         Long currentUserId = SecurityUtils.getCurrentUserId();
         if (currentUserId == null) {
             throw new CustomException(ErrorCode.UNAUTHORIZED, "User is not authenticated or session is invalid.");
         }
 
-        // 调用 service 层查询指定教练从当前时间开始、状态为 Available 的可用时间段
+        // Call service layer to fetch available slots for the specified trainer starting from now with status Available
         List<AvailabilitySlotDTO> slotList = trainerAvailabilityService.getAvailableSlots(trainerId);
 
-        // 封装为 TrainerAvailabilityDTO
+        // Wrap in TrainerAvailabilityDTO
         TrainerAvailabilityDTO responseDTO = TrainerAvailabilityDTO.builder()
                 .availabilitySlots(slotList)
                 .build();
@@ -117,7 +116,7 @@ public class MemberController {
         return RestResult.success(responseDTO, "Trainer availability retrieved successfully.");
     }
 
-    // 会员选择教练的可用时间段并提交预约请求
+    // Member selects trainer's available slot and submits a booking request
     @PostMapping("/appointment")
     public RestResult<?> bookAppointment(@RequestBody @Valid AppointmentBookingDTO dto) {
         Long currentUserId = SecurityUtils.getCurrentUserId();
@@ -128,14 +127,12 @@ public class MemberController {
         return RestResult.success(null, "Appointment booking submitted successfully.");
     }
 
-
     /**
-     * 分页查询当前会员所有未来预约的详细信息：
-     * 先自动更新过期（或完成）的记录，然后只返回状态为 Pending 和 Approved 的记录。
+     * Paginate query for all upcoming bookings of current member:
+     * Automatically update expired (or completed) records first, then return only records with status Pending and Approved.
      */
-
-//    这个设计的核心思路是：在会员查询预约记录之前，先统一批量更新所有待处理记录的状态
-//    （例如将已到时间但状态仍为 Pending 的记录更新为 Expired，或将 Approved 但课程结束的更新为 Completed），然后再进行分页查询。
+//    The core idea of this design is: before member queries booking records, batch update statuses of all pending records
+//    (e.g., update records whose time has passed but still Pending to Expired, or Approved but session ended to Completed), then paginate.
     @GetMapping("/appointments/upcoming")
     public RestResult<?> getUpcomingAppointments(
             @RequestParam(defaultValue = "1") int page,
@@ -150,8 +147,8 @@ public class MemberController {
     }
 
     /**
-     * 分页查询当前会员的历史预约记录：
-     * 返回状态不为 Pending 和 Approved 的记录（例如 Expired, Rejected, Cancelled, Completed）。
+     * Paginate query for historical bookings of current member:
+     * Returns records with status not Pending or Approved (e.g., Expired, Rejected, Cancelled, Completed).
      */
     @GetMapping("/appointments/history")
     public RestResult<?> getHistoricalAppointments(
@@ -167,9 +164,9 @@ public class MemberController {
     }
 
     /**
-     * 会员取消预约接口
-     * 会员可以取消自己状态为 Pending 的预约；如果预约已被批准（Approved），则提示用户不能直接取消
-     * 预约ID 通过 URL 路径传入
+     * Endpoint for member to cancel an appointment
+     * Member can cancel their own appointment if status is Pending; if appointment is Approved, user is informed they cannot cancel directly
+     * Appointment ID is passed via URL path
      */
     @PutMapping("/appointment/cancel/{appointmentId}")
     public RestResult<?> cancelAppointment(@PathVariable("appointmentId") Long appointmentId) {
@@ -182,13 +179,13 @@ public class MemberController {
     }
 
     /**
-     * 动态统计接口：查询当前会员在指定日期范围内的预约统计数据，
-     * 返回每天完成的课程小时数（单位：小时）。
-     * 前端可用于展示图表，日期范围最大不超过30天。
-     * 每条数据是30min
+     * Dynamic statistics endpoint: query booking statistics for current member in specified date range,
+     * returning hours of sessions completed each day (in hours).
+     * For frontend chart display; date range should not exceed 30 days.
+     * Each data point represents 30 minutes.
      *
-     * @param startDate 统计开始日期（格式 yyyy-MM-dd）
-     * @param endDate   统计结束日期（格式 yyyy-MM-dd）
+     * @param startDate Start date for statistics (format yyyy-MM-dd)
+     * @param endDate   End date for statistics (format yyyy-MM-dd)
      */
     @GetMapping("/appointments/statistics/dynamic")
     public RestResult<?> getDynamicAppointmentStatistics(
@@ -203,10 +200,10 @@ public class MemberController {
     }
 
     /**
-     * 判断当前会员是否已与指定教练建立连接（即连接申请被接受）
+     * Determine if current member has established a connection with specified trainer (i.e., connect request accepted)
      *
-     * @param trainerId 教练的ID，由前端传入
-     * @return 连接状态，true 表示已连接，false 表示未连接
+     * @param trainerId Trainer ID, provided by frontend
+     * @return Connection status: true if connected, false if not
      */
     @GetMapping("/is-connected/{trainerId}")
     public RestResult<?> isConnectedWithTrainer(@PathVariable("trainerId") Long trainerId) {

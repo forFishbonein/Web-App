@@ -22,45 +22,45 @@ import java.util.stream.Collectors;
 public class TrainerAvailabilityServiceImpl extends ServiceImpl<TrainerAvailabilityDao, TrainerAvailability>
         implements TrainerAvailabilityService {
 
-    /** 老师一次最多维护未来 7 天 */
+    /**
+     * Instructors can maintain availability slots up to 7 days into the future.
+     */
     private static final int RANGE_DAYS = 7;
 
     @Override
     @Transactional
     public void updateAvailability(Long trainerId, List<AvailabilitySlotDTO> frontList) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime limit = now.plusDays(RANGE_DAYS);
 
-        LocalDateTime   now   = LocalDateTime.now();
-        LocalDateTime   limit = now.plusDays(RANGE_DAYS);
-
-        /* ---------- 1. 过滤非法时间段 ---------- */
+        /* ---------- 1. Filter out invalid slots ---------- */
         List<AvailabilitySlotDTO> valid = frontList.stream()
                 .filter(s -> s.getStartTime() != null && s.getEndTime() != null)
-                .filter(s -> !s.getStartTime().isBefore(now)           // 必须 ≥ 当前
-                        && !s.getEndTime().isAfter(limit)            // 必须 ≤ 7 天后
-                        &&  s.getEndTime().isAfter(s.getStartTime()))// 结束 > 开始
+                .filter(s -> !s.getStartTime().isBefore(now)        // start >= now
+                        && !s.getEndTime().isAfter(limit)            // end <= now + 7 days
+                        &&  s.getEndTime().isAfter(s.getStartTime()))// end > start
                 .collect(Collectors.toList());
-
         if (valid.isEmpty()) {
-            log.info("Trainer[{}] availability update skipped – no valid slot.", trainerId);
+            log.info("Trainer[{}] availability update skipped – no valid slots.", trainerId);
             return;
         }
 
-        /* ---------- 2. 查询当前 7 天内已存在的 slot ---------- */
+        /* ---------- 2. Query existing slots within the next 7 days ---------- */
         List<TrainerAvailability> dbSlots = lambdaQuery()
                 .eq(TrainerAvailability::getTrainerId, trainerId)
                 .ge(TrainerAvailability::getStartTime, now)
                 .le(TrainerAvailability::getEndTime,   limit)
                 .list();
 
-        // 用 “start_end” 当唯一键，避免重复插入
+        // Use "start_end" string as a unique key to avoid duplicate inserts
         Set<String> dbKeys = dbSlots.stream()
                 .map(v -> v.getStartTime() + "_" + v.getEndTime())
                 .collect(Collectors.toSet());
 
-        /* ---------- 3. 只插入新增的 ---------- */
+        /* ---------- 3. Insert only new slots ---------- */
         List<TrainerAvailability> toInsert = valid.stream()
-                .filter(s -> s.getAvailabilityId() == null)                // 前端标记为新增
-                .filter(s -> !dbKeys.contains(s.getStartTime() + "_" + s.getEndTime())) // 数据库尚无同段
+                .filter(s -> s.getAvailabilityId() == null)                // marked new by frontend
+                .filter(s -> !dbKeys.contains(s.getStartTime() + "_" + s.getEndTime())) // not already in DB
                 .map(s -> TrainerAvailability.builder()
                         .trainerId(trainerId)
                         .startTime(s.getStartTime())
@@ -68,17 +68,15 @@ public class TrainerAvailabilityServiceImpl extends ServiceImpl<TrainerAvailabil
                         .status(TrainerAvailability.AvailabilityStatus.Available)
                         .build())
                 .collect(Collectors.toList());
-
         if (!toInsert.isEmpty()) {
             saveBatch(toInsert);
         }
-
-        log.info("Trainer[{}] availability add-only ⇒ inserted {}", trainerId, toInsert.size());
+        log.info("Trainer[{}] availability add-only ⇒ inserted {} slots", trainerId, toInsert.size());
     }
 
-
-
-    // 查出教练的所有时间段，包括booked和unavailable（暂时没有unavailable）
+    /**
+     * Retrieve all future availability slots for a trainer, including booked and unavailable ones (none currently unavailable).
+     */
     @Override
     public List<TrainerAvailability> getFutureAvailability(Long trainerId) {
         LocalDateTime now = LocalDateTime.now();
@@ -91,18 +89,19 @@ public class TrainerAvailabilityServiceImpl extends ServiceImpl<TrainerAvailabil
 
     @Override
     public List<AvailabilitySlotDTO> getAvailableSlots(Long trainerId) {
-        // 计算缓冲时间：当前时间加1小时
+        // Calculate cutoff time: now + 1 hour buffer
         LocalDateTime cutoff = LocalDateTime.now().plusHours(1);
         LambdaQueryWrapper<TrainerAvailability> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(TrainerAvailability::getTrainerId, trainerId)
                 .eq(TrainerAvailability::getStatus, TrainerAvailability.AvailabilityStatus.Available)
                 .ge(TrainerAvailability::getStartTime, cutoff)
                 .orderByAsc(TrainerAvailability::getStartTime)
-                // 只选择 availabilityId、start_time 和 end_time 字段
-                .select(TrainerAvailability::getAvailabilityId, TrainerAvailability::getStartTime, TrainerAvailability::getEndTime);
+                // select only availabilityId, start_time, and end_time
+                .select(TrainerAvailability::getAvailabilityId,
+                        TrainerAvailability::getStartTime,
+                        TrainerAvailability::getEndTime);
 
         List<TrainerAvailability> availabilityList = this.list(queryWrapper);
-
         return availabilityList.stream()
                 .map(item -> AvailabilitySlotDTO.builder()
                         .availabilityId(item.getAvailabilityId())
@@ -111,7 +110,6 @@ public class TrainerAvailabilityServiceImpl extends ServiceImpl<TrainerAvailabil
                         .build())
                 .collect(Collectors.toList());
     }
-
 
 }
 

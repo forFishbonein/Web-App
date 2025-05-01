@@ -14,6 +14,6 @@ public class AppointmentWithTimeVO {
     private String description;
     private String appointmentStatus;
     private LocalDateTime createdAt;
-    private LocalDateTime startTime;   // 预约开始时间
-    private LocalDateTime endTime;     // 预约结束时间
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
 }

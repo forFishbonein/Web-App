@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 public class NotificationServiceImpl extends ServiceImpl<NotificationDao, Notification> implements NotificationService {
 
     @Override
-    // 直接通知表中插入通知
     public void sendNotification(Notification notification) {
         boolean saved = this.save(notification);
         if (!saved) {

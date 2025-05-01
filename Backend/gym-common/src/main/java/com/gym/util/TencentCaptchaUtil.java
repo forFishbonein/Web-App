@@ -2,6 +2,7 @@ package com.gym.util;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -18,6 +19,9 @@ import com.tencentcloudapi.common.profile.HttpProfile;
 @Data
 @Component
 public class TencentCaptchaUtil {
+    // if enabled is false, skip all verification
+    @Value("${tencent.captcha.enabled:true}")
+    private boolean enabled;
 
     @Value("${tencent.captcha.secretId}")
     private String secretId;
@@ -32,56 +36,67 @@ public class TencentCaptchaUtil {
     private String appSecretKey;
 
     /**
-     * 验证腾讯拼图验证码
+     * Verify Tencent sliding puzzle captcha
      *
-     * @param ticket  前端返回的 Ticket
-     * @param randStr 前端返回的 Randstr
-     * @param userIp  用户 IP
-     * @return 验证通过返回 true，否则 false
+     * @param ticket  Ticket returned by the frontend
+     * @param randStr Randstr returned by the frontend
+     * @param userIp  User IP
+     * @return Returns true if verification is successful, otherwise false
      */
     public boolean verifyCaptcha(String ticket, String randStr, String userIp) {
+
+        // —— First case: Skip verification if the global switch is off or configuration is incomplete ——
+        if (!enabled) {
+            log.warn("Tencent captcha verification has been disabled, skipping verification");
+            return true;
+        }
+        if (StringUtils.isAnyBlank(secretId, secretKey, appSecretKey)) {
+            log.warn("Tencent captcha configuration is incomplete, skipping verification");
+            return true;
+        }
+
         try {
-            // 1. 实例化一个认证对象，传入腾讯云账户 SecretId 和 SecretKey
+            // 1. Instantiate a credential object, passing in Tencent Cloud account SecretId and SecretKey
             Credential cred = new Credential(secretId, secretKey);
 
-            // 2. 实例化一个 http 选项，可选，如果有代理或特殊需求可配置
+            // 2. Instantiate an HTTP option, optional, can be configured if there is a proxy or special requirements
             HttpProfile httpProfile = new HttpProfile();
-            httpProfile.setEndpoint("captcha.tencentcloudapi.com"); // 指定接入点
+            httpProfile.setEndpoint("captcha.tencentcloudapi.com"); // Specify the endpoint
 
-            // 3. 实例化一个 client 选项，可选
+            // 3. Instantiate a client option, optional
             ClientProfile clientProfile = new ClientProfile();
             clientProfile.setHttpProfile(httpProfile);
 
-            // 4. 实例化一个 CaptchaClient
+            // 4. Instantiate a CaptchaClient
             CaptchaClient client = new CaptchaClient(cred, "", clientProfile);
 
-            // 5. 实例化请求对象
+            // 5. Instantiate a request object
             DescribeCaptchaResultRequest req = new DescribeCaptchaResultRequest();
-            // 必填参数，根据官方文档设置
-            req.setCaptchaType(9L);         // 9 表示滑块验证码
+            // Required parameters, set according to the official documentation
+            req.setCaptchaType(9L);         // 9 represents sliding puzzle captcha
             req.setTicket(ticket);
             req.setUserIp("2001:630:d0:5004:d93d:61f8:30af:b45e");
             req.setRandstr(randStr);
             req.setCaptchaAppId(captchaAppId);
             req.setAppSecretKey(appSecretKey);
-            // 非必填参数，如有需要可设置
+            // Optional parameters, can be set if needed
             // req.setBusinessId(123L);
             // req.setSceneId(1001L);
             // ...
 
-            // 6. 调用接口，得到返回值
+            // 6. Call the API and get the response
             DescribeCaptchaResultResponse resp = client.DescribeCaptchaResult(req);
 
-            // 7. 从 resp 中获取验证状态
-            // 当 resp.getCaptchaCode() == 1 时表示成功
+            // 7. Get the verification status from resp
+            // When resp.getCaptchaCode() == 1, it indicates success
             long code = resp.getCaptchaCode();
             String msg = resp.getCaptchaMsg();
             log.info("Captcha verify result: code={}, msg={}", code, msg);
 
-            // code == 1 表示验证通过
+            // code == 1 indicates verification success
             return (code == 1);
         } catch (TencentCloudSDKException e) {
-            // 出现异常时可记录日志
+            // Log the exception if it occurs
             log.error("Captcha verify exception: {}", e.toString());
             return false;
         }

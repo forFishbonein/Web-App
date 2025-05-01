@@ -17,26 +17,22 @@ import java.util.stream.Collectors;
 @Component
 public class BloomFilterUtil {
 
-    // 只用于用户数据（USER:xxx）缓存的防穿透
+    // Used only for preventing cache penetration of user data (USER:xxx)
     private BloomFilter<Long> userBloomFilter;
 
     @Autowired
-    private UserDao userDao;  // 直接访问数据库
+    private UserDao userDao;  // Directly access the database
 
     @PostConstruct
     public void init() {
-        // 初始化布隆过滤器，参数根据实际情况设置（预期元素数量、误判率）
+        // Initialize the Bloom filter with parameters set based on actual requirements (expected number of elements, false positive rate)
         userBloomFilter = BloomFilter.create(Funnels.longFunnel(), 100000, 0.01);
 
-        // 直接用 userDao 去查所有用户ID，而不是 userService
+        // Use userDao directly to query all user IDs instead of userService
         List<Long> allUserIds = userDao.selectObjs(
                 new LambdaQueryWrapper<User>().select(User::getUserID)
         ).stream().map(obj -> Long.valueOf(obj.toString())).collect(Collectors.toList());
 
-//        List<Long> allUserIds = userService.listObjs(
-//                new LambdaQueryWrapper<User>().select(User::getUserID),
-//                o -> Long.valueOf(o.toString())
-//        );
         for (Long id : allUserIds) {
             userBloomFilter.put(id);
         }

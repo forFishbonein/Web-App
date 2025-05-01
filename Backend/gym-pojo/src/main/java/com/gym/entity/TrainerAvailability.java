@@ -35,7 +35,6 @@ public class TrainerAvailability implements Serializable {
     @TableField(value = "updated_at", fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
 
-    // 这里感觉不需要unavailable
     public enum AvailabilityStatus {
         Available, Booked, Unavailable
     }

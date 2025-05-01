@@ -3,7 +3,7 @@ package com.gym.event;
 import com.gym.entity.User;
 import org.springframework.context.ApplicationEvent;
 
-// 定义事件
+// define an event class that extends ApplicationEvent
 public class UserCreatedEvent extends ApplicationEvent {
     private final User user;
     public UserCreatedEvent(Object source, User user) {

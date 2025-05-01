@@ -58,27 +58,27 @@ public class UserServiceImpl extends ServiceImpl<UserDao, User> implements UserS
 
     @Override
     public void sendSignupVerification(SignupRequest signupRequest) {
-        // 1. 校验角色，禁止注册管理员账号
+        // 1. Validate role, forbid registering as admin account
         if (signupRequest.getRole() == User.Role.admin) {
             throw new CustomException(ErrorCode.BAD_REQUEST, "You do not have permission to register as an admin.");
         }
-        // 2. 检查邮箱是否已注册
+        // 2. Check if the email is already registered
         User existing = this.getByEmail(signupRequest.getEmail());
         if (existing != null) {
             throw new CustomException(ErrorCode.BAD_REQUEST, "Email is already registered.");
         }
-        // 3. 生成验证码
+        // 3. Generate verification code
         String code = generateRandomCode();
         PendingVerification pv = new PendingVerification();
         pv.setRequest(signupRequest);
         pv.setVerificationCode(code);
         pv.setCreateTime(System.currentTimeMillis());
-        // 4. 保存到 Redis（5分钟有效）
+        // 4. Save to Redis (valid for 5 minutes)
+        // Use String type to store objects as long as RedisTemplate is configured with appropriate serializer
+        // (e.g. JSON serializer), so the object will be serialized to string for storage.
         String redisKey = "SIGNUP_PENDING_" + signupRequest.getEmail();
-        // String 类型来存储对象，只要你的 RedisTemplate 配置了合适的序列化器
-        // （例如 JSON 序列化器），这样对象就会被序列化成字符串存储。
         redisTemplate.opsForValue().set(redisKey, pv, 5, TimeUnit.MINUTES);
-        // 5. 发送验证码邮件
+        // 5. Send verification code email
         mailService.sendVerificationCode(signupRequest.getEmail(), code);
     }
 
@@ -94,24 +94,24 @@ public class UserServiceImpl extends ServiceImpl<UserDao, User> implements UserS
         if (!pv.getVerificationCode().equals(inputCode)) {
             throw new CustomException(ErrorCode.BAD_REQUEST, "Invalid verification code. Please try again.");
         }
-        // 将注册请求转换为 User 实体并写入数据库
+        // Convert the registration request into a User entity and persist to database
         SignupRequest req = pv.getRequest();
         User newUser = convertSignupRequestToUser(req);
         createUser(newUser);
-        // 事件发布，通知监听器，如果是 Trainer 则创建 TrainerProfile
+        // Publish event to notify listeners; if user is a Trainer, create TrainerProfile
         eventPublisher.publishEvent(new UserCreatedEvent(this, newUser));
 
-        // 清理 Redis 中的 PendingVerification 信息
+        // Cleanup PendingVerification information from Redis
         redisTemplate.delete(redisKey);
-        // 更新缓存和布隆过滤器
-        // 感觉不需要更新缓存，直接更新布隆过滤器
+        // Update cache and Bloom filter
+        // No need to update cache explicitly; directly update the Bloom filter
         redisCacheService.updateUser(newUser);
         bloomFilterUtil.addUserToBloomFilter(newUser.getUserID());
     }
 
     @Override
     public void updateUserProfile(Long userId, UserProfileDTO userProfileDTO) {
-        // 使用 MyBatis Plus 的 LambdaUpdateWrapper 封装更新逻辑
+        // Use MyBatis Plus's LambdaUpdateWrapper to encapsulate update logic
         LambdaUpdateWrapper<User> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(User::getUserID, userId)
                 .set(User::getName, userProfileDTO.getName())
@@ -124,13 +124,12 @@ public class UserServiceImpl extends ServiceImpl<UserDao, User> implements UserS
         log.info("User [{}] profile updated successfully", userId);
     }
 
-
     @Override
     public List<TrainerBasicInfoVO> listOtherTrainersBasicInfo(Long excludeTrainerId) {
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("role", User.Role.trainer)                       // 只要是 trainer
-                .ne(excludeTrainerId != null, "user_id", excludeTrainerId) // 排除自己
-                .select("user_id", "name");                          // 仅查所需列
+        queryWrapper.eq("role", User.Role.trainer)                       // only trainers
+                .ne(excludeTrainerId != null, "user_id", excludeTrainerId) // exclude self
+                .select("user_id", "name");                          // select only needed columns
 
         List<User> trainers = baseMapper.selectList(queryWrapper);
 
@@ -150,9 +149,7 @@ public class UserServiceImpl extends ServiceImpl<UserDao, User> implements UserS
         return this.page(page, wrapper);
     }
 
-
-
-    // 将 SignupRequest 转换为 User 实体
+    // Convert SignupRequest to User entity
     private User convertSignupRequestToUser(SignupRequest req) {
         User newUser = new User();
         newUser.setEmail(req.getEmail());
@@ -165,7 +162,7 @@ public class UserServiceImpl extends ServiceImpl<UserDao, User> implements UserS
         return newUser;
     }
 
-    // 生成六位随机验证码
+    // Generate a six-digit random verification code
     private String generateRandomCode() {
         int code = (int) ((Math.random() * 9 + 1) * 100000);
         return String.valueOf(code);
@@ -173,7 +170,7 @@ public class UserServiceImpl extends ServiceImpl<UserDao, User> implements UserS
 
     @Override
     public List<Specializations> listSpecializations() {
-        // 使用 MyBatis-Plus 提供的 selectList(null) 查询所有记录
+        // Use MyBatis-Plus's selectList(null) to query all records
         return Specializationsdao.selectList(null);
     }
 
@@ -211,11 +208,11 @@ public class UserServiceImpl extends ServiceImpl<UserDao, User> implements UserS
                         "Invalid role parameter: must be 'member' or 'trainer'");
             }
         } else {
-            // 默认查询 member + trainer
+            // By default query members + trainers
             qw.in(User::getRole, User.Role.member, User.Role.trainer);
         }
 
-        // 按创建时间升序
+        // Order by creation time ascending
         qw.orderByAsc(User::getCreateTime);
 
         Page<User> pageObj = new Page<>(page, pageSize);

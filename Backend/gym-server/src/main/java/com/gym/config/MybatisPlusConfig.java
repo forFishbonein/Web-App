@@ -6,32 +6,32 @@ import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerIntercept
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-//这个类是一个 Spring Boot 的配置类，用来配置 MyBatis-Plus 的拦截器功能。具体来说：
+// This class is a Spring Boot configuration class used to configure MyBatis-Plus interceptors. Specifically:
 //
-//@Configuration 注解：表示这是一个配置类，会在应用启动时被 Spring 容器加载。
-//@Bean 注解：表示该方法返回的对象（这里是 MybatisPlusInterceptor）会被注册为一个 Spring Bean，其他组件可以自动注入使用。
-//MybatisPlusInterceptor：这是 MyBatis-Plus 的一个拦截器，可以添加多个内部拦截器来扩展功能。
-//PaginationInnerInterceptor：分页拦截器，用于在执行 SQL 时自动处理分页逻辑。
-//OptimisticLockerInnerInterceptor：乐观锁拦截器，用于实现乐观锁机制，防止并发更新冲突。
-//运行时机：
-//在 Spring Boot 应用启动时，Spring 容器会扫描到这个配置类并加载它，然后执行其中的 mpInterceptor() 方法，
-// 将返回的MybatisPlusInterceptor 实例注册到容器中。这意味着在应用启动期间就已经完成了拦截器的配置，
-// 并且在后续执行 MyBatis 操作时会自动生效。
-
-//实际上，你不会在你的业务代码中直接调用或注入这个 mpInterceptor，因为它是由 MyBatis-Plus 框架自动使用的拦截器。
-//它的用途是在执行 SQL 操作时，由 MyBatis-Plus 自动从 Spring 容器中获取并应用这个拦截器，从而实现分页、乐观锁等功能。
-
-// 乐观锁需要在实体类中添加 @Version 注解
+// @Configuration annotation: Indicates that this is a configuration class, which will be loaded by the Spring container during application startup.
+// @Bean annotation: Indicates that the object returned by this method (in this case, MybatisPlusInterceptor) will be registered as a Spring Bean and can be automatically injected into other components.
+// MybatisPlusInterceptor: This is an interceptor provided by MyBatis-Plus, which can include multiple inner interceptors to extend functionality.
+// PaginationInnerInterceptor: A pagination interceptor used to automatically handle pagination logic when executing SQL.
+// OptimisticLockerInnerInterceptor: An optimistic lock interceptor used to implement optimistic locking to prevent concurrent update conflicts.
+// Execution timing:
+// During the startup of the Spring Boot application, the Spring container will scan and load this configuration class, then execute the `mpInterceptor()` method.
+// The returned MybatisPlusInterceptor instance will be registered in the container. This means that the interceptor configuration is completed during application startup,
+// and it will automatically take effect during subsequent MyBatis operations.
+//
+// In practice, you will not directly call or inject this `mpInterceptor` in your business code because it is automatically used by the MyBatis-Plus framework.
+// Its purpose is to be automatically retrieved and applied by MyBatis-Plus from the Spring container during SQL operations, thereby enabling features like pagination and optimistic locking.
+//
+// Optimistic locking requires adding the @Version annotation to the entity class.
 
 @Configuration
 public class MybatisPlusConfig {
     @Bean
     public MybatisPlusInterceptor mpInterceptor() {
-        //1.定义Mp拦截器
+        // 1. Define the MyBatis-Plus interceptor
         MybatisPlusInterceptor mpInterceptor = new MybatisPlusInterceptor();
-        //2.添加分页的拦截器
+        // 2. Add the pagination interceptor
         mpInterceptor.addInnerInterceptor(new PaginationInnerInterceptor());
-        //3.添加乐观锁拦截器
+        // 3. Add the optimistic lock interceptor
         mpInterceptor.addInnerInterceptor(new OptimisticLockerInnerInterceptor());
         return mpInterceptor;
     }

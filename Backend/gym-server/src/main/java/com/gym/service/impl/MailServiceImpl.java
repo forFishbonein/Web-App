@@ -31,24 +31,24 @@ public class MailServiceImpl implements MailService {
      */
     private void sendMail(String to, String subject, String text) {
         try {
-            // 1. 创建邮件对象
+            // 1. Create the email object
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-            // 2. 设置发件人、收件人、标题、内容
-            helper.setFrom("yourgmailEmail@gmail.com"); // 需与 spring.mail.username 对应
+            // 2. Set sender, recipient, subject, and content
+            helper.setFrom("yourgmailEmail@gmail.com"); // Must match spring.mail.username
             helper.setTo(to);
             helper.setSubject(subject);
             helper.setText(text, false);
 
-            // 3. 发送邮件
+            // 3. Send the email
             mailSender.send(message);
             log.info("Email sent successfully: to={}, subject={}", to, subject);
 
         } catch (MessagingException e) {
-            // 只捕获 javax.mail.MessagingException 即可
+            // Only catch javax.mail.MessagingException
             log.error("Failed to send email: to={}, subject={}, error={}", to, subject, e.getMessage());
-            // 若有需要，也可以抛出 RuntimeException 或做其他处理
+            // Optionally, throw a RuntimeException or handle it differently if needed
         }
     }
 
@@ -63,14 +63,5 @@ public class MailServiceImpl implements MailService {
         sendMail(toEmail, subject, text);
     }
 
-
 }
 
-// 废弃
-//    @Override
-//    public void sendAdminNotification(String adminEmail, String message) {
-//        String subject = "New User Pending Review";
-//        String text = "Dear Administrator,\n\n" + message +
-//                "\nPlease log in to the admin system to review the new user.\n\nBest regards";
-//        sendMail(adminEmail, subject, text);
-//    }

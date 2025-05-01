@@ -5,7 +5,6 @@ import lombok.*;
 
 import java.io.Serializable;
 
-// 这个是JWT中redis缓存的用户信息
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -18,9 +17,6 @@ public class UserCacheDTO implements Serializable {
     private User.Role role;
     private User.AccountStatus accountStatus;
 
-    /**
-     * 从 User 实体转换为缓存 DTO
-     */
     public static UserCacheDTO fromEntity(User user) {
         if (user == null) {
             return null;
@@ -34,9 +30,6 @@ public class UserCacheDTO implements Serializable {
         return dto;
     }
 
-    /**
-     * 从缓存 DTO 转换为 User 实体
-     */
     public User toEntity() {
         User user = new User();
         user.setUserID(this.getUserID());

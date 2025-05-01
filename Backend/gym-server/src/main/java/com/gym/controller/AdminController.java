@@ -28,8 +28,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/admin")
 @Slf4j
-// 这个地方就是利用了Spring Security的注解，只有拥有Admin角色的用户才能访问这个接口
-// 也可以配置在securityConfig文件里面
+// This utilizes Spring Security annotations, allowing only users with the Admin role to access this endpoint.
+// It can also be configured in the SecurityConfig file.
 @PreAuthorize("hasRole('admin')")
 public class AdminController {
 
@@ -37,13 +37,13 @@ public class AdminController {
     private UserService userService;
 
     @Autowired
-    private SpecializationsService specializationsService;  // 新增
+    private SpecializationsService specializationsService;
 
     @Autowired
-    private FitnessCentreService fitnessCentreService;  // 新增
+    private FitnessCentreService fitnessCentreService;
 
     /**
-     * 获取当前登录管理员的个人信息
+     * get current admin profile
      * GET /admin/profile
      */
     @GetMapping("/profile")
@@ -124,7 +124,7 @@ public class AdminController {
     }
 
     /**
-     * 列出所有 Specializations
+     * list all specializations
      * GET /admin/specializations
      */
     @GetMapping("/specializations")
@@ -134,7 +134,7 @@ public class AdminController {
     }
 
     /**
-     * 管理员新增一个 Specialization
+     * admin add a specialization
      * POST /admin/specializations
      */
     @PostMapping("/specializations")
@@ -145,7 +145,7 @@ public class AdminController {
     }
 
     /**
-     * 管理员删除一个 Specialization
+     * admin delete a specialization
      * DELETE /admin/specializations/{id}
      */
     @DeleteMapping("/specializations/{id}")
@@ -167,7 +167,6 @@ public class AdminController {
     }
 
     /**
-     * 这个可能不需要，废弃！
      * Get a fitness centre by ID
      * GET /admin/fitness-centres/{id}
      */
@@ -210,7 +209,6 @@ public class AdminController {
     }
 
     /**
-     * 条件分页查询所有 member 或 trainer 用户
      *
      * GET /admin/users?role={member|trainer}&page=1&pageSize=10
      */
