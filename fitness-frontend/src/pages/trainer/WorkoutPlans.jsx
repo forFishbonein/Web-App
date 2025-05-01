@@ -41,7 +41,7 @@ const WorkoutPlans = () => {
   const { showSnackbar } = useSnackbar();
   const [confirmRemoveOpen, setConfirmRemoveOpen] = useState(false);
   const [sortBy, setSortBy] = useState("none");
-  const { listPlans, deletePlan, getApprovedAppointments, bindPlanToAppointment  } = useTrainerApi();
+  const { listPlans, deletePlan, getApprovedAppointments, bindPlanToAppointment } = useTrainerApi();
   const [plans, setPlans] = useState([]);
 
   const handleMenuClose = () => {
@@ -138,7 +138,7 @@ const WorkoutPlans = () => {
   const handleAssignSubmit = async () => {
     const selectedPlan = plans[selectedPlanIndex];
     if (!selectedPlan) return;
-  
+
     try {
       // Call backend for each selected member
       await Promise.all(
@@ -146,15 +146,15 @@ const WorkoutPlans = () => {
           bindPlanToAppointment(member.appointmentId, selectedPlan.planId)
         )
       );
-  
+
       showSnackbar({
         message: `Workout plan assigned to ${selectedMembers.length} session(s) successfully.`,
         severity: "success",
       });
-  
+
       setAssignDialogOpen(false);
       setSelectedMembers([]);
-  
+
       // Refresh data
       fetchPlans();
     } catch (error) {
@@ -164,7 +164,7 @@ const WorkoutPlans = () => {
         severity: "error",
       });
     }
-  };  
+  };
 
   const handleRemovePlan = async () => {
     setConfirmRemoveOpen(false);
