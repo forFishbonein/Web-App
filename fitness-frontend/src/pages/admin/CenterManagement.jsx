@@ -183,7 +183,7 @@ const CenterManagement = () => {
           {editingCentre ? "Edit Centre" : "Add Centre"}
         </DialogTitle>
         <DialogContent
-          sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}
+          sx={{ display: "flex", flexDirection: "column", gap: 2, pt: "1% !important" }}
         >
           <TextField
             label="Name"
