@@ -387,4 +387,18 @@ public class TrainerController {
         return RestResult.success(null, "Workout plan bound to appointment");
     }
 
+    /**
+     * POST /trainer/appointment/force-book
+     */
+    @PostMapping("/appointment/force-book")
+    public RestResult<?> forceBook(@Valid @RequestBody ForceBookingDTO dto) {
+        Long trainerId = SecurityUtils.getCurrentUserId();
+        if (trainerId == null) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED, "User is not authenticated or session is invalid.");
+        }
+        appointmentBookingService.forceBookSession(trainerId, dto);
+        log.info("Trainer[{}] force-booked availability[{}] for member[{}]",
+                trainerId, dto.getAvailabilityId(), dto.getMemberId());
+        return RestResult.success(null, "Force booking created and approved successfully.");
+    }
 }

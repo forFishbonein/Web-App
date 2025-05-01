@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.gym.dto.AppointmentBookingDTO;
 import com.gym.dto.AppointmentDecisionDTO;
 import com.gym.dto.AppointmentDecisionRejectDTO;
+import com.gym.dto.ForceBookingDTO;
 import com.gym.entity.AppointmentBooking;
 import com.gym.vo.AppointmentBookingDetailVO;
 import com.gym.vo.AppointmentBookingHistoryDetailVO;
@@ -157,5 +158,7 @@ public interface AppointmentBookingService extends IService<AppointmentBooking> 
      * @param planId        ID of the workout plan
      */
     void bindWorkoutPlan(Long trainerId, Long appointmentId, Long planId);
+
+    void forceBookSession(Long trainerId, ForceBookingDTO dto);
 }
 
