@@ -56,7 +56,7 @@ const Header = ({ firstName, lastName, children, drawerOpen }) => {
   useEffect(() => {
     if (userInfo) {
       setFormData({
-        name: userInfo.name || "",
+        name: (userInfo.role === "member" || userInfo.role === "admin") ? userInfo.name : userInfo.trainerProfile.name,
         dateOfBirth: userInfo.dateOfBirth || "",
         address: userInfo.address || "",
         email: userInfo.email || ""
@@ -72,7 +72,7 @@ const Header = ({ firstName, lastName, children, drawerOpen }) => {
 
   const handleCancle = () => {
     setFormData({
-      name: userInfo.role === "member" || "admin" ? userInfo.name : userInfo.trainerProfile.name,
+      name: (userInfo.role === "member" || userInfo.role === "admin") ? userInfo.name : userInfo.trainerProfile.name,
       dateOfBirth: userInfo.dateOfBirth || "",
       address: userInfo.address || "",
       email: userInfo.email || ""
