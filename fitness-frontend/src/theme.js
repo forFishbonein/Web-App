@@ -37,6 +37,17 @@ const theme = createTheme({
         },
       },
     },
+    // MuiListItemButton: {
+    //   styleOverrides: {
+    //     root: ({ theme }) => ({
+    //       "&.Mui-selected, &.Mui-selected:hover": {
+    //         backgroundColor: theme.palette.secondary.main,
+    //         color: theme.palette.primary.main,
+    //         "& .MuiListItemIcon-root": { color: "#fff" },
+    //       },
+    //     }),
+    //   },
+    // },
   },
 });
 
