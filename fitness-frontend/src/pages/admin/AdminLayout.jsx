@@ -76,11 +76,12 @@ function AdminLayout() {
                   justifyContent: drawerOpen ? "initial" : "center",
                   px: 2.5,
                   backgroundColor: isSelected
-                    ? (theme) => theme.palette.secondary.main + "20"
+                    ? (theme) => theme.palette.primary.main
                     : "inherit",
-                  "&.Mui-selected": {
-                    backgroundColor: (theme) => theme.palette.secondary.main + "20",
-                    color: (theme) => theme.palette.primary.main,
+                  "&.Mui-selected, &.Mui-selected:hover": {
+                    backgroundColor: (theme) => theme.palette.primary.main,
+                    // color: (theme) => theme.palette.primary.main,
+                    color: "white",
                     "& .MuiListItemIcon-root": {
                       color: "white",
                     },
