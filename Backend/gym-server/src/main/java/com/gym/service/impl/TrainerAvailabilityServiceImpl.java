@@ -23,9 +23,9 @@ public class TrainerAvailabilityServiceImpl extends ServiceImpl<TrainerAvailabil
         implements TrainerAvailabilityService {
 
     /**
-     * Instructors can maintain availability slots up to 7 days into the future.
+     * Instructors can maintain availability slots up to 30 days into the future.
      */
-    private static final int RANGE_DAYS = 7;
+    private static final int RANGE_DAYS = 30;
 
     @Override
     @Transactional
@@ -37,7 +37,7 @@ public class TrainerAvailabilityServiceImpl extends ServiceImpl<TrainerAvailabil
         List<AvailabilitySlotDTO> valid = frontList.stream()
                 .filter(s -> s.getStartTime() != null && s.getEndTime() != null)
                 .filter(s -> !s.getStartTime().isBefore(now)        // start >= now
-                        && !s.getEndTime().isAfter(limit)            // end <= now + 7 days
+                        && !s.getEndTime().isAfter(limit)            // end <= now +30 days
                         &&  s.getEndTime().isAfter(s.getStartTime()))// end > start
                 .collect(Collectors.toList());
         if (valid.isEmpty()) {
