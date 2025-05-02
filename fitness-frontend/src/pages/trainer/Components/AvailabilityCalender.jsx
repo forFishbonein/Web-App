@@ -44,9 +44,20 @@ const AvailabilityCalendar = ({
     if (!editable) return;
 
     const now = new Date();
+    const maxDate = new Date();
+    maxDate.setDate(now.getDate() + 30);
+
     if (start < now) {
       showSnackbar({
         message: "You cannot add availability in the past.",
+        severity: "warning",
+      });
+      return;
+    }
+
+    if (start > maxDate) {
+      showSnackbar({
+        message: "You can only set availability within the next 60 days.",
         severity: "warning",
       });
       return;

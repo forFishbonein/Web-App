@@ -139,7 +139,7 @@ function MemberConnections() {
             <Typography variant="subtitle1" fontWeight={600}>
               {member.memberName}
             </Typography>
-            <Typography variant="body2" color="text.secondary">
+            {/* <Typography variant="body2" color="text.secondary">
               {isRequest
                 ? `📝 ${member.requestMessage}`
                 : member.location
@@ -149,7 +149,7 @@ function MemberConnections() {
 
             <Typography variant="caption" color="text.secondary">
               🕒 {member.time || "-"}
-            </Typography>
+            </Typography> */}
           </Box>
         </Stack>
 
