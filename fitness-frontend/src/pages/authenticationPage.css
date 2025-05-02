@@ -1,4 +1,4 @@
-.Mui-selected {
+.MuiTab-root.Mui-selected {
     color: white !important;
     background-color: #023047 !important;
     border: 1px solid #023047;
