@@ -45,7 +45,7 @@ public class TrainerAvailabilityServiceImpl extends ServiceImpl<TrainerAvailabil
             return;
         }
 
-        /* ---------- 2. Query existing slots within the next 7 days ---------- */
+        /* ---------- 2. Query existing slots within the next 30 days ---------- */
         List<TrainerAvailability> dbSlots = lambdaQuery()
                 .eq(TrainerAvailability::getTrainerId, trainerId)
                 .ge(TrainerAvailability::getStartTime, now)

@@ -49,6 +49,9 @@ public class TrainerController {
     @Autowired
     private WorkoutPlanService workoutPlanService;
 
+    @Autowired
+    private FitnessCentreService fitnessCentreService;
+
     /**
      * Update the current trainer's profile using DTO.
      *
@@ -400,5 +403,15 @@ public class TrainerController {
         log.info("Trainer[{}] force-booked availability[{}] for member[{}]",
                 trainerId, dto.getAvailabilityId(), dto.getMemberId());
         return RestResult.success(null, "Force booking created and approved successfully.");
+    }
+
+    /**
+     * List all fitness centres
+     * GET /trainer/fitness-centres
+     */
+    @GetMapping("/fitness-centres")
+    public RestResult<?> listFitnessCentres() {
+        List<FitnessCentre> centres = fitnessCentreService.listAllCentres();
+        return RestResult.success(centres, "Fitness centres retrieved successfully.");
     }
 }
