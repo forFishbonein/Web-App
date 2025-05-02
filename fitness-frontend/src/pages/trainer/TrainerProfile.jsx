@@ -18,14 +18,16 @@ import { useNavigate } from "react-router-dom";
 import { useSnackbar } from "/src/utils/Hooks/SnackbarContext.jsx";
 
 const TrainerProfile = () => {
-  const { getTrainerProfile, updateTrainerProfile, listSpecializations } =
+  const { getTrainerProfile, updateTrainerProfile, listSpecializations, listWorkplace } =
     useTrainerApi();
   const navigate = useNavigate();
   const { showSnackbar } = useSnackbar();
   const [specializationsList, setSpecializationsList] = useState([]);
+  const [workplaceList, setWorkplaceList] = useState([]);
 
   const [profile, setProfile] = useState({
     specialization: [],
+    workplace: [],
     experience: "",
     location: "",
     bio: "",
@@ -40,6 +42,9 @@ const TrainerProfile = () => {
       setProfile({
         specialization: data.trainerProfile.specializations
           ? data.trainerProfile.specializations.split(",").map((s) => s.trim())
+          : [],
+        workplace: data.trainerProfile.workplace
+          ? data.trainerProfile.workplace.split(",").map(s => s.trim())
           : [],
         experience: data.trainerProfile.yearsOfExperience || "",
         location: data.address || "",
@@ -73,10 +78,28 @@ const TrainerProfile = () => {
       });
     }
   };
+  const fetchWorkplace = async () => {
+    try {
+      const res = await listWorkplace();
+      const specs = res?.data;
 
+      if (Array.isArray(specs)) {
+        setWorkplaceList(specs);
+      } else {
+        throw new Error("Workplaces response is not an array.");
+      }
+    } catch (err) {
+      console.error("Failed to load workplaces", err);
+      showSnackbar({
+        message: "Failed to load workplaces.",
+        severity: "error",
+      });
+    }
+  };
   useEffect(() => {
     fetchProfile();
     fetchSpecializations();
+    fetchWorkplace();
   }, []);
 
   const handleChange = (e) => {
@@ -97,12 +120,22 @@ const TrainerProfile = () => {
     }));
   };
 
+  const handleWorkplaceChange = (event) => {
+    const {
+      target: { value },
+    } = event;
+    setProfile((prev) => ({
+      ...prev,
+      workplace: typeof value === "string" ? value.split(",") : value,
+    }));
+  };
   const handleSave = async () => {
     try {
       const payload = {
         biography: profile.bio,
         certifications: profile.certifications,
         specializations: profile.specialization.join(", "),
+        workplace: profile.workplace.join(", "),
         yearsOfExperience: parseInt(profile.experience, 10),
       };
 
@@ -188,7 +221,7 @@ const TrainerProfile = () => {
           />
         </Grid> */}
 
-        <Grid item xs={12} sm={6}>
+        {/* <Grid item xs={12} sm={6}>
           <TextField
             label="Workplace"
             name="Workplace"
@@ -196,6 +229,30 @@ const TrainerProfile = () => {
             onChange={handleChange}
             fullWidth
           />
+        </Grid> */}
+        <Grid item xs={12} sm={6}>
+          <FormControl fullWidth>
+            <InputLabel>Workplace</InputLabel>
+            <Select
+              multiple
+              value={profile.workplace}
+              onChange={handleWorkplaceChange}
+              input={<OutlinedInput label="Workplace" />}
+              renderValue={(selected) => (
+                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                  {selected.map((value) => (
+                    <Chip key={value} label={value} />
+                  ))}
+                </Box>
+              )}
+            >
+              {workplaceList.map((spec) => (
+                <MenuItem key={spec.centreId} value={spec.name}>
+                  {spec.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </Grid>
 
         <Grid item xs={12} sm={6}>

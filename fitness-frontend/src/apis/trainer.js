@@ -31,6 +31,14 @@ const useTrainerApi = () => {
       url: `/user/specializations`,
     });
   };
+
+  const listWorkplace = () => {
+    return httpRequest({
+      method: "get",
+      url: `/trainer/fitness-centres`,
+    });
+  };
+
   // MemberManagement
   const getPendingConnectRequests = () => {
     return httpRequest({
@@ -73,7 +81,7 @@ const useTrainerApi = () => {
       method: "get",
       url: `/trainer/appointments/pending`,
     });
-  };  
+  };
   // SessionRequests
   const acceptAppointment = (appointmentId, responseMessage = "") => {
     return httpRequest({
@@ -108,7 +116,7 @@ const useTrainerApi = () => {
       method: "get",
       url: `/trainer/availability`,
     });
-  };  
+  };
   // TrainerProfile
   const updateTrainerProfile = (data) => {
     return httpRequest({
@@ -140,7 +148,7 @@ const useTrainerApi = () => {
       method: "get",
       url: "/trainer/appointments/by-member",
     });
-  };  
+  };
   // SessionRequests
   const getAlternativeTrainers = () => {
     return httpRequest({
@@ -149,7 +157,12 @@ const useTrainerApi = () => {
     });
   };
   // SessionRequests
-  const rejectAppointment = (appointmentId, responseMessage, alternativeTrainerId, alternativeTrainerName) => {
+  const rejectAppointment = (
+    appointmentId,
+    responseMessage,
+    alternativeTrainerId,
+    alternativeTrainerName
+  ) => {
     return httpRequest({
       method: "put",
       url: "/trainer/appointment/reject",
@@ -167,7 +180,7 @@ const useTrainerApi = () => {
       method: "get",
       url: "/trainer/appointments/completed",
     });
-  };  
+  };
   // TrainerHome
   const getDynamicTrainerStatistics = ({ startDate, endDate }) => {
     return httpRequest({
@@ -175,7 +188,7 @@ const useTrainerApi = () => {
       url: "/trainer/appointments/statistics/dynamic",
       params: { startDate, endDate },
     });
-  };  
+  };
   // MySessions.jsx
   const createPlan = ({ title, content }) => {
     return httpRequest({
@@ -201,7 +214,7 @@ const useTrainerApi = () => {
       method: "put",
       url: `/trainer/appointments/${appointmentId}/workout-plan/${planId}`,
     });
-  };  
+  };
   const updatePlan = (planId, { title, content }) => {
     return httpRequest({
       method: "put",
@@ -211,7 +224,7 @@ const useTrainerApi = () => {
         content,
       },
     });
-  }; 
+  };
   const forceBook = (data) => {
     return httpRequest({
       method: "post",
@@ -219,8 +232,7 @@ const useTrainerApi = () => {
       data,
     });
   };
-  
-  
+
   return {
     getTrainerList,
     getTrainerInfo,
@@ -249,6 +261,7 @@ const useTrainerApi = () => {
     bindPlanToAppointment,
     updatePlan,
     forceBook,
+    listWorkplace,
   };
 };
 export default useTrainerApi;
