@@ -75,7 +75,8 @@ public class TrainerController {
                 .set(TrainerProfile::getCertifications, trainerProfileDTO.getCertifications())
                 .set(TrainerProfile::getSpecializations, trainerProfileDTO.getSpecializations())
                 .set(TrainerProfile::getYearsOfExperience, trainerProfileDTO.getYearsOfExperience())
-                .set(TrainerProfile::getBiography, trainerProfileDTO.getBiography());
+                .set(TrainerProfile::getBiography, trainerProfileDTO.getBiography())
+                .set(TrainerProfile::getWorkplace, trainerProfileDTO.getWorkplace());
 
         boolean updateResult = trainerProfileService.update(updateWrapper);
         if (!updateResult) {

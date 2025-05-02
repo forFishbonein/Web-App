@@ -30,4 +30,6 @@ public class TrainerProfileDTO {
     @NotBlank(message = "Biography cannot be blank")
     @Size(max = 500, message = "Biography cannot be longer than 500 characters")
     private String biography;
+
+    private String workplace;
 }
