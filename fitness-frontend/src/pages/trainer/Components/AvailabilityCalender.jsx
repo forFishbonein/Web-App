@@ -57,7 +57,7 @@ const AvailabilityCalendar = ({
 
     if (start > maxDate) {
       showSnackbar({
-        message: "You can only set availability within the next 60 days.",
+        message: "You can only set availability within the next 30 days.",
         severity: "warning",
       });
       return;
