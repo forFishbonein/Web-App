@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Box, Button, Typography, useMediaQuery } from "@mui/material";
-// 正确写法
-import { useTheme } from '@mui/material/styles'
+import { Box, Button, Typography, useTheme, useMediaQuery } from "@mui/material";
 import Header from "../components/header/homeHeaderComponent";
 import Footer from "../components/footer/footerComponent";
 import image from "../assets/strengthImage.jpg";
