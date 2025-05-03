@@ -188,7 +188,7 @@ public class AuthServiceImpl implements AuthService {
         // Generate JWT token for password reset
         String resetToken = jwtUtils.generateResetToken(user);
         // Construct reset link (frontend route configured as needed)
-        String resetLink = "http://localhost:5173/reset-password?token=" + resetToken;
+        String resetLink = "http://8.208.16.103/reset-password?token=" + resetToken;
         // Send reset password email asynchronously
         mailService.sendResetLink(request.getEmail(), resetLink);
     }
