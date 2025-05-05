@@ -6,21 +6,18 @@ services:
     networks: [app-net]
 
   backend:
-    build: ./Backend          # 上面的 Dockerfile
+    build: ./Backend          
     ports: ["8080:8080"]
     environment:
-      # SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/fitness?serverTimezone=UTC
-      # SPRING_DATASOURCE_USERNAME: root
-      # SPRING_DATASOURCE_PASSWORD: 123456
       SPRING_REDIS_HOST: redis
       SPRING_REDIS_PORT: 6379
       SPRING_REDIS_PASSWORD: root@123456
-    depends_on: [redis]       # 如果还有 mysql 就加进去
+    depends_on: [redis]       
     networks: [app-net]
 
   frontend:
-    build: ./fitness-frontend # 上面的 Dockerfile
-    ports: ["80:80"]          # React 被 nginx 直接提供
+    build: ./fitness-frontend 
+    ports: ["80:80"]          
     depends_on: [backend]
     networks: [app-net]
 
