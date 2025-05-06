@@ -40,6 +40,9 @@ public class User implements Serializable {
     @TableField("account_status")
     private AccountStatus accountStatus = AccountStatus.Pending;
 
+    @TableField("is_subscribe")
+    private Boolean isSubscribe = true;
+
     @TableField(value = "created_at", fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 

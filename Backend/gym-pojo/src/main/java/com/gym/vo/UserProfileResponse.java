@@ -26,4 +26,7 @@ public class UserProfileResponse {
 
     @JsonProperty("isGoogle")
     private boolean isGoogle;
+
+    @JsonProperty("isSubscribe")
+    private boolean isSubscribe;
 }

@@ -246,4 +246,17 @@ public class UserServiceImpl extends ServiceImpl<UserDao, User> implements UserS
         Page<User> pageObj = new Page<>(page, pageSize);
         return this.page(pageObj, qw);
     }
+
+    @Override
+    public void updateSubscription(Long userId, boolean subscribe) {
+
+        boolean ok = this.update(new LambdaUpdateWrapper<User>()
+                .eq(User::getUserID, userId)
+                .set(User::getIsSubscribe, subscribe));
+
+        if (!ok) {
+            throw new CustomException(ErrorCode.BAD_REQUEST,
+                    "Failed to update subscription status.");
+        }
+    }
 }

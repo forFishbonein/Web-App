@@ -29,5 +29,7 @@ public interface UserService extends IService<User> {
     Page<User> getPendingUsers(Page<User> page);
 
     Page<User> listUsers(int page, int pageSize, String role);
+
+    void updateSubscription(Long userId, boolean subscribe);
 }
 

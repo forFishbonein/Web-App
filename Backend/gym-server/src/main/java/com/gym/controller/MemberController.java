@@ -1,5 +1,6 @@
 package com.gym.controller;
 
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.gym.dto.*;
 import com.gym.entity.User;
@@ -71,8 +72,18 @@ public class MemberController {
                 .address(user.getAddress())
                 .role(user.getRole())
                 .isGoogle(user.getPasswordHash() == null)
+                .isSubscribe(Boolean.TRUE.equals(user.getIsSubscribe()))
                 .build();
         return RestResult.success(response, "User profile retrieved successfully.");
+    }
+
+    @PutMapping("/unsubscribe")
+    public RestResult<?> unsubscribe() {
+        Long uid = SecurityUtils.getCurrentUserId();
+        userService.update(new LambdaUpdateWrapper<User>()
+                .eq(User::getUserID, uid)
+                .set(User::getIsSubscribe, false));
+        return RestResult.success(null,"Unsubscribed successfully");
     }
 
     // Endpoint to submit a new connect request
