@@ -18,6 +18,7 @@ import com.gym.enumeration.ErrorCode;
 import com.gym.event.UserCreatedEvent;
 import com.gym.exception.CustomException;
 import com.gym.service.MailService;
+import com.gym.service.NotificationService;
 import com.gym.service.UserService;
 import com.gym.vo.TrainerBasicInfoVO;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +27,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import com.gym.entity.Notification;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -55,6 +57,10 @@ public class UserServiceImpl extends ServiceImpl<UserDao, User> implements UserS
 
     @Autowired
     private SpecializationsDao Specializationsdao;
+
+    /* new ↓ */
+    @Autowired private NotificationService notificationService;
+    @Autowired private UserDao userDao;
 
     @Override
     public void sendSignupVerification(SignupRequest signupRequest) {
@@ -100,6 +106,28 @@ public class UserServiceImpl extends ServiceImpl<UserDao, User> implements UserS
         createUser(newUser);
         // Publish event to notify listeners; if user is a Trainer, create TrainerProfile
         eventPublisher.publishEvent(new UserCreatedEvent(this, newUser));
+
+        /* ---------- 3. Notify all admins ---------- */
+        List<User> admins = userDao.selectList(
+                new LambdaQueryWrapper<User>()
+                        .eq(User::getRole, User.Role.admin));
+
+        String msg = String.format(
+                "A new %s account (%s) is pending your approval.",
+                newUser.getRole(), newUser.getEmail());
+
+        for (User admin : admins) {
+            notificationService.sendNotification(Notification.builder()
+                    .userId(admin.getUserID())
+                    .title("New user awaiting approval")
+                    .message(msg)
+                    .type(Notification.NotificationType.INFO)
+                    .isRead(false)
+                    .build());
+        }
+        log.info("Signup verified for user [{}]; {} admin notifications sent.",
+                newUser.getEmail(), admins.size());
+
 
         // Cleanup PendingVerification information from Redis
         redisTemplate.delete(redisKey);
