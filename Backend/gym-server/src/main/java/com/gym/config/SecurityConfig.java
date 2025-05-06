@@ -37,7 +37,8 @@ public class SecurityConfig {
         cfg.setAllowedOrigins(Arrays.asList(
                "http://localhost",
                 "http://localhost:5173",
-                "http://localhost:3000"
+                "http://localhost:3000",
+                "https://8.208.16.103.sslip.io"
         ));
         cfg.setAllowedMethods(Arrays.asList("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
         cfg.setAllowedHeaders(Arrays.asList("*"));

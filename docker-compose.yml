@@ -6,21 +6,71 @@ services:
     networks: [app-net]
 
   backend:
-    build: ./Backend          
+    build: ./Backend
     ports: ["8080:8080"]
     environment:
       SPRING_REDIS_HOST: redis
       SPRING_REDIS_PORT: 6379
       SPRING_REDIS_PASSWORD: root@123456
-    depends_on: [redis]       
+    depends_on: [redis]
     networks: [app-net]
 
   frontend:
-    build: ./fitness-frontend 
-    ports: ["80:80"]          
+    build: ./fitness-frontend
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # Hang static files to the default webroot of nginx
+      # - ./fitness-frontend/dist:/usr/share/nginx/html # no need
+      - ./certs:/etc/letsencrypt:ro
+    environment:
+      - NGINX_MODE=prod #dev/prod
     depends_on: [backend]
     networks: [app-net]
-
+  # certbot:
+  #   image: certbot/certbot
+  #   volumes:
+  #     - ./fitness-frontend/dist:/var/www/html:ro
+  #     - ./certs:/etc/letsencrypt
+  #   entrypoint: >
+  #     sh -c "certbot certonly
+  #            --webroot -w /var/www/html
+  #            -d 8.208.16.103.sslip.io
+  #            --agree-tos
+  #            --non-interactive
+  #            --email you@example.com"
+  #   networks: [app-net]
+  certbot:
+      image: certbot/certbot
+      network_mode: "host"
+      volumes:
+        # The front-end static directory is hung to /usr/share/nginx/html and needs to be writable to place the challenge file
+        - ./fitness-frontend/dist:/usr/share/nginx/html
+        # As long as the certificate directory is read-only when the front end reads the certificate, it is also acceptable. Here, rw is also maintained
+        - ./certs:/etc/letsencrypt
+      #1.The way of webroot
+      #command:
+          #  - certonly
+          #  - --non-interactive
+          #  - --agree-tos
+          #  - --email=haowhenhai@163.com
+          #  - --webroot
+          #  - --preferred-challenges=http
+          #  - -w
+          #  - /usr/share/nginx/html
+          #  - -d
+          #  - 8.208.16.103.sslip.io
+      #2.The way of standalone
+      command:
+        - certonly
+        - --standalone
+        - --preferred-challenges=http
+        - --non-interactive
+        - --agree-tos
+        - --email=haowhenhai@163.com
+        - -d
+        - 8.208.16.103.sslip.io
 networks:
   app-net:
     driver: bridge
