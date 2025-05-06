@@ -6,21 +6,76 @@ services:
     networks: [app-net]
 
   backend:
-    build: ./Backend          
+    build: ./Backend
     ports: ["8080:8080"]
     environment:
       SPRING_REDIS_HOST: redis
       SPRING_REDIS_PORT: 6379
       SPRING_REDIS_PASSWORD: root@123456
-    depends_on: [redis]       
+    depends_on: [redis]
     networks: [app-net]
 
   frontend:
-    build: ./fitness-frontend 
-    ports: ["80:80"]          
+    build: ./fitness-frontend
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # 把静态文件挂到 nginx 默认的 webroot
+      # - ./fitness-frontend/dist:/usr/share/nginx/html #不能加
+      - ./certs:/etc/letsencrypt:ro
+    environment:
+      - NGINX_MODE=prod #dev/prod
     depends_on: [backend]
     networks: [app-net]
-
+  # certbot:
+  #   image: certbot/certbot
+  #   volumes:
+  #     - ./fitness-frontend/dist:/var/www/html:ro
+  #     - ./certs:/etc/letsencrypt
+  #   entrypoint: >
+  #     sh -c "certbot certonly
+  #            --webroot -w /var/www/html
+  #            -d 8.208.16.103.sslip.io
+  #            --agree-tos
+  #            --non-interactive
+  #            --email you@example.com"
+  #   networks: [app-net]
+  certbot:
+    image: certbot/certbot
+    # 挂载前端静态目录和证书目录
+    # volumes:
+    #   - ./fitness-frontend/dist:/var/www/html:ro
+    #   - ./certs:/etc/letsencrypt
+    volumes:
+      # 前端静态目录 挂到 /var/www/html，需要可写才能放置挑战文件
+      # - ./fitness-frontend/dist:/var/www/html
+      - ./fitness-frontend/dist:/usr/share/nginx/html
+      # 证书目录只要前端读证书时是只读也可以，这里也保持 rw
+      - ./certs:/etc/letsencrypt
+    # 用 command 传入所有非交互式参数
+    # command: >
+    #   certonly
+    #     --non-interactive
+    #     --agree-tos
+    #     --email haowhenhai@163.com
+    #     --webroot -w /var/www/html
+    #     -d 8.208.16.103.sslip.io
+    command: >
+      certonly
+        --non-interactive
+        --agree-tos
+        --email haowhenhai@163.com
+        --webroot -w /usr/share/nginx/html
+        -d 8.208.16.103.sslip.io
+    # command: >
+    #   certonly
+    #     --standalone
+    #     --preferred-challenges http
+    #     --non-interactive
+    #     --agree-tos
+    #     --email haowhenhai@163.com
+    #     -d 8.208.16.103.sslip.io
 networks:
   app-net:
     driver: bridge
