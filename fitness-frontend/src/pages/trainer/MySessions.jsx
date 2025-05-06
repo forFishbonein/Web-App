@@ -145,19 +145,19 @@ function MySessions() {
         //   }
         // ];
         setAcceptedSessions(res.data);
-        //注：新增在查询的时候设置WorkoutPlans
+        //Note: Add the function of setting WorkoutPlans when querying
         setWorkoutPlans(res.data.reduce((total, current) => {
           return current.workoutPlanContent ? {
             ...total, [current.appointmentId]: {
               workoutPlanId: current.workoutPlanId,
               workoutPlanContent: current.workoutPlanContent?.split("\n").map(item => {
                 // console.log(item);
-                // 先按 “–” 拆成左右两部分
+                // First, press the "-" to split it into left and right parts
                 const [left, right] = item.split("-").map(s => s.trim());
                 // console.log(left, right);
-                // left 形如 "Step 1: 30 min"
-                // right 就是 notes，比如 "prepare"
-                // 从 left 里再抽数字
+                // left is in the form of "Step 1: 30 min"
+                // right is notes, such as "prepare"
+                // Draw a number from "left" again
                 const numMatch = left.match(/(\d+)\s*min/i);
                 const duration = numMatch ? numMatch[1] : "";
 
@@ -292,10 +292,10 @@ function MySessions() {
       });
     }
   }
-  //注：保存的时候分为直接保存和更新替换
+  //Note: When saving, it is divided into direct saving and update replacement
   const handleSavePlan = async () => {
     if (isCreate) {
-      //1.首先创建一个 plan，得到 plan 的 Id，然后绑定给这个课程订单
+      //1.First, create a plan, obtain the Id of the plan, and then bind it to this course order
       let planId = await createNewWorkoutPlan();
       await bindAppointmentAndWorkPlan(currentSessionId, planId);
       setWorkoutPlans((prev) => ({
@@ -315,7 +315,7 @@ function MySessions() {
           workoutPlanId: planId,
           workoutPlanContent: planRows
         }
-      })); //这个对象扩展运算符可以新增也可以修改覆盖
+      })); //This object extension operator can add or modify overwrite
       showSnackbar({
         message: "Workout plan have been updated to this session!",
         severity: "success",

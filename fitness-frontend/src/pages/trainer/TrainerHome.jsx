@@ -63,7 +63,7 @@ import dayjs from 'dayjs';
 // ];
 const getStaticHoursData = (rawData) => {
   // if (!rawData?.lenngth) return [[], [], 0];
-  // 1. weeklyData —— 最近 7 天，按 Mon–Sun 聚合
+  // 1. weeklyData —— In the recent 7 days, aggregate by mon-Sun
   const last7 = rawData.slice(-7);
   const weekOrder = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   const weeklyData = weekOrder.map(weekday => {
@@ -73,7 +73,7 @@ const getStaticHoursData = (rawData) => {
     return { day: weekday, hours };
   });
 
-  // 2. monthlyData —— 最近 28 天，分成 4 个“周”统计
+  // 2. monthlyData —— The recent 28 days are divided into four "weeks" for statistics
   const last28 = rawData.slice(-28);
   const monthlyData = [];
   for (let i = 0; i < 4; i++) {
@@ -82,7 +82,7 @@ const getStaticHoursData = (rawData) => {
     monthlyData.push({ day: `Week ${i + 1}`, hours });
   }
 
-  // 3. totalHours —— 原始数据所有天数的小时总和
+  // 3. totalHours —— The hourly total of all the days in the original data
   const totalHours = rawData.reduce((sum, item) => sum + (item.hours ?? 0), 0);
   // console.log(weeklyData, monthlyData, totalHours)
   return [weeklyData, monthlyData, totalHours]
@@ -121,8 +121,8 @@ function TrainerHome() {
   };
   const getHoursData = () => {
     // let startDate = dayjs().subtract(1, 'month'); // 往前推1个月
-    let startDate = dayjs().subtract(1, 'year'); // 往前推1年
-    let endDate = dayjs(); // 当前时间
+    let startDate = dayjs().subtract(1, 'year'); // Go back one year
+    let endDate = dayjs(); // current time
     let startDateStr = startDate.format('YYYY-MM-DD');
     let endDateStr = endDate.format('YYYY-MM-DD');
     getDynamicTrainerStatistics({ startDate: startDateStr, endDate: endDateStr }).then((res) => {

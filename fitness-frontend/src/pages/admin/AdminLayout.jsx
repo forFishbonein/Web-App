@@ -55,7 +55,7 @@ function AdminLayout() {
         },
       }}
     >
-      {/* 占位 AppBar 的高度 */}
+      {/* Occupy the height of the AppBar */}
       <Box sx={{ height: '10vh', flexShrink: 0 }} />
       <Box sx={{ display: "flex", justifyContent: drawerOpen ? "flex-end" : "center", p: 1 }}>
         <IconButton onClick={() => setDrawerOpen(!drawerOpen)}>
@@ -110,7 +110,7 @@ function AdminLayout() {
     <>
       {/* Top AppBar */}
       <AdminDashboard drawerOpen={drawerOpen} />
-      {/* 占位：刚好和 AppBar 等高 */}
+      {/* Occupation: Exactly at the same height as the AppBar */}
       < div style={{ height: "10vh" /* px */, flexShrink: 0 }
       } />
       {/* Sidebar Drawer */}

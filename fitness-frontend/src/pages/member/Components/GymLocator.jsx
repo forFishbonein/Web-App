@@ -26,7 +26,7 @@ function GymLocator() {
     },
   };
 
-  // 用于获取 DOM 元素的引用
+  // Used to obtain references to DOM elements
   const apiLoaderRef = useRef(null);
   const locatorRef = useRef(null);
   useEffect(() => {
@@ -42,13 +42,13 @@ function GymLocator() {
         };
       })
       console.log("locations information：", locations);
-      // 因为 React 不会传递 key 属性，我们手动设置 API loader 的 key 属性
+      // Because React does not pass the key attribute, we manually set the key attribute of the API loader
       if (apiLoaderRef.current) {
         apiLoaderRef.current.setAttribute("key", API_KEY);
       }
       CONFIGURATION.locations = locations;
       // console.log("CONFIGURATION", CONFIGURATION)
-      // 等待 <gmpx-store-locator> 自定义元素定义完毕，再调用配置方法
+      // Wait for the custom element <gmpx-store-locator> to be defined, and then call the configuration method
       customElements.whenDefined("gmpx-store-locator").then(() => {
         if (locatorRef.current) {
           locatorRef.current.configureFromQuickBuilder(CONFIGURATION);
@@ -61,13 +61,13 @@ function GymLocator() {
 
   return (
     <div style={{ width: "100%", height: "100vh", margin: 0 }}>
-      {/* 使用 ref 来获取 API loader 实例 */}
+      {/* Use ref to obtain the API loader instance */}
       <gmpx-api-loader
         ref={apiLoaderRef}
         solution-channel="GMP_QB_locatorplus_v11_cABD"
       ></gmpx-api-loader>
 
-      {/* 地图定位器 */}
+      {/* Map locator */}
       <gmpx-store-locator
         ref={locatorRef}
         map-id="DEMO_MAP_ID"

@@ -123,7 +123,7 @@ const AvailabilityCalendar = ({
         onSelectEvent={handleSelectEvent}
         startAccessor="start"
         endAccessor="end"
-        // 2. 根据 event.title 返回不同的样式
+        // Return different styles based on event.title
         eventPropGetter={event => {
           let backgroundColor = "#1976d2";
           let borderColor = "#1565c0";

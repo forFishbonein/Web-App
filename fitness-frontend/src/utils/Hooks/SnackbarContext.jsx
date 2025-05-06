@@ -40,11 +40,11 @@ export const SnackbarProvider = ({ children }) => {
   );
 };
 
-// `useSnackbar` Hook 让 React 组件可以访问 `showSnackbar`
+// The 'useSnackbar' Hook enables React components to access the 'showSnackbar'
 export const useSnackbar = () => useContext(SnackbarContext);
 
 // Global error notifier function
-// `errorNotifier.showError` 确保 `Snackbar` 被初始化后才调用
+// 'errorNotifier.showError' ensures that 'Snackbar' is called only after it has been initialized
 export const errorNotifier = {
   showError: (message) => {
     if (externalShowSnackbar) {

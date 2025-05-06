@@ -61,7 +61,7 @@ const WorkoutPlans = () => {
       if (!map[key]) {
         map[key] = [];
       }
-      // 把整条记录都 push 进去
+      // push the entire record in
       map[key].push(item);
       return map;
     }, {});

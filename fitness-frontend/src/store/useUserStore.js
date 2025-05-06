@@ -45,6 +45,6 @@ export const useUserStore = create(
   )
 );
 
-// 查询 Token 和 UserInfo
+// Query the Token and UserInfo
 export const selectUserInfo = () => useUserStore((state) => state.userInfo);
 export const selectToken = () => useUserStore((state) => state.token);

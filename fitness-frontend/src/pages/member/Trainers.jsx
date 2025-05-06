@@ -4,9 +4,6 @@ import {
   Box,
   Paper,
   Typography,
-  Select,
-  MenuItem,
-  InputLabel,
   FormControl,
   Card,
   CardContent,
@@ -206,7 +203,7 @@ export default function Trainers() {
             borderRadius: 2,
             p: 3,
             pb: 1,
-            
+
             height: "100%",
             display: "flex",
             flexDirection: "column",
@@ -233,7 +230,7 @@ export default function Trainers() {
                       inputValue={inputValueLocation}
                       onInputChange={(event, newInputValue) => setInputValueLocation(newInputValue)}
                       renderInput={(params) => (
-                        <TextField {...params} label="Filter by Club Location" variant="outlined" sx={{marginTop: "5px"}} />
+                        <TextField {...params} label="Filter by Club Location" variant="outlined" sx={{ marginTop: "5px" }} />
                       )}
                       sx={{
                         maxHeight: 200,
@@ -250,7 +247,7 @@ export default function Trainers() {
                       inputValue={inputValue}
                       onInputChange={(event, newInputValue) => setInputValue(newInputValue)}
                       renderInput={(params) => (
-                        <TextField {...params} label="Filter by Specialty" variant="outlined" sx={{marginTop: "5px"}}/>
+                        <TextField {...params} label="Filter by Specialty" variant="outlined" sx={{ marginTop: "5px" }} />
                       )}
                       sx={{
                         maxHeight: 200,

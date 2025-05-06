@@ -1,4 +1,4 @@
-import { create } from 'zustand';
+import { create } from "zustand";
 
 const useSessionStore = create((set) => ({
   acceptedSessions: [],
@@ -24,14 +24,24 @@ const useSessionStore = create((set) => ({
 
   recordSession: (session) =>
     set((state) => ({
-      historySessions: [...state.historySessions, { ...session, status: "Completed" }],
-      acceptedSessions: state.acceptedSessions.filter((s) => s.id !== session.id),
+      historySessions: [
+        ...state.historySessions,
+        { ...session, status: "Completed" },
+      ],
+      acceptedSessions: state.acceptedSessions.filter(
+        (s) => s.id !== session.id
+      ),
     })),
 
   cancelSession: (session) =>
     set((state) => ({
-      historySessions: [...state.historySessions, { ...session, status: "Cancelled" }],
-      acceptedSessions: state.acceptedSessions.filter((s) => s.id !== session.id),
+      historySessions: [
+        ...state.historySessions,
+        { ...session, status: "Cancelled" },
+      ],
+      acceptedSessions: state.acceptedSessions.filter(
+        (s) => s.id !== session.id
+      ),
     })),
 }));
 

@@ -114,7 +114,7 @@ function TrainerLayout() {
     <>
       {/* Top AppBar */}
       < TrainerDashboard drawerOpen={drawerOpen} />
-      {/* 占位：刚好和 AppBar 等高 */}
+      {/* Occupation: Exactly at the same height as the AppBar */}
       < div style={{ height: "10vh" /* px */, flexShrink: 0 }
       } />
       {/* Sidebar Drawer */}

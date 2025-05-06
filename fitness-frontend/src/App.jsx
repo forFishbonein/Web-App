@@ -73,7 +73,7 @@ function App() {
     <ThemeProvider theme={theme}>
       <SnackbarProvider>
         <CssBaseline />
-        {/* Suspense 包裹整个路由树 */}
+        {/* Suspense wraps the entire routing tree */}
         <Suspense
           fallback={
             <Backdrop open={true} sx={{ color: "#fff", zIndex: (t) => t.zIndex.drawer + 1 }}>

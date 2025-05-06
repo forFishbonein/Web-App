@@ -1,14 +1,13 @@
 import { useCallback } from "react";
 
-// 验证码 App ID
+// code App ID
 const APP_ID = "190688044";
 
 const useCaptcha = () => {
-  // 触发验证码
-  // need logic //要验证码的逻辑
+  // Trigger verification code
+  // need logic //Verify the logic of the code
   const onCaptchaShow = useCallback((onSuccess, onFailure) => {
     try {
-      // alert(111);
       const captcha = new TencentCaptcha(
         APP_ID,
         (res) => callback(res, onSuccess, onFailure),
@@ -20,7 +19,7 @@ const useCaptcha = () => {
     }
   }, []);
 
-  //logic simulation //去掉验证码的（可选，切换这两者即可）
+  //logic simulation // Remove the verification code (optional, just switch between the two)
   // const onCaptchaShow = useCallback((onSuccess, onFailure) => {
   //   //直接调用 callback，给假数据
   //   const ticket = `trerror_1001_${APP_ID}_${Math.floor(Date.now() / 1000)}`;
@@ -35,7 +34,7 @@ const useCaptcha = () => {
   //   );
   // }, []);
 
-  // 处理验证码结果
+  // Process the verification code results
   const callback = useCallback((res, onSuccess, onFailure) => {
     console.log("callback:", res);
     if (res.ret === 0) {
@@ -53,14 +52,14 @@ const useCaptcha = () => {
     }
   }, []);
 
-  // 处理验证码加载失败
+  // Handle the failure to load the verification code
   const loadErrorCallback = useCallback(
     (onFailure) => {
       const ticket = `trerror_1001_${APP_ID}_${Math.floor(Date.now() / 1000)}`;
       if (onFailure) {
         onFailure("Captcha JS failed to load. Please try again.");
       }
-      // 失败时候也不会阻止逻辑，继续进行
+      // Even when it fails, it won't stop the logic. Just keep going
       callback(
         {
           ret: 500,

@@ -3,7 +3,7 @@
  * @Author: Aron
  * @Date: 2025-03-01 00:16:52
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2025-04-26 20:42:14
+ * @LastEditTime: 2025-05-06 19:10:35
  * Copyright: 2025 xxxTech CO.,LTD. All Rights Reserved.
  * @Descripttion:
  */
@@ -103,7 +103,7 @@ function SessionList({ getSessionsList, cancelAppointment, getDynamicAppointment
     ] : [])
   ];
 
-  const [viewMode, setViewMode] = useState("list"); // 默认显示列表
+  const [viewMode, setViewMode] = useState("list"); // Default display list
   const handleViewChange = (event, newView) => {
     if (newView !== null) {
       setViewMode(newView);

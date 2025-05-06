@@ -4,9 +4,9 @@ import dayjs from "dayjs";
 import { DateRange } from "react-date-range";
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
-// 例如使用英文（美国）
+// For example, using English (USA)
 import enUS from 'date-fns/locale/en-US';
-// 或者中文
+// Or Chinese
 // import zhCN from 'date-fns/locale/zh-CN';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend, ResponsiveContainer, ComposedChart } from "recharts";
 function HistoryChart({ getDynamicAppointmentStatistics }) {
@@ -74,7 +74,7 @@ function HistoryChart({ getDynamicAppointmentStatistics }) {
           onChange={(ranges) => handleSelect(ranges)}
           moveRangeOnFirstSelection={false}
           minDate={thirtyDaysAgo.toDate()}  // Minimum optional date
-          maxDate={today.toDate()}  // TODO Maximum optional date
+          maxDate={today.toDate()}  // Maximum optional date
         />
       </Popover>
       <Button
