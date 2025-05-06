@@ -28,19 +28,6 @@ services:
       - NGINX_MODE=prod #dev/prod
     depends_on: [backend]
     networks: [app-net]
-  # certbot:
-  #   image: certbot/certbot
-  #   volumes:
-  #     - ./fitness-frontend/dist:/var/www/html:ro
-  #     - ./certs:/etc/letsencrypt
-  #   entrypoint: >
-  #     sh -c "certbot certonly
-  #            --webroot -w /var/www/html
-  #            -d 8.208.16.103.sslip.io
-  #            --agree-tos
-  #            --non-interactive
-  #            --email you@example.com"
-  #   networks: [app-net]
   certbot:
       image: certbot/certbot
       network_mode: "host"
