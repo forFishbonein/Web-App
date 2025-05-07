@@ -48,7 +48,7 @@ const LoginButton = () => {
     }
   };
   const handleFBLogin = () => {
-    console.log("login start"); //因为打包默认会给 console.log去掉，所以我们看不到任何输出，因为 docker-compose了就相当于打包了
+    console.log("login start"); //Because the packaging is removed by default from console.log, we can't see any output because docker-compose is equivalent to packaging
     //Because the packaging is removed by default from console.log, we can't see any output because docker-compose is equivalent to packaging
     if (window.FB) {
       window.FB.login(

@@ -21,7 +21,7 @@ const useCaptcha = () => {
 
   //logic simulation // Remove the verification code (optional, just switch between the two)
   // const onCaptchaShow = useCallback((onSuccess, onFailure) => {
-  //   //直接调用 callback，给假数据
+  //   //Call the callback directly and provide fake data.
   //   const ticket = `trerror_1001_${APP_ID}_${Math.floor(Date.now() / 1000)}`;
   //   callback(
   //     {
