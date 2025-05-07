@@ -25,7 +25,7 @@ services:
       # - ./fitness-frontend/dist:/usr/share/nginx/html # no need
       - ./certs:/etc/letsencrypt:ro
     environment:
-      - NGINX_MODE=prod #dev/prod
+      - NGINX_MODE=dev #dev/prod
     depends_on: [backend]
     networks: [app-net]
   certbot:

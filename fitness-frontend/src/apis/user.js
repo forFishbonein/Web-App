@@ -22,9 +22,16 @@ const useUserApi = () => {
       },
     });
   };
+  const unSubscribe = () => {
+    return httpRequest({
+      method: "put",
+      url: `/member/unsubscribe`,
+    });
+  };
   return {
     getUserInfo,
     updateUserInfo,
+    unSubscribe,
   };
 };
 export default useUserApi;

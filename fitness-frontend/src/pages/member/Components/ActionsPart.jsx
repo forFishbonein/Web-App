@@ -3,7 +3,7 @@
  * @Author: Aron
  * @Date: 2025-03-01 17:24:34
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2025-04-26 19:40:45
+ * @LastEditTime: 2025-05-07 01:22:22
  * Copyright: 2025 xxxTech CO.,LTD. All Rights Reserved.
  * @Descripttion:
  */
@@ -17,11 +17,18 @@ import {
   DialogContentText,
   DialogActions
 } from "@mui/material";
+import { useUserStore } from "../../../store/useUserStore";
+import { useSnackbar } from "../../../utils/Hooks/SnackbarContext.jsx";
 function ActionsPart({ cancelAppoint, appointment }) {
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedAppointmentId, setSelectedAppointmentId] = useState(null);
-
+  const userInfo = useUserStore((state) => state.userInfo);
+  const { showSnackbar } = useSnackbar();
   const handleOpenDialog = (appointmentId) => {
+    if (userInfo?.isSubscribe === false) {
+      showSnackbar({ message: "You are not a subscriber, please subscribe first!", severity: "warning" });
+      return;
+    }
     setSelectedAppointmentId(appointmentId);
     setOpenDialog(true);
   };

@@ -18,8 +18,8 @@ const Header = ({ onTabClick }) => {
 
         {/* Navigation Tabs */}
         <Tabs value={tabValue} aria-label="navigation tabs" onChange={(event, newValue) => setTabValue(newValue)}
-          textColor="inherit"            // 让文字都用父容器（AppBar）的 color
-        // indicatorColor="secondary"     // 下划线用 secondary 色
+          textColor="inherit"            // Let all the text use the color of the parent container (AppBar)
+        // indicatorColor="secondary"     // The underline is in secondary color
         >
           {tabs.map((tab, index) => (
             <Tab

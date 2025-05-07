@@ -3,7 +3,7 @@
  * @Author: Aron
  * @Date: 2025-03-01 00:16:52
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2025-05-06 19:10:35
+ * @LastEditTime: 2025-05-07 01:21:17
  * Copyright: 2025 xxxTech CO.,LTD. All Rights Reserved.
  * @Descripttion:
  */
@@ -34,6 +34,7 @@ import Empty from "../../../components/empty/Empty.jsx"
 import useTrainerApi from "../../../apis/trainer";
 import useMemberApi from "../../../apis/member.js";
 import BookSessionDialog from "./BookSessionDialog.jsx"
+import { useUserStore } from "../../../store/useUserStore";
 // Return the corresponding color according to the reservation status
 function getChipColor(status) {
   switch (status) {
@@ -84,6 +85,7 @@ function SessionList({ getSessionsList, cancelAppointment, getDynamicAppointment
     setCurrentPage(page);
   };
   const { showSnackbar } = useSnackbar();
+  const userInfo = useUserStore((state) => state.userInfo);
   const cancelAppoint = async (selectedAppointmentId) => {
     await cancelAppointment(selectedAppointmentId);
     showSnackbar({ message: "Cancel successful!", severity: "success" });

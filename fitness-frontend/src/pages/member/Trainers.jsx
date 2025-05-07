@@ -30,6 +30,7 @@ import { useSnackbar } from "../../utils/Hooks/SnackbarContext.jsx";
 
 import Empty from "../../components/empty/Empty"
 import BookSessionDialog from "./Components/BookSessionDialog.jsx";
+import { useUserStore } from "../../store/useUserStore";
 
 // Sample trainers data
 // const trainersData = [
@@ -71,7 +72,7 @@ export default function Trainers() {
   const [inputValue, setInputValue] = useState("");
   const [inputValueLocation, setInputValueLocation] = useState("");
 
-
+  const userInfo = useUserStore((state) => state.userInfo);
   useEffect(() => {
     filterTrainersList();
     //trainersList is designed to ensure that switching back still displays the original search results
@@ -134,6 +135,10 @@ export default function Trainers() {
 
   const [connectingId, setConnectingId] = useState(null);
   const handleConnect = (trainerId) => () => {
+    if (userInfo?.isSubscribe === false) {
+      showSnackbar({ message: "You are not a subscriber, please subscribe first!", severity: "warning" });
+      return;
+    }
     setConnectingId(trainerId);
     setOpenConnect(true);
   }
@@ -187,7 +192,12 @@ export default function Trainers() {
   const [openSession, setOpenSession] = useState(false);
   const [bookingId, setBookingId] = useState(null);
   const [bookingSpecializations, setBookingSpecializations] = useState([]);
+
   const handleBookSession = (trainerId, specializations) => () => {
+    if (userInfo?.isSubscribe === false) {
+      showSnackbar({ message: "You are not a subscriber, please subscribe first!", severity: "warning" });
+      return;
+    }
     setBookingId(trainerId);
     setOpenSession(true);
     setBookingSpecializations(specializations ? specializations.split(",") : []);
@@ -306,7 +316,7 @@ export default function Trainers() {
                         </Box>
                         <Box sx={{ display: "flex" }}>
                           <Box sx={{ width: "112px" }}></Box>
-                          <Box>
+                          <Box sx={{ flex: 1 }}>
                             <Typography
                               variant="body1" color="text.secondary"
                               onClick={handleExpandClick(trainer.userId)}
