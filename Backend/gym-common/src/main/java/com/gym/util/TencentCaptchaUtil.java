@@ -75,7 +75,7 @@ public class TencentCaptchaUtil {
             // Required parameters, set according to the official documentation
             req.setCaptchaType(9L);         // 9 represents sliding puzzle captcha
             req.setTicket(ticket);
-            req.setUserIp("2001:630:d0:5004:d93d:61f8:30af:b45e");
+            req.setUserIp(userIp);
             req.setRandstr(randStr);
             req.setCaptchaAppId(captchaAppId);
             req.setAppSecretKey(appSecretKey);
