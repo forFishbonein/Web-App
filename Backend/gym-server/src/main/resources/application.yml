@@ -52,8 +52,8 @@
   tencent:
     captcha:
       enabled: true               # Enable Tencent Captcha, change to false to disable
-      SecretId: AKIDToxsadXGl38zc3HI7C6zmLgqnXBevypS
-      SecretKey: UkneIjxznOlwufCXyFI8qUu76rOk28lD
+      secretId: AKIDToxsadXGl38zc3HI7C6zmLgqnXBevypS
+      secretKey: UkneIjxznOlwufCXyFI8qUu76rOk28lD
       # ID of the captcha product
       captchaAppId: 194199123
       # AppSecretKey of the captcha product (server-side key)
