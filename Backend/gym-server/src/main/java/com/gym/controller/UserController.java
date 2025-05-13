@@ -53,6 +53,8 @@ public class UserController {
     // Used to generate Tencent robot captcha
     private void validateCaptcha(String captchaTicket, String captchaRandstr, HttpServletRequest request) {
         String clientIp = IpUtil.getClientIp(request);
+        // 打印ip看一下是不是用户ip还是nginx
+        log.info("Client IP: {}", clientIp);
         boolean captchaValid = tencentCaptchaUtil.verifyCaptcha(captchaTicket, captchaRandstr, clientIp);
         if (!captchaValid) {
             throw new CustomException(ErrorCode.BAD_REQUEST, "Captcha verification failed.");
