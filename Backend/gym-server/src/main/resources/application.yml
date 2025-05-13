@@ -51,13 +51,13 @@
 
   tencent:
     captcha:
-      enabled: false               # Enable Tencent Captcha, change to false to disable
-      secretId: AKIDBMaeYFj293kDXeXCgx3wb4KNCpGMFuLZ
-      secretKey: 4uZ3KNCqJZbUAfwzrY1JRL4Zrxtc7QZX
+      enabled: true               # Enable Tencent Captcha, change to false to disable
+      SecretId: AKIDToxsadXGl38zc3HI7C6zmLgqnXBevypS
+      SecretKey: UkneIjxznOlwufCXyFI8qUu76rOk28lD
       # ID of the captcha product
-      captchaAppId: 190688044
+      captchaAppId: 194199123
       # AppSecretKey of the captcha product (server-side key)
-      appSecretKey: QeG8lEob0R2iZlhNS1SlZwK0h
+      appSecretKey: wx78IPc142rKRo79wyKPnq1fG
 
 
   google:
