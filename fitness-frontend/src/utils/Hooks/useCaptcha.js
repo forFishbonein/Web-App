@@ -1,7 +1,8 @@
 import { useCallback } from "react";
 
 // code App ID
-const APP_ID = "190688044";
+// const APP_ID = "190688044";
+const APP_ID = "194199123";
 
 const useCaptcha = () => {
   // Trigger verification code
