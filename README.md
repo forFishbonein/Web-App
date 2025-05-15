@@ -1,14 +1,26 @@
 # Web-App
-Color theme
-Background : #023047
-Text : White
-Text on hover : #f4d35e
+基本特性
 
+新成员可以通过提供姓名、出生日期、地址、电子邮件账户和密码进行注册成为会员。
 
-Menu Item	Description
-Home - Analytics overview (sessions per week, hours trained, active members, upcoming sessions)
-Connection Requests - Manage member connection requests
-Session Requests - Handle incoming session bookings
-My Sessions - List/calendar view of upcoming sessions; manage them
-Workout Plans - Create/manage personalized workout plans
-Member Progress - View and update member training history and stats
+经管理员批准后，会员可以寻找私人教练，向其发送训练请求，如果得到该教练的同意，
+
+即可预约私人健身课程。此外，他们还可以追踪自己的健身进度和课程历史，并取消
+
+订阅。 私人教练可以收到会员提出的个人训练课程请求，在这些请求中会员会描述自己的健身 目标。然后，私人教练可以根据会员的描述来审核、接受、拒绝该请求，或者建议 由其他私人教练来提供服务。 如果进行了私人训练课程，私人教练可以更新会员的训练历史/进度，并预约下 一次训练课程。
+
+会员可以查看自己的训练历史记录，查看训练课程的数据，即最近一周/一个月内预订课程的完 整记录以及锻炼的总时长。他们还可以查看并取消即将进行的预约，或者如果没有预约， 安排下一次的私人训练课程。
+
+当私人教练在会员的个人资料中添加训练课程时，会员的训练记录应相应更新，
+
+并向会员发送通知。
+
+对于此原型系统，不应实施任何支付系统。
+
+高级需求
+
+• 与开放数据源的集成。例如，您可以提供可用健身中心的地图视图可视化（作为上 文第二点中最后一点的扩展）。
+
+• 客户可以使用其社交媒体账户（如谷歌和脸书）注册并登录。 系统会在客户注册时向其发送一封验证邮件以核实其身份。
+
+• 将您的 Web 应用程序部署到 Azure 云平台。
