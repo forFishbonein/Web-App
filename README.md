@@ -30,3 +30,5 @@
 • 客户可以使用其社交媒体账户（如谷歌和脸书）注册并登录。 系统会在客户注册时向其发送一封验证邮件以核实其身份。
 
 • 将您的 Web 应用程序部署到 Azure 云平台。
+
+系统的介绍报告：https://github.com/forFishbonein/Web-App/blob/main/%E7%BF%BB%E8%AF%91%E6%8A%A5%E5%91%8Ateam_09.pdf
