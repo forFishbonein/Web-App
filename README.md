@@ -1,6 +1,6 @@
 # Web-App
 项目整体基本介绍
-课程作业项目，分为会员端、教练端和管理端三端，均为 web 系统，实现申请教学、预约课程、地图选择俱乐部、制定训练计划、安排课程、训练统计分析等功能，采用 React19 + Material UI + Zustand + Spring Boot 进行开发，从0到1独立开发前端，前端实现了动态导入+代码分割、代码压缩（Gzip）、静态资源Http缓存策略等性能优化（实现了 LCP1.82 秒，LightHouse 得分 87 分），使用 Nginx+Docker Compose 进行前端页面部署，同时配置了 Https+Http2，还集成了腾讯人机验证功能。
+UoS Web6251 课程作业项目，分为会员端、教练端和管理端三端，均为 web 系统，实现申请教学、预约课程、地图选择俱乐部、制定训练计划、安排课程、训练统计分析等功能，采用 React19 + Material UI + Zustand + Spring Boot 进行开发，从0到1独立开发前端，前端实现了动态导入+代码分割、代码压缩（Gzip）、静态资源Http缓存策略等性能优化（实现了 LCP1.82 秒，LightHouse 得分 87 分），使用 Nginx+Docker Compose 进行前端页面部署，同时配置了 Https+Http2，还集成了腾讯人机验证功能。
 
 基本特性
 
